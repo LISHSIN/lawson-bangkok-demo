@@ -1,0 +1,11 @@
+.App .mapboxgl-popup-content .popup-header .header-text {
+    color: black;
+    align-self: center;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+}
+
+.App .mapboxgl-popup-content .popup-content {
+    padding-top: 6px;
+}

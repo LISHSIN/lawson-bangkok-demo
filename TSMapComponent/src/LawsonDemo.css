@@ -1,0 +1,83 @@
+.App {
+  color: white;
+  font-size: 16px;
+}
+
+.App ul {
+  list-style: none;
+  padding-left: 1em;
+  padding-bottom: 1em;
+}
+
+.App li {
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+}
+
+.App .container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  height: 100%;
+  /* for IE11 */
+}
+
+.App .wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.App .layerlist {
+  width: 300px;
+  background: #333333;
+}
+
+.App .contents {
+  flex: 1;
+}
+
+.App .title {
+  display: table-cell;
+  vertical-align: middle;
+  height: 100%;
+  width: 300px;
+  padding: 8px;
+}
+
+.App .toolbar {
+  background: #333333;
+  padding: 5px;
+}
+
+.App .toolbar-button {
+  width: 80px;
+}
+
+/* Override jQueryUI's button style */
+.App .ui-button, .App .ui-button-text .ui-button {  
+  font-size: 12px !important; 
+}
+
+.App .button-group-grid {
+  display: grid;
+  grid-template-columns: 200px 200px 200px;
+}
+
+.App .button-group-header {
+  border-bottom: #189be7 2px solid;
+  text-align: center;
+  margin-right: 8px;
+}
+
+.App .button-group-content {
+  text-align: center;
+  padding: 5px;
+  margin-right: 8px;
+}
+
+.App .layerlist-radio,
+.App .layerlist-checkbox {
+  margin-right: 10px;
+  transform: scale(1.4);
+}

@@ -1,0 +1,117 @@
+.App a, .App a:hover {
+  outline: 0 !important;
+  color: inherit !important;
+  text-decoration: none !important;
+}
+.App #toggleButton {
+  display: flex;
+  z-index: 1;
+  position: absolute;
+  top: 160px;
+  left: 0;
+  width: 25px;
+  height: 40px;
+  background-color: white;
+  border: 1px solid #bebebe;
+  border-left: 0;
+  align-items: center;
+  justify-content: center;
+  pointer-events: visible;
+  transition: left 2s;
+}
+.App #toggleButton.active {
+  left: 237px;
+}
+.App #toggleButton i.fa {
+  color: #bebebe;
+  font-size: 24px;
+  margin-top: -3px;
+}
+.App #toggleButton i.fa span {
+  display: inherit;
+  margin-top: 4px;
+}
+.App #toggleButton i.fa-angle-left, .App #toggleButton.active i.fa-angle-right {
+  display: none;
+}
+.App #toggleButton i.fa-angle-right, .App #toggleButton.active i.fa-angle-left {
+  display: block;
+  padding-left: 0;
+}
+.App .navigation {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    z-index: 1;
+    color: black;
+    background-color: rgba(255,255,255, 1);
+    left: -237px;
+    top: 0;
+    padding: 10px;
+    pointer-events: visible;
+    font-size: 13px;
+    height: inherit;
+    transition: left 2s;
+    text-align: left;
+}
+.App .navigation.active {
+    left: 0;
+}
+
+.App .toolbar-toggle-btn {
+  display: flex;
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  right: 50px;
+  width: 40px;
+  height: 25px;
+  background-color: white;
+  border: 1px solid #bebebe;
+  border-top: 0;
+  align-items: center;
+  justify-content: center;
+  pointer-events: visible;
+  transition: top 2s;
+}
+.App .toolbar-toggle-btn.active {
+  top: 82px;
+}
+.App .toolbar-toggle-btn i.fa {
+  color: #bebebe;
+  font-size: 24px;
+  margin-top: -3px;
+}
+.App .toolbar-toggle-btn i.fa span {
+  display: inherit;
+  margin-top: 4px;
+}
+.App .toolbar-toggle-btn i.fa-angle-up, .App .toolbar-toggle-btn.active i.fa-angle-down {
+  display: none;
+}
+.App .toolbar-toggle-btn i.fa-angle-down, .App .toolbar-toggle-btn.active i.fa-angle-up {
+  display: block;
+  padding-left: 0;
+}
+.App .toolbar-navigation {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    z-index: 1;
+    color: black;
+    background-color: rgba(255,255,255, 1);
+    left: 0;
+    top: 0;
+    right: 0;
+    padding: 0;
+    pointer-events: visible;
+    font-size: 13px;
+    height: inherit;
+    transition: top 2s;
+    text-align: left;
+}
+.App .toolbar-navigation.active {
+    top: 0;
+}

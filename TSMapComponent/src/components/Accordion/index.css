@@ -1,0 +1,22 @@
+.accordion .accordion-header .icon::after {
+    content: ' \229E'; /* plus */
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding-left: 10px;
+}
+
+.accordion.show .accordion-header .icon::after {
+    content: ' \229F'; /* minus */
+}
+
+.accordion .accordion-content {
+    max-height: 0;
+    transition: max-height 0.5s ease-out;
+    overflow: hidden;
+}
+
+.accordion.show .accordion-content {
+    max-height: 900px;
+    transition: max-height 0.5s ease-in;
+}

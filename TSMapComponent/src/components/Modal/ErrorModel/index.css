@@ -1,0 +1,17 @@
+.App .attribute-error-modal .message,
+.App .crm-license-error-modal .message {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.App .attribute-error-modal .buttons,
+.App .crm-license-error-modal .buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.App .attribute-error-modal .buttons button,
+.App .crm-license-error-modal .buttons button {
+    width: 3rem;
+}

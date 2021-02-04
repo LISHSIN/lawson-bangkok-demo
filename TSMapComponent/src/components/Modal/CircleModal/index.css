@@ -1,0 +1,63 @@
+.circle-modal {
+    border-radius: 5px;
+}
+
+.circle-modal input[type=number],
+.circle-modal select,
+.circle-modal textarea {
+    width: 92%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.circle-modal label {
+    padding: 3px 6px 6px 0;
+    display: inline-block;
+}
+
+.circle-modal .row {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+/* Clear floats after the columns */
+.circle-modal .row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.circle-modal .col-35 {
+    float: left;
+    width: 35%;
+    margin-top: 6px;
+}
+
+.circle-modal .col-65 {
+    float: left;
+    width: 65%;
+    margin-top: 6px;
+}
+
+.circle-modal .buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.circle-modal .buttons button {
+    margin-left: 10px;
+}
+.circle-modal .buttons button:first-child {
+    margin-left: 0;
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+    .circle-modal .col-35,
+    .circle-modal .col-65 {
+        width: 100%;
+        margin-top: 0;
+    }
+}

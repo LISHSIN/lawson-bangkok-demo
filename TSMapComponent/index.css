@@ -1,0 +1,43 @@
+html {
+    height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.io-pane {
+  color: black;
+}
+
+div#root {
+    height: 100%;
+}
+
+.TSMapComponent {
+  height: 600px;
+}
+
+#reconnect_notification_Id,
+#OverflowButton_buttoncrm_header_global_flyout,
+#taskBasedMenuContainer,
+#quickCreateLauncher,
+section[openedpopups] {
+  z-index: 2;
+}
+
+#__flyoutRootNode > div > div,
+[id="MscrmControls.Containers.DashboardControl|__flyoutRootNode"] > div > div {
+  z-index: 2;
+}

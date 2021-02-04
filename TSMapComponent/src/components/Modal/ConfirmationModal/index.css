@@ -1,0 +1,17 @@
+.App .message {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.App .confirmation-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.App .confirmation-buttons button {
+    margin-left: 10px;
+}
+.App .confirmation-buttons button:first-child {
+    margin-left: 0;
+}

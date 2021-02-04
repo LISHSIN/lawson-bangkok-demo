@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control namespace="SampleNamespace" constructor="TSMapComponent" version="0.0.1" display-name-key="TSMapComponent" description-key="TSMapComponent description" control-type="standard">
+    <!-- <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" /> -->
+    <data-set name="dataSetGrid" display-name-key="DataSetGridProperty_Display_Key">
+	  </data-set>
+    <resources>
+      <css path="index.css" order="1" />
+      <css path="src/LawsonDemo.css" order="1" />
+      <css path="src/App.css" order="1" />
+      <css path="src/toggleButton.css" order="1" />
+      <css path="../node_modules/mapbox-gl/dist/mapbox-gl.css" order="1" />
+      <css path="../node_modules/@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css" order="1" />
+      <code path="index.ts" order="2"/>
+    </resources>
+  </control>
+</manifest>

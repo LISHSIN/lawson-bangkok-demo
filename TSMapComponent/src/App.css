@@ -1,0 +1,145 @@
+.App {
+    height: 100%;
+    position: relative;
+}
+
+.App .spinner {
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.App .spinner::after {
+    content: '';
+    width: 50px;
+    height: 50px;
+    border: 5px solid #FFF;
+    border-radius: 50%;
+    border-top-color: #07d;
+    -webkit-animation: spin .6s linear infinite;
+    animation: spin .6s linear infinite;
+}
+  
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.App #mapWithFileReaderContainer {
+    display: flex;
+    height: 100%;
+    position: relative;
+    flex-direction: row;
+    flex: 1;
+}
+
+.App #mapWithFileReaderContainer .map-container {
+    width: 100%;
+    height: 100%;
+}
+
+.App #mapWithFileReaderContainer .file-reader-container {
+    display: flex;
+    /* height: 30%; */
+    /* background-color: rgba(0, 0, 0, 0.2); */
+}
+
+.App .file-reader {
+    padding-left: 10px;
+    text-align: left;
+}
+
+.App .file-reader input[type="file"] {
+  opacity: 1;
+  width: 100%;
+  height: inherit;
+  padding: 0;
+  position: relative;
+  pointer-events: unset;
+}
+
+.App .container {
+    text-align: left;
+    min-height: unset;
+    position: relative;
+    overflow: hidden;
+}
+
+.App .layerlist-container {
+    width: 0;
+    height: 100%;
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    transition: width 1.95s;
+}
+.App .layerlist-container.active {
+    width: 237px;
+}
+
+.App .layerlist {
+    width: unset;
+    overflow: auto;
+}
+.App .layerlist > ul {
+    padding-right: 1em;
+}
+.App .layerlist-radio,
+.App .layerlist-checkbox {
+    padding: 0;
+    width: unset;
+}
+
+.App .wrapper {
+    position: relative;
+}
+.App .toolbar-container {
+    height: 0;
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    transition: height 1.95s;
+}
+.App .toolbar-container.active {
+    height: 82px;
+}
+.App .toolbar {
+    overflow: hidden;
+}
+.App .button-group-grid {
+    padding: 10px;
+    grid-template-columns: 182px 152px 182px 102px 62px;
+}
+.App .toolbar-button {
+    width: 40px;
+    margin-right: 1px;
+    background-color: white;
+}
+.App .toolbar-button.active {
+    border: #189be7 2px solid;
+    outline: none;
+    background: #abd4ec;
+}
+.App .toolbar-button svg image {
+    width: 100%;
+}
+
+.App .mapboxgl-ctrl-top-right {
+    top: 130px;
+}
+
+.App .mapboxgl-popup-content {
+    color: black;
+}

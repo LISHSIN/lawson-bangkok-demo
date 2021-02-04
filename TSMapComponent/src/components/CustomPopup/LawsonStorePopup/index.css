@@ -1,0 +1,19 @@
+.App .popup-content .lawson-store-info {
+    padding: 5px;
+    overflow: auto;
+    max-height: 100px;
+    max-width: 200px;
+}
+.App .popup-content .lawson-store-info > div {
+    margin-bottom: 5px;
+}
+
+.App .popup-content .lawson-store-info-buttons {
+    float: right;
+    padding-top: 10px;
+}
+
+.App .popup-content .lawson-store-info-buttons button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
