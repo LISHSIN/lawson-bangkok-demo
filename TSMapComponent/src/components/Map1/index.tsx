@@ -13,6 +13,7 @@ import miniStopImg from './images/miniStop.png';
 import familyMartImg from './images/familyMart.png';
 import sevenElevenImg from './images/sevenEleven.png';
 import lawsonStationImg from './images/Lawson-station.png';
+import tescoLotusExpressImg from './images/TescoLotusExpress.png'
 
 import { MapboxConfig, LayerId, SourceId, ImageId, GlDrawColorId, GlDrawPaintPropertyId, GlDrawLayerId, GlDrawMode } from './constants';
 import { mapboxReactContext } from 'components/MapboxContext';
@@ -20,7 +21,7 @@ import { layerReactContext, LayerType } from 'components/LayerContext';
 import { showHideLawsonTradeAreaLayer } from 'components/LayerList/constants';
 import LegendFC from 'components/Legend';
 import { initialLawsonStoreFeatureProperty, LawsonStoreFeaturePropertyInfo, LawsonStoreGeojsonInfo } from './module';
-import { mockCompititorFamilyMartFeatureList, mockCompititorMiniStopFeatureList, mockCompititorSevenElevenFeatureList, mockFeatureList, mockLawsonTradeAreaFeatureList } from './mock';
+import { mockCompititorFamilyMartFeatureList, mockCompititorMiniStopFeatureList, mockCompititorSevenElevenFeatureList, mockCompititorTescoLotusExpressFeatureList, mockFeatureList, mockLawsonTradeAreaFeatureList } from './mock';
 
 const Mapbox = ReactMapboxGl({
     accessToken: MapboxConfig.ACCESS_TOKEN,
@@ -75,6 +76,12 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         // 'features': mockCompititorMiniStopFeatureList,
     } as any;
 
+    const tescoLotusExpressGeojson = {
+        'type': 'FeatureCollection',
+        'features': [],
+        // 'features': mockCompititorTescoLotusExpressFeatureList,
+    } as any;
+
     useEffect(() => {
         if (mapContext !== undefined) {
             onInitMapDraw(mapContext);
@@ -95,6 +102,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
             retriveMiniStopDataFromD365(mapContext);
             retriveFamilyMartDataFromD365(mapContext);
             retriveSevenElevenDataFromD365(mapContext);
+            retriveTescoLotusExpressDataFromD365(mapContext)
             updateIsRefreshAllLayers(false);
         }
     }, [isRefreshAllLayers]);
@@ -204,6 +212,37 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                 }
                 let source = map.getSource(SourceId.SEVEN_ELEVEN_STORE_SOURCE) as any;
                 source.setData(sevenElevenGeojson);
+            });
+    }
+
+    function retriveTescoLotusExpressDataFromD365(map: MapboxGl.Map) {
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_tescolotusexpress").then((result) => {
+                sevenElevenGeojson.features = [];
+                for (var i = 0; i < result.entities.length; i++) {
+                    let entity = result.entities[i];
+                    let geojson = {
+                        'type': 'Feature',
+                        'geometry': {
+                            coordinates: [entity.crcef_ceox, entity.crcef_ux],
+                            type: "Point"
+                        },
+                        'id': entity.crcef_tescolotusexpressid,
+                        'properties': {
+                            crcef_tescolotusexpressid: entity.crcef_tescolotusexpressid,
+                            crcef_id: entity.crcef_id,
+                            crcef_name: entity.crcef_name,
+                            crcef_addrcity: entity.crcef_addrcity,
+                            crcef_addrstree: entity.crcef_addrstree,
+                            crcef_phone: entity.crcef_phone,
+                            crcef_ceox: entity.crcef_ceox,
+                            crcef_ux: entity.crcef_ux
+                        }
+                    }
+                    tescoLotusExpressGeojson.features.push(geojson);
+                }
+                let source = map.getSource(SourceId.TESCO_LOTUS_EXPRESS_SOURCE) as any;
+                source.setData(tescoLotusExpressGeojson);
             });
     }
 
@@ -340,6 +379,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                             crcef_7eleven: entity.crcef_7eleven,
                             crcef_familymart: entity.crcef_familymart,
                             crcef_ministop: entity.crcef_ministop,
+                            crcef_tescoLotusExpress: entity.crcef_tescolotusexpress,
                             crcef_tatal: entity.crcef_tatal,
                             crcef_0oclockweekend: entity.crcef_0oclockweekend,
                             crcef_1oclockweekend: entity.crcef_1oclockweekend,
@@ -664,6 +704,47 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         retriveMiniStopDataFromD365(map);
     }
 
+    function addTescoLotusExpressLayer(map: MapboxGl.Map) {
+        let tescoLotusExpressIconId = ImageId.TESCO_LOTUS_EXPRESS_ICON;
+        let tescoLotusExpressLayerId = LayerId.TESCO_LOTUS_EXPRESS_LAYER as LayerType;
+        let tescoLotusExpressSourceId = SourceId.TESCO_LOTUS_EXPRESS_SOURCE;
+
+        map.loadImage(tescoLotusExpressImg, (error: any, image: any) => {
+            if (error) return;
+
+            let hasStoreImage = map.hasImage(tescoLotusExpressIconId);
+            if (hasStoreImage === false) {
+                map.addImage(tescoLotusExpressIconId, image);
+            }
+        });
+
+        let tescoLotusExpressSource = map.getSource(tescoLotusExpressSourceId);
+        if (tescoLotusExpressSource === undefined) {
+            map.addSource(tescoLotusExpressSourceId, {
+                'type': 'geojson',
+                'data': tescoLotusExpressGeojson
+            });
+        }
+
+        let tescoLotusExpressLayer = map.getLayer(tescoLotusExpressLayerId);
+        if (tescoLotusExpressLayer === undefined) {
+            map.addLayer({
+                'id': tescoLotusExpressLayerId,
+                'source': tescoLotusExpressSourceId,
+                'type': 'symbol',
+                'minzoom': 13,
+                'layout': {
+                    'icon-image': tescoLotusExpressIconId,
+                    'icon-size': 0.5,
+                    'icon-allow-overlap': true
+                },
+            });
+        }
+
+        map.setLayoutProperty(tescoLotusExpressLayerId, "visibility", (layerObj[tescoLotusExpressLayerId].isEnable === true ? 'visible' : 'none'));
+        retriveTescoLotusExpressDataFromD365(map);
+    }
+
     /**
      * This function is used to add trade area
      * to populate over the circle and polygon on Map view.
@@ -703,6 +784,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         addFamilyMartLayer(map);
         addSevenElevenStoreLayer(map);
         addMiniStopStoreLayer(map);
+        addTescoLotusExpressLayer(map);
 
         showHideAllLayers(map);
     }

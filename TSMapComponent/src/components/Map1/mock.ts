@@ -99,6 +99,7 @@ const featureProperties = {
     "crcef_7eleven": 6,
     "crcef_familymart": 4,
     "crcef_ministop": 1,
+    "crcef_tescolotusexpress" : 6,
     "crcef_tatal": 11,
     "crcef_0oclockweekend": 6,
     "crcef_1oclockweekend": 8,
@@ -154,7 +155,7 @@ export const mockFeatureList: GeoJSON.Feature[] = [
         "id": 'guid1',
         "geometry": {
             "type": "Point",
-            "coordinates": [121.04955732822418, 14.603814127287848]
+            "coordinates": [100.50445982809214, 13.749275829023063]
         },
         "type": "Feature",
         "properties": Object.assign({}, featureProperties, {
@@ -165,7 +166,7 @@ export const mockFeatureList: GeoJSON.Feature[] = [
         "id": 'guid2',
         "geometry": {
             "type": "Point",
-            "coordinates": [121.05918424034119, 14.603814127287848]
+            "coordinates": [100.50815965678231, 13.748210993898525]
         },
         "type": "Feature",
         "properties": Object.assign({}, featureProperties, {
@@ -180,11 +181,11 @@ export const mockLawsonTradeAreaFeatureList: GeoJSON.Feature[] = [
         "geometry": {
             "type": "Polygon",
             "coordinates": [[
-                [121.04955732822418, 14.603814127287848],
-                [121.04955732822418, 14.603814127287848],
-                [121.04955732822418, 14.603814127287848],
-                [121.04955732822418, 14.603814127287848],
-                [121.04955732822418, 14.603814127287848]
+                [100.50445854663849, 13.749275205717126],
+                [100.50445854663849, 13.749275205717126],
+                [100.50445854663849, 13.749275205717126],
+                [100.50445854663849, 13.749275205717126],
+                [100.50445854663849, 13.749275205717126]
             ]]
         },
         "type": "Feature",
@@ -198,12 +199,11 @@ export const mockLawsonTradeAreaFeatureList: GeoJSON.Feature[] = [
         "geometry": {
             "type": "Polygon",
             "coordinates": [[
-                [121.05789275051984, 14.606012147943417],
-                [121.05704288848455, 14.602565886718324],
-                [121.06133266828482, 14.599746178272426],
-                [121.06254675690718, 14.605189749603653],
-                [121.0624658176659, 14.607265320452342],
-                [121.05789275051984, 14.606012147943417],
+                [100.50644569311623, 13.74858230291504],
+                [100.50866556990991, 13.749814455544083],
+                [100.51235215101411, 13.748505293159582],
+                [100.5068420996858, 13.746349009749153],
+                [100.50644569311623, 13.74858230291504],
             ]]
         },
         "type": "Feature",
@@ -218,7 +218,7 @@ export const mockCompititorFamilyMartFeatureList: GeoJSON.Feature[] = [
         "id": 1,
         "geometry": {
             "type": "Point",
-            "coordinates": [121.04955732822618, 14.603814127287848]
+            "coordinates": [100.49159989465767, 13.75020929269192]
         },
         "type": "Feature",
         "properties": featureProperties,
@@ -227,7 +227,7 @@ export const mockCompititorFamilyMartFeatureList: GeoJSON.Feature[] = [
         "id": 2,
         "geometry": {
             "type": "Point",
-            "coordinates": [121.05918424034330, 14.603814127287848]
+            "coordinates": [100.4948730533551, 13.750463640866286]
         },
         "type": "Feature",
         "properties": featureProperties,
@@ -239,7 +239,7 @@ export const mockCompititorSevenElevenFeatureList: GeoJSON.Feature[] = [
         "id": 1,
         "geometry": {
             "type": "Point",
-            "coordinates": [121.04955732822525, 14.603814127287848]
+            "coordinates": [100.49847352792165, 13.75682225540632]
         },
         "type": "Feature",
         "properties": featureProperties,
@@ -248,7 +248,7 @@ export const mockCompititorSevenElevenFeatureList: GeoJSON.Feature[] = [
         "id": 2,
         "geometry": {
             "type": "Point",
-            "coordinates": [121.05918424034430, 14.603814127287848]
+            "coordinates": [100.50357965548926, 13.755359789356959]
         },
         "type": "Feature",
         "properties": featureProperties,
@@ -260,7 +260,7 @@ export const mockCompititorMiniStopFeatureList: GeoJSON.Feature[] = [
         "id": 1,
         "geometry": {
             "type": "Point",
-            "coordinates": [121.04955732822500, 14.603814127287748]
+            "coordinates": [100.49336740035397, 13.744995094243592]
         },
         "type": "Feature",
         "properties": featureProperties,
@@ -269,7 +269,28 @@ export const mockCompititorMiniStopFeatureList: GeoJSON.Feature[] = [
         "id": 2,
         "geometry": {
             "type": "Point",
-            "coordinates": [121.05918424034230, 14.603814127287200]
+            "coordinates": [100.49801528570327, 13.745630978318061]
+        },
+        "type": "Feature",
+        "properties": featureProperties,
+    },
+];
+
+export const mockCompititorTescoLotusExpressFeatureList: GeoJSON.Feature[] = [
+    {
+        "id": 1,
+        "geometry": {
+            "type": "Point",
+            "coordinates": [100.50299048692324, 13.753579383572486]
+        },
+        "type": "Feature",
+        "properties": featureProperties,
+    },
+    {
+        "id": 2,
+        "geometry": {
+            "type": "Point",
+            "coordinates": [100.50731105640341, 13.75669508480776]
         },
         "type": "Feature",
         "properties": featureProperties,

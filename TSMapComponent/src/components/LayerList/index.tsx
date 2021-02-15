@@ -76,7 +76,7 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                                 <CheckboxFC
                                     checked={layerObj[LayerId.LAWSON_STORE_LAYER].isEnable}
                                     layerId={LayerId.LAWSON_STORE_LAYER}
-                                    layerName="Lawson Store"
+                                    layerName="Store A"
                                 ></CheckboxFC>
                             </li>
                         </ul>
@@ -88,12 +88,12 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                                 <CheckboxFC
                                     checked={layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].isEnable}
                                     layerId={LayerId.LAWSON_TRADE_AREA_LAYER}
-                                    layerName="Lawson Trade Area"
+                                    layerName="Trade Area"
                                 ></CheckboxFC>
                             </li>
                         </ul>
                     </li>
-                    <li>
+                    {/* <li>
                         <b>Focus Area</b>
                         <ul>
                             <li>
@@ -125,7 +125,7 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                                 ></CheckboxFC>
                             </li>
                         </ul>
-                    </li>
+                    </li> */}
                     <li>
                         <b>Competitor</b>
                         <ul>
@@ -133,21 +133,28 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                                 <CheckboxFC
                                     checked={layerObj[LayerId.SEVEN_ELEVEN_STORE_LAYER].isEnable}
                                     layerId={LayerId.SEVEN_ELEVEN_STORE_LAYER}
-                                    layerName="Seven Eleven"
+                                    layerName="Store B"
                                 ></CheckboxFC>
                             </li>
                             <li>
                                 <CheckboxFC
                                     checked={layerObj[LayerId.FAMILIMART_STORE_LAYER].isEnable}
                                     layerId={LayerId.FAMILIMART_STORE_LAYER}
-                                    layerName="FamilyMart"
+                                    layerName="Store C"
                                 ></CheckboxFC>
                             </li>
                             <li>
                                 <CheckboxFC
                                     checked={layerObj[LayerId.MINISTOP_STORE_LAYER].isEnable}
                                     layerId={LayerId.MINISTOP_STORE_LAYER}
-                                    layerName="MiniStop"
+                                    layerName="Store D"
+                                ></CheckboxFC>
+                            </li>
+                            <li>
+                                <CheckboxFC
+                                    checked={layerObj[LayerId.TESCO_LOTUS_EXPRESS_LAYER].isEnable}
+                                    layerId={LayerId.TESCO_LOTUS_EXPRESS_LAYER}
+                                    layerName="Store E"
                                 ></CheckboxFC>
                             </li>
                         </ul>
