@@ -1,14 +1,14 @@
 export const MapboxConfig = {
-    /* hisol-lis User */
-    STYLE: "mapbox://styles/hisol-lis/ckisni1b3143219s069jdkad7",
+    /* store-opening-hsin User */
+    STYLE: "mapbox://styles/store-opening-hsin/ckkrswsur0j3o17uwfnxmurqu",
 
-    SATELLITE_STYLE: "mapbox://styles/hisol-lis/ckhvsflih0oxa19pqtekgumsj",
+    SATELLITE_STYLE: "mapbox://styles/store-opening-hsin/ckkrsy84y0h3r17o5ri7bteex",
 
     MONOCHROME_STYLE: "mapbox://styles/hisol-lis/ckhvs3jso0ohm19nxyh83j57y",
 
-    ACCESS_TOKEN: "pk.eyJ1IjoiaGlzb2wtbGlzIiwiYSI6ImNrZXJyZzA0aTIwYTYyc3FtZmJnbjVneDcifQ.gdXWSGjzgXtHeux5Yv6FQw",
+    ACCESS_TOKEN: "pk.eyJ1Ijoic3RvcmUtb3BlbmluZy1oc2luIiwiYSI6ImNra3FqM2M0ejBmZjYyeHBmcmJhd2drdzgifQ.He2KZ2j5Rdr84gAMz22Ijg",
 
-    CENTER: [121.04335, 14.56842] as [number, number],
+    CENTER: [100.52302, 13.75615] as [number, number],
 
     ZOOM: [12] as [number],
 }
@@ -54,6 +54,8 @@ export enum LayerId {
     MINISTOP_STORE = "Ministop-store",
 
     MINISTOP_STORE_LAYER = "ministopStoreLayer",
+
+    TESCO_LOTUS_EXPRESS_LAYER = "tescoLotusExpressLayer",
 
     POPULATION_COUNT = "Population-count",
 
@@ -153,7 +155,9 @@ export enum SourceId {
 
     MINISTOP_STORE_SOURCE = "MinistopStoreSource",
 
-    LAWSON_STATION_SOURCE = "lawsonStationSource"
+    LAWSON_STATION_SOURCE = "lawsonStationSource",
+
+    TESCO_LOTUS_EXPRESS_SOURCE = "tescoLotusExpressSource"
 }
 
 export enum ImageId {
@@ -165,7 +169,9 @@ export enum ImageId {
 
     MINISTOP_STORE_ICON = "miniStopStoreIcon",
 
-    LAWSON_STATION_ICON = "lawsonStationIcon"
+    LAWSON_STATION_ICON = "lawsonStationIcon",
+
+    TESCO_LOTUS_EXPRESS_ICON = "tescoLotusExpressIcon"
 }
 
 export enum BaseMapName {

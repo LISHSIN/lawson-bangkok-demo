@@ -26,6 +26,7 @@ export interface CompetitorStoreInfo {
     ministop: number,
     familymart: number,
     sevenEleven: number,
+    tescoLotusExpress: number,
     tatal: number,
 }
 
@@ -130,6 +131,7 @@ export interface LawsonStoreFeaturePropertyInfo {
     crcef_7eleven: number,
     crcef_familymart: number,
     crcef_ministop: number,
+    crcef_tescoLotusExpress: number,
     crcef_tatal: number,
     crcef_0oclockweekend: number,
     crcef_1oclockweekend: number,
@@ -214,6 +216,7 @@ export const initialCompetitorStoreInfo: CompetitorStoreInfo = {
     ministop: 0,
     familymart: 0,
     sevenEleven: 0,
+    tescoLotusExpress: 0,
     tatal: 0,
 }
 
@@ -318,6 +321,7 @@ export const initialLawsonStoreFeatureProperty: LawsonStoreFeaturePropertyInfo =
     crcef_7eleven: 0,
     crcef_familymart: 0,
     crcef_ministop: 0,
+    crcef_tescoLotusExpress: 0,
     crcef_tatal: 0,
     crcef_0oclockweekend: 0,
     crcef_1oclockweekend: 0,

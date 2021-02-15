@@ -200,9 +200,9 @@ export enum TooltipName {
 
     SELECT = "Select",
 
-    CHART = "Lawson Trade Area Statistics",
+    CHART = "Trade Area Statistics",
 
-    LAWSON_CHART = "Lawson Store Statistics",
+    LAWSON_CHART = "Store Statistics",
 
     REFRESH = "Refresh",
 }

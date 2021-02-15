@@ -253,22 +253,23 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             map.on('draw.selectionchange', onDrawSelectionChange);
 
             // Remove the existing click event
-            map.off('click', onMapClick);
             map.off('click', LayerId.LAWSON_STORE_LAYER, onLawsonStoreClick);
             map.off('click', LayerId.FAMILIMART_STORE_LAYER, onFamilyStoreClick);
             map.off('click', LayerId.MINISTOP_STORE_LAYER, onMinistopStoreClick);
             map.off('click', LayerId.SEVEN_ELEVEN_STORE_LAYER, onSevenElevenStoreClick);
             map.off('click', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdClick);
             map.off('click', GlDrawLayerId.GL_DRAW_POLYGON_STROKE_INACTIVE_COLD, onGlDrawPolygonStrokeInActiveColdClick);
+            map.off('click', onMapClick);
 
             // add new click event
-            map.on('click', onMapClick);
             map.on('click', LayerId.LAWSON_STORE_LAYER, onLawsonStoreClick);
             map.on('click', LayerId.FAMILIMART_STORE_LAYER, onFamilyStoreClick);
             map.on('click', LayerId.MINISTOP_STORE_LAYER, onMinistopStoreClick);
             map.on('click', LayerId.SEVEN_ELEVEN_STORE_LAYER, onSevenElevenStoreClick);
+            map.on('click', LayerId.TESCO_LOTUS_EXPRESS_LAYER, onTescoLotusExpressStoreClick);
             map.on('click', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdClick);
             map.on('click', GlDrawLayerId.GL_DRAW_POLYGON_STROKE_INACTIVE_COLD, onGlDrawPolygonStrokeInActiveColdClick);
+            map.on('click', onMapClick);
 
             // Remove the existing double click event
             map.off('dblclick', GlDrawLayerId.GL_DRAW_POLYGON_FILL_ACTIVE_COLD, onGlDrawPolygonFillActiveColdDoubleClick);
@@ -1100,14 +1101,20 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             let layers: LayerType[] = [LayerId.SEVEN_ELEVEN_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
+        let getTotalTescoLotusExpressStore = () => {
+            let layers: LayerType[] = [LayerId.TESCO_LOTUS_EXPRESS_LAYER];
+            return getTotalStoreByLayerIds(layers);
+        };
         let totalMiniStop = getTotalMinistopStore();
         let totalFamilyMart = getTotalFamilymartStore();
         let totalSevenEleven = getTotalSevenElevenStore();
-        let totalCompetitiores = totalMiniStop + totalFamilyMart + totalSevenEleven;
+        let totalTescoLotusExpress = getTotalTescoLotusExpressStore();
+        let totalCompetitiores = totalMiniStop + totalFamilyMart + totalSevenEleven + totalTescoLotusExpress;
         return {
             ministop: totalMiniStop,
             familymart: totalFamilyMart,
             sevenEleven: totalSevenEleven,
+            tescoLotusExpress: totalTescoLotusExpress,
             tatal: totalCompetitiores,
         };
     }
@@ -1563,6 +1570,20 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param event
      */
     function onSevenElevenStoreClick(e: any) {
+        e.preventDefault();
+        let isExist = isUnSaveFeatureExist();
+        if (map === undefined || isExist === true) {
+            mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
+            return;
+        }
+
+        let { mapOperation} = btnObjRef;
+        if (mapOperation.info.isEnable === true) {
+            showCompetitorStoreInfoPopup(map, e);
+        }
+    }
+
+    function onTescoLotusExpressStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -2175,7 +2196,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         var randomNumber = Math.floor(Math.random() * 100) + 1;
         let promisesArray = [];
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
-        const { ministop: totalMinistop, familymart: totalFamilymart, sevenEleven: totalSevenEleven, tatal: totalTatal } = aggregatedCompetitorStoreObj;
+        const { ministop: totalMinistop, familymart: totalFamilymart, sevenEleven: totalSevenEleven, tescoLotusExpress: totalTescoLotusExpress, tatal: totalTatal } = aggregatedCompetitorStoreObj;
 
         for (var i = 0; i < filteredLawsonStoreFeatures.length; i++) {
             let feature = filteredLawsonStoreFeatures[i];
@@ -2284,6 +2305,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         crcef_7eleven: totalSevenEleven,
                         crcef_familymart: totalFamilymart,
                         crcef_ministop: totalMinistop,
+                        crcef_tescolotusexpress: totalTescoLotusExpress,
                         crcef_tatal: totalTatal,
                         crcef_0oclockweekend: property.crcef_0oclockweekend,
                         crcef_1oclockweekend: property.crcef_1oclockweekend,
