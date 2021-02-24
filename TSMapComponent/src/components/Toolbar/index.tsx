@@ -529,7 +529,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             return true;
         }
         if (mapEventRef.unSaveLawsonStoreFeatureId !== undefined) {
-            alert('Please save the edited lawson store');
+            alert('Please save the edited store A');
             return true;
         }
         return false;
@@ -2407,7 +2407,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         if (isVisibleLawsonTradeAreaLayer() === true) {
             setActiveBtnId(btnId);
         } else {
-            alert("Please select the lawson trade area layer");
+            alert("Please select the trade area layer");
         }
     }
 
@@ -3009,7 +3009,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             if (filteredStoreFeatureList.length === 0) {
                 let initialLawsonStoreFeature = JSON.parse(JSON.stringify(initialLawsonStoreGeojsonInfo));
                 initialLawsonStoreFeature.properties = Object.assign(initialLawsonStoreFeature.properties, {
-                    crcef_storename: 'Trade Area Without Lawson Store',
+                    crcef_storename: 'Trade Area Without Store A',
                     crcef_duplicatelawsonstoredataid: initialLawsonStoreFeature.id
                 });
 
