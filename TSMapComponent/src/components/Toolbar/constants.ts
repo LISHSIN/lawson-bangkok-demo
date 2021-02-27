@@ -113,10 +113,10 @@ export const mockFeatureData: MapboxGl.MapboxGeoJSONFeature = {
     "properties": featureProperties,
     "id": 1,
     "layer": {
-        "id": "Lawson-Store",
+        "id": "Store",
         "type": "symbol",
         "source": "composite",
-        "source-layer": "lawson_store-84rvui",
+        "source-layer": "store-84rvui",
         "minzoom": 13,
         "layout": {
             "text-field": {},
@@ -134,7 +134,7 @@ export const mockFeatureData: MapboxGl.MapboxGeoJSONFeature = {
         }
     },
     "source": "composite",
-    "sourceLayer": "lawson_store-84rvui",
+    "sourceLayer": "store-84rvui",
     "state": {}
 }
 
@@ -166,9 +166,9 @@ export enum ButtonId {
 
     SELECT = "select",
 
-    CHART = "chart",
+    TRADE_AREA_CHART = "tradeAreaStatistics",
 
-    LAWSON_CHART = "lawsonStoreStatistics",
+    A_STORE_CHART = "StoreStatistics",
 
     REFRESH = "refresh",
 }
@@ -200,9 +200,9 @@ export enum TooltipName {
 
     SELECT = "Select",
 
-    CHART = "Trade Area Statistics",
+    TRADE_AREA_CHART = "Trade Area Statistics",
 
-    LAWSON_CHART = "Store Statistics",
+    A_STORE_CHART = "Store Statistics",
 
     REFRESH = "Refresh",
 }
@@ -215,7 +215,7 @@ export enum TradeAreaActionId {
     DELETE = "delete",
 }
 
-export enum LawsonStoreActionId {
+export enum StoreActionId {
     CREATE = "create",
 
     UPDATE = "update",

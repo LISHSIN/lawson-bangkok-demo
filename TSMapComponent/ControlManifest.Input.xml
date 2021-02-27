@@ -6,7 +6,7 @@
 	  </data-set>
     <resources>
       <css path="index.css" order="1" />
-      <css path="src/LawsonDemo.css" order="1" />
+      <css path="src/StoreDemo.css" order="1" />
       <css path="src/App.css" order="1" />
       <css path="src/toggleButton.css" order="1" />
       <css path="../node_modules/mapbox-gl/dist/mapbox-gl.css" order="1" />

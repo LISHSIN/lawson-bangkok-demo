@@ -74,8 +74,8 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                         <ul>
                             <li>
                                 <CheckboxFC
-                                    checked={layerObj[LayerId.LAWSON_STORE_LAYER].isEnable}
-                                    layerId={LayerId.LAWSON_STORE_LAYER}
+                                    checked={layerObj[LayerId.A_STORE_LAYER].isEnable}
+                                    layerId={LayerId.A_STORE_LAYER}
                                     layerName="Store A"
                                 ></CheckboxFC>
                             </li>
@@ -86,8 +86,8 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                         <ul>
                             <li>
                                 <CheckboxFC
-                                    checked={layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].isEnable}
-                                    layerId={LayerId.LAWSON_TRADE_AREA_LAYER}
+                                    checked={layerObj[LayerId.TRADE_AREA_LAYER].isEnable}
+                                    layerId={LayerId.TRADE_AREA_LAYER}
                                     layerName="Trade Area"
                                 ></CheckboxFC>
                             </li>

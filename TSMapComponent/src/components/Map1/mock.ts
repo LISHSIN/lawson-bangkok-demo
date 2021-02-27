@@ -175,7 +175,7 @@ export const mockFeatureList: GeoJSON.Feature[] = [
     },
 ];
 
-export const mockLawsonTradeAreaFeatureList: GeoJSON.Feature[] = [
+export const mockTradeAreaFeatureList: GeoJSON.Feature[] = [
     {
         "id": 1,
         "geometry": {

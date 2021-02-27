@@ -30,7 +30,7 @@ export interface CompetitorStoreInfo {
     tatal: number,
 }
 
-export interface LawsonStoreFeaturePropertyInfo {
+export interface AStoreFeaturePropertyInfo {
     crcef_randomnumber: number,
     crcef_duplicatelawsonstoredataid: string,
     crcef_id: number,
@@ -178,14 +178,14 @@ export interface LawsonStoreFeaturePropertyInfo {
     crcef_sun: number,
 }
 
-export interface LawsonStoreGeojsonInfo {
+export interface AStoreGeojsonInfo {
     id: number,
     type: 'Feature',
     geometry: {
         coordinates: GeoJSON.Position,
         type: "Point"
     },
-    properties: LawsonStoreFeaturePropertyInfo
+    properties: AStoreFeaturePropertyInfo
 }
 
 export const initialPopulationInfo: PopulationInfo = {
@@ -220,7 +220,7 @@ export const initialCompetitorStoreInfo: CompetitorStoreInfo = {
     tatal: 0,
 }
 
-export const initialLawsonStoreFeatureProperty: LawsonStoreFeaturePropertyInfo = {
+export const initialAStoreFeatureProperty: AStoreFeaturePropertyInfo = {
     crcef_randomnumber: 1,
     crcef_duplicatelawsonstoredataid: 'guid',
     crcef_id: 1,
@@ -368,12 +368,12 @@ export const initialLawsonStoreFeatureProperty: LawsonStoreFeaturePropertyInfo =
     crcef_sun: 0,
 }
 
-export const initialLawsonStoreGeojsonInfo: LawsonStoreGeojsonInfo = {
+export const initialAStoreGeojsonInfo: AStoreGeojsonInfo = {
     id: 1,
     type: 'Feature',
     geometry: {
         coordinates: [0, 0],
         type: 'Point'
     },
-    properties: initialLawsonStoreFeatureProperty
+    properties: initialAStoreFeatureProperty
 };

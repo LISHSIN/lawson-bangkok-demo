@@ -3,11 +3,11 @@ import { Popup } from 'react-mapbox-gl';
 import "./index.css";
 
 import { usePopup } from './usePopup';
-import LawsonStorePopupFC from './LawsonStorePopup';
+import AStorePopupFC from './AStorePopup';
 
 export {
     usePopup,
-    LawsonStorePopupFC
+    AStorePopupFC
 }
 
 export interface CustomPopupProps {
