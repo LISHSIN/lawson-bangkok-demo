@@ -23,10 +23,10 @@ export interface PopulationInfo {
 }
 
 export interface CompetitorStoreInfo {
-    ministop: number,
-    familymart: number,
-    sevenEleven: number,
-    tescoLotusExpress: number,
+    bStore: number,
+    cStore: number,
+    dStore: number,
+    eStore: number,
     tatal: number,
 }
 
@@ -213,10 +213,10 @@ export const initialPopulationInfo: PopulationInfo = {
 }
 
 export const initialCompetitorStoreInfo: CompetitorStoreInfo = {
-    ministop: 0,
-    familymart: 0,
-    sevenEleven: 0,
-    tescoLotusExpress: 0,
+    bStore: 0,
+    cStore: 0,
+    dStore: 0,
+    eStore: 0,
     tatal: 0,
 }
 

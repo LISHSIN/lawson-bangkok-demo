@@ -254,19 +254,20 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             // Remove the existing click event
             map.off('click', LayerId.A_STORE_LAYER, onAStoreClick);
-            map.off('click', LayerId.FAMILIMART_STORE_LAYER, onFamilyStoreClick);
-            map.off('click', LayerId.MINISTOP_STORE_LAYER, onMinistopStoreClick);
-            map.off('click', LayerId.SEVEN_ELEVEN_STORE_LAYER, onSevenElevenStoreClick);
+            map.off('click', LayerId.C_STORE_LAYER, onCStoreClick);
+            map.off('click', LayerId.D_STORE_LAYER, onDStoreClick);
+            map.off('click', LayerId.B_STORE_LAYER, onBStoreClick);
+            map.off('click', LayerId.E_STORE_LAYER, onEStoreClick);
             map.off('click', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdClick);
             map.off('click', GlDrawLayerId.GL_DRAW_POLYGON_STROKE_INACTIVE_COLD, onGlDrawPolygonStrokeInActiveColdClick);
             map.off('click', onMapClick);
 
             // add new click event
             map.on('click', LayerId.A_STORE_LAYER, onAStoreClick);
-            map.on('click', LayerId.FAMILIMART_STORE_LAYER, onFamilyStoreClick);
-            map.on('click', LayerId.MINISTOP_STORE_LAYER, onMinistopStoreClick);
-            map.on('click', LayerId.SEVEN_ELEVEN_STORE_LAYER, onSevenElevenStoreClick);
-            map.on('click', LayerId.TESCO_LOTUS_EXPRESS_LAYER, onTescoLotusExpressStoreClick);
+            map.on('click', LayerId.C_STORE_LAYER, onCStoreClick);
+            map.on('click', LayerId.D_STORE_LAYER, onDStoreClick);
+            map.on('click', LayerId.B_STORE_LAYER, onBStoreClick);
+            map.on('click', LayerId.E_STORE_LAYER, onEStoreClick);
             map.on('click', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdClick);
             map.on('click', GlDrawLayerId.GL_DRAW_POLYGON_STROKE_INACTIVE_COLD, onGlDrawPolygonStrokeInActiveColdClick);
             map.on('click', onMapClick);
@@ -1089,32 +1090,32 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             let filterdCompetitorStoreFeatureList = filterCompetitorStoreDataWithInPolygonByLayerIds(layers, map, polygonFeatureList);
             return filterdCompetitorStoreFeatureList.length;
         };
-        let getTotalMinistopStore = () => {
-            let layers: LayerType[] = [LayerId.MINISTOP_STORE_LAYER];
+        let getTotalDStore = () => {
+            let layers: LayerType[] = [LayerId.D_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let getTotalFamilymartStore = () => {
-            let layers: LayerType[] = [LayerId.FAMILIMART_STORE_LAYER];
+        let getTotalCStore = () => {
+            let layers: LayerType[] = [LayerId.C_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let getTotalSevenElevenStore = () => {
-            let layers: LayerType[] = [LayerId.SEVEN_ELEVEN_STORE_LAYER];
+        let getTotalBStore = () => {
+            let layers: LayerType[] = [LayerId.B_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let getTotalTescoLotusExpressStore = () => {
-            let layers: LayerType[] = [LayerId.TESCO_LOTUS_EXPRESS_LAYER];
+        let getTotalEStore = () => {
+            let layers: LayerType[] = [LayerId.E_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let totalMiniStop = getTotalMinistopStore();
-        let totalFamilyMart = getTotalFamilymartStore();
-        let totalSevenEleven = getTotalSevenElevenStore();
-        let totalTescoLotusExpress = getTotalTescoLotusExpressStore();
-        let totalCompetitiores = totalMiniStop + totalFamilyMart + totalSevenEleven + totalTescoLotusExpress;
+        let totalBStore = getTotalBStore();
+        let totalCStore = getTotalCStore();
+        let totalDStore = getTotalDStore();
+        let totalEStore = getTotalEStore();
+        let totalCompetitiores = totalBStore + totalCStore + totalDStore + totalEStore;
         return {
-            ministop: totalMiniStop,
-            familymart: totalFamilyMart,
-            sevenEleven: totalSevenEleven,
-            tescoLotusExpress: totalTescoLotusExpress,
+            bStore: totalBStore,
+            cStore: totalCStore,
+            dStore: totalDStore,
+            eStore: totalEStore,
             tatal: totalCompetitiores,
         };
     }
@@ -1526,10 +1527,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show familt mart store info popup
+     * 1. show "C" store info popup
      * @param event
      */
-    function onFamilyStoreClick(e: any) {
+    function onCStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1546,10 +1547,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show ministop store info popup
+     * 1. show "D" store info popup
      * @param event
      */
-    function onMinistopStoreClick(e: any) {
+    function onDStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1566,10 +1567,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show seven eleven store info popup
+     * 1. show "B" store info popup
      * @param event
      */
-    function onSevenElevenStoreClick(e: any) {
+    function onBStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1583,7 +1584,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
     }
 
-    function onTescoLotusExpressStoreClick(e: any) {
+    /**
+     * This function is used to handle the below action
+     * based on the toolbar button selected
+     * 1. show "E" store info popup
+     * @param event
+     */
+    function onEStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -2196,7 +2203,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         var randomNumber = Math.floor(Math.random() * 100) + 1;
         let promisesArray = [];
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
-        const { ministop: totalMinistop, familymart: totalFamilymart, sevenEleven: totalSevenEleven, tescoLotusExpress: totalTescoLotusExpress, tatal: totalTatal } = aggregatedCompetitorStoreObj;
+        const { bStore: totalBStore, cStore: totalCStore, dStore: totalDStore, eStore: totalEStore, tatal: totalTatal } = aggregatedCompetitorStoreObj;
 
         for (var i = 0; i < filteredAStoreFeatures.length; i++) {
             let feature = filteredAStoreFeatures[i];
@@ -2302,10 +2309,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         crcef_woman90: property.crcef_woman90,
                         crcef_woman100: property.crcef_woman100,
                         crcef_total: totalPopulation,
-                        crcef_7eleven: totalSevenEleven,
-                        crcef_familymart: totalFamilymart,
-                        crcef_ministop: totalMinistop,
-                        crcef_tescolotusexpress: totalTescoLotusExpress,
+                        crcef_7eleven: totalBStore,
+                        crcef_familymart: totalCStore,
+                        crcef_ministop: totalDStore,
+                        crcef_tescolotusexpress: totalEStore,
                         crcef_tatal: totalTatal,
                         crcef_0oclockweekend: property.crcef_0oclockweekend,
                         crcef_1oclockweekend: property.crcef_1oclockweekend,

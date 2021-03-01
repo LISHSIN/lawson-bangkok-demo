@@ -213,7 +213,7 @@ export const mockTradeAreaFeatureList: GeoJSON.Feature[] = [
     },
 ];
 
-export const mockCompititorFamilyMartFeatureList: GeoJSON.Feature[] = [
+export const mockCompititorCStoreFeatureList: GeoJSON.Feature[] = [
     {
         "id": 1,
         "geometry": {
@@ -234,7 +234,7 @@ export const mockCompititorFamilyMartFeatureList: GeoJSON.Feature[] = [
     },
 ];
 
-export const mockCompititorSevenElevenFeatureList: GeoJSON.Feature[] = [
+export const mockCompititorBStoreFeatureList: GeoJSON.Feature[] = [
     {
         "id": 1,
         "geometry": {
@@ -255,7 +255,7 @@ export const mockCompititorSevenElevenFeatureList: GeoJSON.Feature[] = [
     },
 ];
 
-export const mockCompititorMiniStopFeatureList: GeoJSON.Feature[] = [
+export const mockCompititorDStoreFeatureList: GeoJSON.Feature[] = [
     {
         "id": 1,
         "geometry": {
@@ -276,7 +276,7 @@ export const mockCompititorMiniStopFeatureList: GeoJSON.Feature[] = [
     },
 ];
 
-export const mockCompititorTescoLotusExpressFeatureList: GeoJSON.Feature[] = [
+export const mockCompititorEStoreFeatureList: GeoJSON.Feature[] = [
     {
         "id": 1,
         "geometry": {

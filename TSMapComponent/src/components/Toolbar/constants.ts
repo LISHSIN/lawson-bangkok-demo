@@ -4,7 +4,7 @@ export const showMockData: boolean = true;
 
 const featureProperties = {
     "#": 1,
-    "Store Name": "6789 Tower Store",
+    "Store Name": "Store A",
     "Address(Plus Code)": "H259+4X マカティ フィリピン Metro Manila",
     "Lat": 14.557813,
     "Lon": 121.019938,
@@ -98,9 +98,9 @@ const featureProperties = {
     "Woman-90": 4,
     "Woman-100": 1,
     "total": 5389,
-    "7-Eleven": 10,
-    "Familymart": 3,
-    "Ministop": 1,
+    "B-Store": 10,
+    "C-Store": 3,
+    "D-Store": 1,
     "Tatal": 14
 }
 

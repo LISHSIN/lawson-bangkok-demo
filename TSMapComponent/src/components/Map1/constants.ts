@@ -43,19 +43,13 @@ export enum LayerId {
 
     FOCUSAREA_MAKATI = "FocusArea-Makati",
 
-    SEVEN_ELEVEN_STORE = "7-eleven-store",
+    B_STORE_LAYER = "bStoreLayer",
 
-    SEVEN_ELEVEN_STORE_LAYER = "sevenElevenStoreLayer",
+    C_STORE_LAYER = "cStoreLayer",
 
-    FAMILIMART_STORE = "Familimart-Store",
+    D_STORE_LAYER = "dStoreLayer",
 
-    FAMILIMART_STORE_LAYER = "familymartStoreLayer",
-
-    MINISTOP_STORE = "Ministop-store",
-
-    MINISTOP_STORE_LAYER = "ministopStoreLayer",
-
-    TESCO_LOTUS_EXPRESS_LAYER = "tescoLotusExpressLayer",
+    E_STORE_LAYER = "eStoreLayer",
 
     POPULATION_COUNT = "Population-count",
 
@@ -151,13 +145,13 @@ export enum SourceId {
 
     TRADE_AREA_SOURCE = "tradeAreaSource",
 
-    SEVEN_ELEVEN_STORE_SOURCE = "sevenElevenStoreSource",
+    B_STORE_SOURCE = "bStoreSource",
 
-    FAMILYMART_STORE_SOURCE = "familymartStoreSource",
+    C_STORE_SOURCE = "cStoreSource",
 
-    MINISTOP_STORE_SOURCE = "MinistopStoreSource",
+    D_STORE_SOURCE = "dStoreSource",
 
-    TESCO_LOTUS_EXPRESS_SOURCE = "tescoLotusExpressSource"
+    E_STORE_SOURCE = "eStoreSource",
 }
 
 export enum ImageId {
@@ -165,13 +159,13 @@ export enum ImageId {
 
     A_STORE_SELECTION_ICON = "aStoreSelectionIcon",
 
-    FAMILYMART_STORE_ICON = "familyMartStoreIcon",
+    B_STORE_ICON = "bStoreIcon",
 
-    SEVENELEVEN_STORE_ICON = "sevenElevenStoreIcon",
+    C_STORE_ICON = "cStoreIcon",
 
-    MINISTOP_STORE_ICON = "miniStopStoreIcon",
+    D_STORE_ICON = "dStoreIcon",
 
-    TESCO_LOTUS_EXPRESS_ICON = "tescoLotusExpressIcon"
+    E_STORE_ICON = "eStoreIcon",
 }
 
 export enum BaseMapName {
