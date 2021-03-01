@@ -35,14 +35,6 @@ export enum LayerId {
 
     TRADE_AREA_LAYER = "tradeAreaLayer",
 
-    FOCUSAREA_ALABANG = "FocusArea-Alabang",
-
-    FOCUSAREA_BGC = "FocusArea-BGC",
-
-    FOCUSAREA_ORTIGAS = "FocusArea-Ortigas",
-
-    FOCUSAREA_MAKATI = "FocusArea-Makati",
-
     B_STORE_LAYER = "bStoreLayer",
 
     C_STORE_LAYER = "cStoreLayer",

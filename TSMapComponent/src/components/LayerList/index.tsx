@@ -93,39 +93,6 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
                             </li>
                         </ul>
                     </li>
-                    {/* <li>
-                        <b>Focus Area</b>
-                        <ul>
-                            <li>
-                                <CheckboxFC
-                                    checked={layerObj[LayerId.FOCUSAREA_ALABANG].isEnable}
-                                    layerId={LayerId.FOCUSAREA_ALABANG}
-                                    layerName="Focus Area Aliabang"
-                                ></CheckboxFC>
-                            </li>
-                            <li>
-                                <CheckboxFC
-                                    checked={layerObj[LayerId.FOCUSAREA_BGC].isEnable}
-                                    layerId={LayerId.FOCUSAREA_BGC}
-                                    layerName="Focus Area BCG"
-                                ></CheckboxFC>
-                            </li>
-                            <li>
-                                <CheckboxFC
-                                    checked={layerObj[LayerId.FOCUSAREA_ORTIGAS].isEnable}
-                                    layerId={LayerId.FOCUSAREA_ORTIGAS}
-                                    layerName="Focus Area Ortigas"
-                                ></CheckboxFC>
-                            </li>
-                            <li>
-                                <CheckboxFC
-                                    checked={layerObj[LayerId.FOCUSAREA_MAKATI].isEnable}
-                                    layerId={LayerId.FOCUSAREA_MAKATI}
-                                    layerName="Focus Area Makati"
-                                ></CheckboxFC>
-                            </li>
-                        </ul>
-                    </li> */}
                     <li>
                         <b>Competitor</b>
                         <ul>
