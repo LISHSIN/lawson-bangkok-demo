@@ -8,20 +8,20 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import "./index.css";
 
-import lawsonImg from './images/lawson.png';
-import miniStopImg from './images/miniStop.png';
-import familyMartImg from './images/familyMart.png';
-import sevenElevenImg from './images/sevenEleven.png';
-import lawsonStationImg from './images/Lawson-station.png';
-import tescoLotusExpressImg from './images/TescoLotusExpress.png'
+import aStoreImg from './images/aStore.png';
+import bStoreImg from './images/bStore.png';
+import cStoreImg from './images/cStore.png';
+import dStoreImg from './images/dStore.png';
+import eStoreImg from './images/eStore.png';
+import aStoreSelectedImg from './images/aStoreSelected.png';
 
 import { MapboxConfig, LayerId, SourceId, ImageId, GlDrawColorId, GlDrawPaintPropertyId, GlDrawLayerId, GlDrawMode } from './constants';
 import { mapboxReactContext } from 'components/MapboxContext';
 import { layerReactContext, LayerType } from 'components/LayerContext';
-import { showHideLawsonTradeAreaLayer } from 'components/LayerList/constants';
+import { showHideTradeAreaLayer } from 'components/LayerList/constants';
 import LegendFC from 'components/Legend';
-import { initialLawsonStoreFeatureProperty, LawsonStoreFeaturePropertyInfo, LawsonStoreGeojsonInfo } from './module';
-import { mockCompititorFamilyMartFeatureList, mockCompititorMiniStopFeatureList, mockCompititorSevenElevenFeatureList, mockCompititorTescoLotusExpressFeatureList, mockFeatureList, mockLawsonTradeAreaFeatureList } from './mock';
+import { initialAStoreFeatureProperty, AStoreFeaturePropertyInfo, AStoreGeojsonInfo } from './module';
+import { mockCompititorBStoreFeatureList, mockCompititorCStoreFeatureList, mockCompititorDStoreFeatureList, mockCompititorEStoreFeatureList, mockFeatureList, mockTradeAreaFeatureList } from './mock';
 
 const Mapbox = ReactMapboxGl({
     accessToken: MapboxConfig.ACCESS_TOKEN,
@@ -47,39 +47,39 @@ export const Map1FC: React.FC<Map1Props> = (props => {
 
     const { style, center, containerStyle, zoom } = props.map;
 
-    const lawsonStoreGeojson = {
+    const aStoreGeojson = {
         'type': 'FeatureCollection',
         'features': [],
         // 'features': mockFeatureList,
     } as any;
 
-    const lawsonStationGeojson = {
+    const aStoreSelectedGeojson = {
         'type': 'FeatureCollection',
         'features': [],
     } as any;
 
-    const familyMartGeojson = {
+    const bStoreGeojson = {
         'type': 'FeatureCollection',
         'features': [],
-        // 'features': mockCompititorFamilyMartFeatureList,
+        // 'features': mockCompititorBStoreFeatureList,
     } as any;
 
-    const sevenElevenGeojson = {
+    const cStoreGeojson = {
         'type': 'FeatureCollection',
         'features': [],
-        // 'features': mockCompititorSevenElevenFeatureList,
+        // 'features': mockCompititorCStoreFeatureList,
     } as any;
 
-    const miniStopGeojson = {
+    const dStoreGeojson = {
         'type': 'FeatureCollection',
         'features': [],
-        // 'features': mockCompititorMiniStopFeatureList,
+        // 'features': mockCompititorDStoreFeatureList,
     } as any;
 
-    const tescoLotusExpressGeojson = {
+    const eStoreGeojson = {
         'type': 'FeatureCollection',
         'features': [],
-        // 'features': mockCompititorTescoLotusExpressFeatureList,
+        // 'features': mockCompititorEStoreFeatureList,
     } as any;
 
     useEffect(() => {
@@ -97,25 +97,25 @@ export const Map1FC: React.FC<Map1Props> = (props => {
 
     useEffect(() => {
         if (mapContext !== undefined && isRefreshAllLayers === true) {
-            retriveLawsonStoreDataFromD365(mapContext);
-            retriveLawsonTradeAreaDataFromD365(mapContext);
-            retriveMiniStopDataFromD365(mapContext);
-            retriveFamilyMartDataFromD365(mapContext);
-            retriveSevenElevenDataFromD365(mapContext);
-            retriveTescoLotusExpressDataFromD365(mapContext)
+            retriveAStoreDataFromD365(mapContext);
+            retriveTradeAreaDataFromD365(mapContext);
+            retriveBStoreDataFromD365(mapContext);
+            retriveCStoreDataFromD365(mapContext);
+            retriveDStoreDataFromD365(mapContext);
+            retriveEStoreDataFromD365(mapContext);
             updateIsRefreshAllLayers(false);
         }
     }, [isRefreshAllLayers]);
 
     /**
-     * This function is used to retrive the "crcef_ministop" (Ministop) Entity values
+     * This function is used to retrive the "crcef_ministop" (D Store) Entity values
      * to populate over the compititor Area on Map view.
      * @param map 
      */
-    function retriveMiniStopDataFromD365(map: MapboxGl.Map) {
+    function retriveDStoreDataFromD365(map: MapboxGl.Map) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_ministop").then((result) => {
-                miniStopGeojson.features = [];
+                dStoreGeojson.features = [];
                 for (var i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
@@ -136,22 +136,22 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                             crcef_ux: entity.crcef_ux
                         }
                     }
-                    miniStopGeojson.features.push(geojson);
+                    dStoreGeojson.features.push(geojson);
                 }
-                let source = map.getSource(SourceId.MINISTOP_STORE_SOURCE) as any;
-                source.setData(miniStopGeojson);
+                let source = map.getSource(SourceId.D_STORE_SOURCE) as any;
+                source.setData(dStoreGeojson);
             });
     }
 
     /**
-     * This function is used to retrive the "crcef_familymart" (FamilyMart) Entity values
+     * This function is used to retrive the "crcef_familymart" (C Store) Entity values
      * to populate over the compititor Area on Map view.
      * @param map 
      */
-    function retriveFamilyMartDataFromD365(map: MapboxGl.Map) {
+    function retriveCStoreDataFromD365(map: MapboxGl.Map) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_familymart").then((result) => {
-                familyMartGeojson.features = [];
+                cStoreGeojson.features = [];
                 for (var i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
@@ -172,22 +172,22 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                             crcef_ux: entity.crcef_ux
                         }
                     }
-                    familyMartGeojson.features.push(geojson);
+                    cStoreGeojson.features.push(geojson);
                 }
-                let source = map.getSource(SourceId.FAMILYMART_STORE_SOURCE) as any;
-                source.setData(familyMartGeojson);
+                let source = map.getSource(SourceId.C_STORE_SOURCE) as any;
+                source.setData(cStoreGeojson);
             });
     }
 
     /**
-     * This function is used to retrive the "crcef_seveneleven" (SevenEleven) Entity values
+     * This function is used to retrive the "crcef_seveneleven" (B Store) Entity values
      * to populate over the compititor Area on Map view.
      * @param map 
      */
-    function retriveSevenElevenDataFromD365(map: MapboxGl.Map) {
+    function retriveBStoreDataFromD365(map: MapboxGl.Map) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_seveneleven").then((result) => {
-                sevenElevenGeojson.features = [];
+                bStoreGeojson.features = [];
                 for (var i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
@@ -208,17 +208,22 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                             crcef_ux: entity.crcef_ux
                         }
                     }
-                    sevenElevenGeojson.features.push(geojson);
+                    bStoreGeojson.features.push(geojson);
                 }
-                let source = map.getSource(SourceId.SEVEN_ELEVEN_STORE_SOURCE) as any;
-                source.setData(sevenElevenGeojson);
+                let source = map.getSource(SourceId.B_STORE_SOURCE) as any;
+                source.setData(bStoreGeojson);
             });
     }
 
-    function retriveTescoLotusExpressDataFromD365(map: MapboxGl.Map) {
+    /**
+     * This function is used to retrive the "crcef_tescolotusexpress" (E Store) Entity values
+     * to populate over the compititor Area on Map view.
+     * @param map 
+     */
+    function retriveEStoreDataFromD365(map: MapboxGl.Map) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_tescolotusexpress").then((result) => {
-                sevenElevenGeojson.features = [];
+                eStoreGeojson.features = [];
                 for (var i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
@@ -239,38 +244,38 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                             crcef_ux: entity.crcef_ux
                         }
                     }
-                    tescoLotusExpressGeojson.features.push(geojson);
+                    eStoreGeojson.features.push(geojson);
                 }
-                let source = map.getSource(SourceId.TESCO_LOTUS_EXPRESS_SOURCE) as any;
-                source.setData(tescoLotusExpressGeojson);
+                let source = map.getSource(SourceId.E_STORE_SOURCE) as any;
+                source.setData(eStoreGeojson);
             });
     }
 
     /**
-     * This function is used to retrive the "crcef_duplicatelawsonstoredata" (LawsonStore) Entity values
+     * This function is used to retrive the "crcef_duplicatelawsonstoredata" (A Store) Entity values
      * to populate over the store Area on Map view.
      * @param map 
      */
-    function retriveLawsonStoreDataFromD365(map: MapboxGl.Map) {
+    function retriveAStoreDataFromD365(map: MapboxGl.Map) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_duplicatelawsonstoredata").then((result) => {
-                let lawsonStoreFeatureList = layerObj[LayerId.LAWSON_STORE_LAYER].featureList;
-                lawsonStoreFeatureList.length = 0;
-                lawsonStoreGeojson.features = [];
+                let aStoreFeatureList = layerObj[LayerId.A_STORE_LAYER].featureList;
+                aStoreFeatureList.length = 0;
+                aStoreGeojson.features = [];
 
                 for (var i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     for (let key of Object.keys(entity)) {
                         let entityVal = entity[key];
                         if (entityVal === null) {
-                            let initialPropVal = initialLawsonStoreFeatureProperty[key as keyof LawsonStoreFeaturePropertyInfo];
+                            let initialPropVal = initialAStoreFeatureProperty[key as keyof AStoreFeaturePropertyInfo];
                             if (initialPropVal !== undefined) {
                                 entity[key] = initialPropVal; // Set Initial Value
                             }
                         }
                     }
 
-                    let geojson: LawsonStoreGeojsonInfo = {
+                    let geojson: AStoreGeojsonInfo = {
                         'type': 'Feature',
                         'geometry': {
                             coordinates: [entity.crcef_lon, entity.crcef_lat],
@@ -427,24 +432,24 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                         }
                     }
 
-                    lawsonStoreGeojson.features.push(geojson);
+                    aStoreGeojson.features.push(geojson);
                 }
-                let source = map.getSource(SourceId.LAWSON_STORE_SOURCE) as any;
-                source.setData(lawsonStoreGeojson);
+                let source = map.getSource(SourceId.A_STORE_SOURCE) as any;
+                source.setData(aStoreGeojson);
 
-                layerObj[LayerId.LAWSON_STORE_LAYER].featureList = lawsonStoreGeojson.features.slice();
+                layerObj[LayerId.A_STORE_LAYER].featureList = aStoreGeojson.features.slice();
             });
     }
 
     /**
-     * This function is used to retrive the "crcef_lawsontradearea" (LawsonTradeArea) Entity values
+     * This function is used to retrive the "crcef_lawsontradearea" (TradeArea) Entity values
      * to populate over the circle and polygon on Map view.
      * @param map 
      */
-    function retriveLawsonTradeAreaDataFromD365(map: MapboxGl.Map) {
+    function retriveTradeAreaDataFromD365(map: MapboxGl.Map) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_lawsontradearea").then((result) => {
-                let tradeAreaFeatureList = layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].featureList;
+                let tradeAreaFeatureList = layerObj[LayerId.TRADE_AREA_LAYER].featureList;
                 tradeAreaFeatureList.length = 0;
                 mapDraw?.deleteAll();
 
@@ -460,16 +465,16 @@ export const Map1FC: React.FC<Map1Props> = (props => {
     }
 
     /**
-     * This function is used to retrive the "mock trade area" (LawsonTradeArea) Entity values
+     * This function is used to retrive the "mock trade area" (TradeArea) Entity values
      * to populate over the circle and polygon on Map view.
      * @param map 
      */
-    function retriveLawsonTradeAreaDataFromMockList(map: MapboxGl.Map) {
-        let tradeAreaFeatureList = layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].featureList;
+    function retriveTradeAreaDataFromMockList(map: MapboxGl.Map) {
+        let tradeAreaFeatureList = layerObj[LayerId.TRADE_AREA_LAYER].featureList;
         tradeAreaFeatureList.length = 0;
         mapDraw?.deleteAll();
 
-        mockLawsonTradeAreaFeatureList.forEach((feature) => {
+        mockTradeAreaFeatureList.forEach((feature) => {
             mapDraw?.add(feature);
             tradeAreaFeatureList.push(feature);
         });
@@ -477,272 +482,277 @@ export const Map1FC: React.FC<Map1Props> = (props => {
 
     /**
      * This function is used to add custom layer
-     * to populate over the lawson store icon on Map view.
+     * to populate over the "A store" icon on Map view.
      * @param map 
      */
-    function addLawsonStoreLayer(map: MapboxGl.Map) {
-        let lawsonIconId = ImageId.LAWSON_STORE_ICON;
-        let lawsonLayerId = LayerId.LAWSON_STORE_LAYER as LayerType;
-        let lawsonSourceId = SourceId.LAWSON_STORE_SOURCE;
+    function addAStoreLayer(map: MapboxGl.Map) {
+        let aStoreIconId = ImageId.A_STORE_ICON;
+        let aStoreLayerId = LayerId.A_STORE_LAYER as LayerType;
+        let aStoreSourceId = SourceId.A_STORE_SOURCE;
 
-        map.loadImage(lawsonImg, (error: any, image: any) => {
+        map.loadImage(aStoreImg, (error: any, image: any) => {
             if (error) return;
 
-            let hasStoreImage = map.hasImage(lawsonIconId);
+            let hasStoreImage = map.hasImage(aStoreIconId);
             if (hasStoreImage === false) {
-                map.addImage(lawsonIconId, image);
+                map.addImage(aStoreIconId, image);
             }
         });
 
-        let lawsonSource = map.getSource(lawsonSourceId);
-        if (lawsonSource === undefined) {
-            map.addSource(lawsonSourceId, {
+        let aStoreSource = map.getSource(aStoreSourceId);
+        if (aStoreSource === undefined) {
+            map.addSource(aStoreSourceId, {
                 'type': 'geojson',
-                'data': lawsonStoreGeojson
+                'data': aStoreGeojson
             });
         }
 
-        let lawsonLayer = map.getLayer(lawsonLayerId);
-        if (lawsonLayer === undefined) {
+        let aStoreLayer = map.getLayer(aStoreLayerId);
+        if (aStoreLayer === undefined) {
             map.addLayer({
-                'id': lawsonLayerId,
-                'source': lawsonSourceId,
+                'id': aStoreLayerId,
+                'source': aStoreSourceId,
                 'type': 'symbol',
                 'minzoom': 13,
                 'layout': {
-                    'icon-image': lawsonIconId,
+                    'icon-image': aStoreIconId,
                     'icon-size': 0.5,
                     'icon-allow-overlap': true
                 },
             });
         }
 
-        map.setLayoutProperty(lawsonLayerId, "visibility", (layerObj[lawsonLayerId].isEnable === true ? 'visible' : 'none'));
-        retriveLawsonStoreDataFromD365(map);
+        map.setLayoutProperty(aStoreLayerId, "visibility", (layerObj[aStoreLayerId].isEnable === true ? 'visible' : 'none'));
+        retriveAStoreDataFromD365(map);
     }
 
     /**
      * This function is used to add custom layer
-     * to populate over the lawson selected store icon on Map view.
+     * to populate over the selected "A store" icon on Map view.
      * @param map 
      */
-    function addLawsonStationLayer(map: MapboxGl.Map) {
-        let lawsonStationIconId = ImageId.LAWSON_STATION_ICON;
-        let lawsonStationLayerId = LayerId.LAWSON_STATION_LAYER as LayerType;
-        let lawsonStationSourceId = SourceId.LAWSON_STATION_SOURCE;
+    function addAStoreSelectionLayer(map: MapboxGl.Map) {
+        let aStoreSelectedIconId = ImageId.A_STORE_SELECTION_ICON;
+        let aStoreSelectedLayerId = LayerId.A_STORE_SELECTION_LAYER as LayerType;
+        let aStoreSelectedSourceId = SourceId.A_STORE_SELECTION_SOURCE;
 
-        map.loadImage(lawsonStationImg, (error: any, image: any) => {
+        map.loadImage(aStoreSelectedImg, (error: any, image: any) => {
             if (error) return;
 
-            let hasStoreImage = map.hasImage(lawsonStationIconId);
+            let hasStoreImage = map.hasImage(aStoreSelectedIconId);
             if (hasStoreImage === false) {
-                map.addImage(lawsonStationIconId, image);
+                map.addImage(aStoreSelectedIconId, image);
             }
         });
 
-        let lawsonSource = map.getSource(lawsonStationSourceId);
-        if (lawsonSource === undefined) {
-            map.addSource(lawsonStationSourceId, {
+        let aStoreSelectedSource = map.getSource(aStoreSelectedSourceId);
+        if (aStoreSelectedSource === undefined) {
+            map.addSource(aStoreSelectedSourceId, {
                 'type': 'geojson',
-                'data': lawsonStationGeojson
+                'data': aStoreSelectedGeojson
             });
         }
 
-        let lawsonLayer = map.getLayer(lawsonStationLayerId);
-        if (lawsonLayer === undefined) {
+        let aStoreSelectedLayer = map.getLayer(aStoreSelectedLayerId);
+        if (aStoreSelectedLayer === undefined) {
             map.addLayer({
-                'id': lawsonStationLayerId,
-                'source': lawsonStationSourceId,
+                'id': aStoreSelectedLayerId,
+                'source': aStoreSelectedSourceId,
                 'type': 'symbol',
                 'minzoom': 13,
                 'layout': {
-                    'icon-image': lawsonStationIconId,
+                    'icon-image': aStoreSelectedIconId,
                     'icon-size': 0.5,
                     'icon-allow-overlap': true
                 },
             });
         }
 
-        map.setLayoutProperty(lawsonStationLayerId, "visibility", (layerObj[lawsonStationLayerId].isEnable === true ? 'visible' : 'none'));
+        map.setLayoutProperty(aStoreSelectedLayerId, "visibility", (layerObj[aStoreSelectedLayerId].isEnable === true ? 'visible' : 'none'));
     }
 
     /**
      * This function is used to add custom layer
-     * to populate over the family mart icon on Map view.
+     * to populate over the "C" store icon on Map view.
      * @param map 
      */
-    function addFamilyMartLayer(map: MapboxGl.Map) {
-        let familyMartIconId = ImageId.FAMILYMART_STORE_ICON;
-        let familyMartLayerId = LayerId.FAMILIMART_STORE_LAYER as LayerType;
-        let familyMartSourceId = SourceId.FAMILYMART_STORE_SOURCE;
+    function addCStoreLayer(map: MapboxGl.Map) {
+        let cStoreIconId = ImageId.C_STORE_ICON;
+        let cStoreLayerId = LayerId.C_STORE_LAYER as LayerType;
+        let cStoreSourceId = SourceId.C_STORE_SOURCE;
 
-        map.loadImage(familyMartImg, (error: any, image: any) => {
+        map.loadImage(cStoreImg, (error: any, image: any) => {
             if (error) return;
 
-            let hasStoreImage = map.hasImage(familyMartIconId);
+            let hasStoreImage = map.hasImage(cStoreIconId);
             if (hasStoreImage === false) {
-                map.addImage(familyMartIconId, image);
+                map.addImage(cStoreIconId, image);
             }
         });
 
-        let fmlyMartSource = map.getSource(familyMartSourceId);
-        if (fmlyMartSource === undefined) {
-            map.addSource(familyMartSourceId, {
+        let cStoreSource = map.getSource(cStoreSourceId);
+        if (cStoreSource === undefined) {
+            map.addSource(cStoreSourceId, {
                 'type': 'geojson',
-                'data': familyMartGeojson
+                'data': cStoreGeojson
             });
         }
 
-        let fmlyMartLayer = map.getLayer(familyMartLayerId);
-        if (fmlyMartLayer === undefined) {
+        let cStoreLayer = map.getLayer(cStoreLayerId);
+        if (cStoreLayer === undefined) {
             map.addLayer({
-                'id': familyMartLayerId,
-                'source': familyMartSourceId,
+                'id': cStoreLayerId,
+                'source': cStoreSourceId,
                 'type': 'symbol',
                 'minzoom': 13,
                 'layout': {
-                    'icon-image': familyMartIconId,
+                    'icon-image': cStoreIconId,
                     'icon-size': 0.5,
                     'icon-allow-overlap': true
                 },
             });
         }
 
-        map.setLayoutProperty(familyMartLayerId, "visibility", (layerObj[familyMartLayerId].isEnable === true ? 'visible' : 'none'));
-        retriveFamilyMartDataFromD365(map);
+        map.setLayoutProperty(cStoreLayerId, "visibility", (layerObj[cStoreLayerId].isEnable === true ? 'visible' : 'none'));
+        retriveCStoreDataFromD365(map);
     }
 
     /**
      * This function is used to add custom layer
-     * to populate over the seven eleven icon on Map view.
+     * to populate over the "B" store icon on Map view.
      * @param map 
      */
-    function addSevenElevenStoreLayer(map: MapboxGl.Map) {
-        let sevenElevenIconId = ImageId.SEVENELEVEN_STORE_ICON;
-        let sevenElevenLayerId = LayerId.SEVEN_ELEVEN_STORE_LAYER as LayerType;
-        let sevenElevenSourceId = SourceId.SEVEN_ELEVEN_STORE_SOURCE;
+    function addBStoreLayer(map: MapboxGl.Map) {
+        let bStoreIconId = ImageId.B_STORE_ICON;
+        let bStoreLayerId = LayerId.B_STORE_LAYER as LayerType;
+        let bStoreSourceId = SourceId.B_STORE_SOURCE;
 
-        map.loadImage(sevenElevenImg, (error: any, image: any) => {
+        map.loadImage(bStoreImg, (error: any, image: any) => {
             if (error) return;
 
-            let hasStoreImage = map.hasImage(sevenElevenIconId);
+            let hasStoreImage = map.hasImage(bStoreIconId);
             if (hasStoreImage === false) {
-                map.addImage(sevenElevenIconId, image);
+                map.addImage(bStoreIconId, image);
             }
         });
 
-        let sevenElevenSource = map.getSource(sevenElevenSourceId);
-        if (sevenElevenSource === undefined) {
-            map.addSource(sevenElevenSourceId, {
+        let bStoreSource = map.getSource(bStoreSourceId);
+        if (bStoreSource === undefined) {
+            map.addSource(bStoreSourceId, {
                 'type': 'geojson',
-                'data': sevenElevenGeojson
+                'data': bStoreGeojson
             });
         }
 
-        let sevenelevenLayer = map.getLayer(sevenElevenLayerId);
-        if (sevenelevenLayer === undefined) {
+        let bStoreLayer = map.getLayer(bStoreLayerId);
+        if (bStoreLayer === undefined) {
             map.addLayer({
-                'id': sevenElevenLayerId,
-                'source': sevenElevenSourceId,
+                'id': bStoreLayerId,
+                'source': bStoreSourceId,
                 'type': 'symbol',
                 'minzoom': 13,
                 'layout': {
-                    'icon-image': sevenElevenIconId,
+                    'icon-image': bStoreIconId,
                     'icon-size': 0.5,
                     'icon-allow-overlap': true
                 },
             });
         }
 
-        map.setLayoutProperty(sevenElevenLayerId, "visibility", (layerObj[sevenElevenLayerId].isEnable === true ? 'visible' : 'none'));
-        retriveSevenElevenDataFromD365(map);
+        map.setLayoutProperty(bStoreLayerId, "visibility", (layerObj[bStoreLayerId].isEnable === true ? 'visible' : 'none'));
+        retriveBStoreDataFromD365(map);
     }
 
     /**
      * This function is used to add custom layer
-     * to populate over the ministop icon on Map view.
+     * to populate over the "D" store icon on Map view.
      * @param map 
      */
-    function addMiniStopStoreLayer(map: MapboxGl.Map) {
-        let miniStopIconId = ImageId.MINISTOP_STORE_ICON;
-        let miniStopLayerId = LayerId.MINISTOP_STORE_LAYER as LayerType;
-        let miniStopSourceId = SourceId.MINISTOP_STORE_SOURCE;
+    function addDStoreLayer(map: MapboxGl.Map) {
+        let dStoreIconId = ImageId.D_STORE_ICON;
+        let dStoreLayerId = LayerId.D_STORE_LAYER as LayerType;
+        let dStoreSourceId = SourceId.D_STORE_SOURCE;
 
-        map.loadImage(miniStopImg, (error: any, image: any) => {
+        map.loadImage(dStoreImg, (error: any, image: any) => {
             if (error) return;
 
-            let hasStoreImage = map.hasImage(miniStopIconId);
+            let hasStoreImage = map.hasImage(dStoreIconId);
             if (hasStoreImage === false) {
-                map.addImage(miniStopIconId, image);
+                map.addImage(dStoreIconId, image);
             }
         });
 
-        let miniStopSource = map.getSource(miniStopSourceId);
-        if (miniStopSource === undefined) {
-            map.addSource(miniStopSourceId, {
+        let dStoreSource = map.getSource(dStoreSourceId);
+        if (dStoreSource === undefined) {
+            map.addSource(dStoreSourceId, {
                 'type': 'geojson',
-                'data': miniStopGeojson
+                'data': dStoreGeojson
             });
         }
 
-        let miniStopLayer = map.getLayer(miniStopLayerId);
-        if (miniStopLayer === undefined) {
+        let dStoreLayer = map.getLayer(dStoreLayerId);
+        if (dStoreLayer === undefined) {
             map.addLayer({
-                'id': miniStopLayerId,
-                'source': miniStopSourceId,
+                'id': dStoreLayerId,
+                'source': dStoreSourceId,
                 'type': 'symbol',
                 'minzoom': 13,
                 'layout': {
-                    'icon-image': miniStopIconId,
+                    'icon-image': dStoreIconId,
                     'icon-size': 0.5,
                     'icon-allow-overlap': true
                 },
             });
         }
 
-        map.setLayoutProperty(miniStopLayerId, "visibility", (layerObj[miniStopLayerId].isEnable === true ? 'visible' : 'none'));
-        retriveMiniStopDataFromD365(map);
+        map.setLayoutProperty(dStoreLayerId, "visibility", (layerObj[dStoreLayerId].isEnable === true ? 'visible' : 'none'));
+        retriveDStoreDataFromD365(map);
     }
 
-    function addTescoLotusExpressLayer(map: MapboxGl.Map) {
-        let tescoLotusExpressIconId = ImageId.TESCO_LOTUS_EXPRESS_ICON;
-        let tescoLotusExpressLayerId = LayerId.TESCO_LOTUS_EXPRESS_LAYER as LayerType;
-        let tescoLotusExpressSourceId = SourceId.TESCO_LOTUS_EXPRESS_SOURCE;
+    /**
+     * This function is used to add custom layer
+     * to populate over the "E" store icon on Map view.
+     * @param map 
+     */
+    function addEStoreLayer(map: MapboxGl.Map) {
+        let eStoreIconId = ImageId.E_STORE_ICON;
+        let eStoreLayerId = LayerId.E_STORE_LAYER as LayerType;
+        let eStoreSourceId = SourceId.E_STORE_SOURCE;
 
-        map.loadImage(tescoLotusExpressImg, (error: any, image: any) => {
+        map.loadImage(eStoreImg, (error: any, image: any) => {
             if (error) return;
 
-            let hasStoreImage = map.hasImage(tescoLotusExpressIconId);
+            let hasStoreImage = map.hasImage(eStoreIconId);
             if (hasStoreImage === false) {
-                map.addImage(tescoLotusExpressIconId, image);
+                map.addImage(eStoreIconId, image);
             }
         });
 
-        let tescoLotusExpressSource = map.getSource(tescoLotusExpressSourceId);
-        if (tescoLotusExpressSource === undefined) {
-            map.addSource(tescoLotusExpressSourceId, {
+        let eStoreSource = map.getSource(eStoreSourceId);
+        if (eStoreSource === undefined) {
+            map.addSource(eStoreSourceId, {
                 'type': 'geojson',
-                'data': tescoLotusExpressGeojson
+                'data': eStoreGeojson
             });
         }
 
-        let tescoLotusExpressLayer = map.getLayer(tescoLotusExpressLayerId);
-        if (tescoLotusExpressLayer === undefined) {
+        let eStoreLayer = map.getLayer(eStoreLayerId);
+        if (eStoreLayer === undefined) {
             map.addLayer({
-                'id': tescoLotusExpressLayerId,
-                'source': tescoLotusExpressSourceId,
+                'id': eStoreLayerId,
+                'source': eStoreSourceId,
                 'type': 'symbol',
                 'minzoom': 13,
                 'layout': {
-                    'icon-image': tescoLotusExpressIconId,
+                    'icon-image': eStoreIconId,
                     'icon-size': 0.5,
                     'icon-allow-overlap': true
                 },
             });
         }
 
-        map.setLayoutProperty(tescoLotusExpressLayerId, "visibility", (layerObj[tescoLotusExpressLayerId].isEnable === true ? 'visible' : 'none'));
-        retriveTescoLotusExpressDataFromD365(map);
+        map.setLayoutProperty(eStoreLayerId, "visibility", (layerObj[eStoreLayerId].isEnable === true ? 'visible' : 'none'));
+        retriveEStoreDataFromD365(map);
     }
 
     /**
@@ -750,9 +760,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
      * to populate over the circle and polygon on Map view.
      * @param map 
      */
-    function addLawsonTradeAreaLayer(map: MapboxGl.Map) {
-        retriveLawsonTradeAreaDataFromD365(map);
-        // retriveLawsonTradeAreaDataFromMockList(map);
+    function addTradeAreaLayer(map: MapboxGl.Map) {
+        retriveTradeAreaDataFromD365(map);
+        // retriveTradeAreaDataFromMockList(map);
     }
 
     /**
@@ -778,13 +788,13 @@ export const Map1FC: React.FC<Map1Props> = (props => {
      * @param map 
      */
     function addCustomLayers(map: MapboxGl.Map) {
-        addLawsonStoreLayer(map);
-        addLawsonStationLayer(map);
-        addLawsonTradeAreaLayer(map);
-        addFamilyMartLayer(map);
-        addSevenElevenStoreLayer(map);
-        addMiniStopStoreLayer(map);
-        addTescoLotusExpressLayer(map);
+        addAStoreLayer(map);
+        addAStoreSelectionLayer(map);
+        addTradeAreaLayer(map);
+        addBStoreLayer(map);
+        addCStoreLayer(map);
+        addDStoreLayer(map);
+        addEStoreLayer(map);
 
         showHideAllLayers(map);
     }
@@ -799,8 +809,8 @@ export const Map1FC: React.FC<Map1Props> = (props => {
             let layerId = id as LayerType;
             let isVisible = layerObj[layerId].isEnable;
 
-            if (layerId === LayerId.LAWSON_TRADE_AREA_LAYER) {
-                showHideLawsonTradeAreaLayer(map, isVisible);
+            if (layerId === LayerId.TRADE_AREA_LAYER) {
+                showHideTradeAreaLayer(map, isVisible);
             } else {
                 let mapLayer = map.getLayer(layerId);
                 if (mapLayer !== undefined) {

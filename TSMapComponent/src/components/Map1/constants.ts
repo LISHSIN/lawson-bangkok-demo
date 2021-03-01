@@ -25,37 +25,23 @@ export enum LayerId {
 
     POLYGON_LAYER = "polygonLayer",
 
-    LAWSON_STORE = "Lawson-Store",
+    A_STORE = "A-Store",
 
-    LAWSON_STORE_LAYER = "lawsonStoreLayer",
+    A_STORE_LAYER = "aStoreLayer",
 
-    LAWSON_STATION_LAYER = "lawsonStationLayer",
+    A_STORE_SELECTION_LAYER = "aStoreSelectionLayer",
 
-    LAWSON_TRADEAREA = "Lawson-TradeArea",
+    TRADEAREA = "TradeArea",
 
-    LAWSON_TRADE_AREA_LAYER = "lawsonTradeAreaLayer",
+    TRADE_AREA_LAYER = "tradeAreaLayer",
 
-    FOCUSAREA_ALABANG = "FocusArea-Alabang",
+    B_STORE_LAYER = "bStoreLayer",
 
-    FOCUSAREA_BGC = "FocusArea-BGC",
+    C_STORE_LAYER = "cStoreLayer",
 
-    FOCUSAREA_ORTIGAS = "FocusArea-Ortigas",
+    D_STORE_LAYER = "dStoreLayer",
 
-    FOCUSAREA_MAKATI = "FocusArea-Makati",
-
-    SEVEN_ELEVEN_STORE = "7-eleven-store",
-
-    SEVEN_ELEVEN_STORE_LAYER = "sevenElevenStoreLayer",
-
-    FAMILIMART_STORE = "Familimart-Store",
-
-    FAMILIMART_STORE_LAYER = "familymartStoreLayer",
-
-    MINISTOP_STORE = "Ministop-store",
-
-    MINISTOP_STORE_LAYER = "ministopStoreLayer",
-
-    TESCO_LOTUS_EXPRESS_LAYER = "tescoLotusExpressLayer",
+    E_STORE_LAYER = "eStoreLayer",
 
     POPULATION_COUNT = "Population-count",
 
@@ -145,33 +131,33 @@ export enum LayerId {
 }
 
 export enum SourceId {
-    LAWSON_STORE_SOURCE = "lawsonStoreSource",
+    A_STORE_SOURCE = "aStoreSource",
 
-    LAWSON_TRADE_AREA_SOURCE = "lawsonTradeAreaSource",
+    A_STORE_SELECTION_SOURCE = "aStoreSelectionSource",
 
-    SEVEN_ELEVEN_STORE_SOURCE = "sevenElevenStoreSource",
+    TRADE_AREA_SOURCE = "tradeAreaSource",
 
-    FAMILYMART_STORE_SOURCE = "familymartStoreSource",
+    B_STORE_SOURCE = "bStoreSource",
 
-    MINISTOP_STORE_SOURCE = "MinistopStoreSource",
+    C_STORE_SOURCE = "cStoreSource",
 
-    LAWSON_STATION_SOURCE = "lawsonStationSource",
+    D_STORE_SOURCE = "dStoreSource",
 
-    TESCO_LOTUS_EXPRESS_SOURCE = "tescoLotusExpressSource"
+    E_STORE_SOURCE = "eStoreSource",
 }
 
 export enum ImageId {
-    LAWSON_STORE_ICON = "lawsonStoreIcon",
+    A_STORE_ICON = "aStoreIcon",
 
-    FAMILYMART_STORE_ICON = "familyMartStoreIcon",
+    A_STORE_SELECTION_ICON = "aStoreSelectionIcon",
 
-    SEVENELEVEN_STORE_ICON = "sevenElevenStoreIcon",
+    B_STORE_ICON = "bStoreIcon",
 
-    MINISTOP_STORE_ICON = "miniStopStoreIcon",
+    C_STORE_ICON = "cStoreIcon",
 
-    LAWSON_STATION_ICON = "lawsonStationIcon",
+    D_STORE_ICON = "dStoreIcon",
 
-    TESCO_LOTUS_EXPRESS_ICON = "tescoLotusExpressIcon"
+    E_STORE_ICON = "eStoreIcon",
 }
 
 export enum BaseMapName {

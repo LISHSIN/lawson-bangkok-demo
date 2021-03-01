@@ -10,7 +10,7 @@ export const CompetitorStorePopupFC: React.FC<CompetitorStorePopupProps> = (prop
 
     return (
         <>
-            <div className="lawson-store-info">
+            <div className="store-info">
                 <div><b>StoreName: </b>{property.crcef_name}</div>
                 <div><b>Address: </b>{property.crcef_addrstree + property.crcef_addrcity}</div>
                 <div><b>TEL: </b>{property.crcef_phone}</div>

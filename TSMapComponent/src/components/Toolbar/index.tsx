@@ -5,29 +5,29 @@ import * as MapboxGl from 'mapbox-gl';
 import * as MapboxDrawGeodesic from 'mapbox-gl-draw-geodesic';
 
 import handImg from './images/hand.png';
-import infoImg from './images/transparent-info.png';
+import infoImg from './images/info.png';
 import pointImg from './images/point.png';
-import deleteImg from './images/transparent-delete.png';
-import chartImg from './images/transparent-chart.png';
-import refreshImg from './images/transparent-refresh-icon.png';
-import storeImg from './images/store.png';
+import deleteImg from './images/delete.png';
+import tradeAreaChartImg from './images/trade-area-chart.png';
+import storeChartImg from './images/store-chart.png';
+import refreshImg from './images/refresh-icon.png';
 
 import { mapboxReactContext } from 'components/MapboxContext';
 import { layerReactContext, LayerType } from 'components/LayerContext';
 
 import SpinnerFC from 'components/Spinner';
 import ToolbarButtonFC from 'components/ToolbarButton';
-import CustomPopupFC, { usePopup, LawsonStorePopupFC } from 'components/CustomPopup';
+import CustomPopupFC, { usePopup, AStorePopupFC } from 'components/CustomPopup';
 import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC } from 'components/Modal';
 
 import { CircleInfo } from './module';
-import { ButtonId, TradeAreaActionId, LawsonStoreActionId, TooltipName } from './constants';
+import { ButtonId, TradeAreaActionId, StoreActionId, TooltipName } from './constants';
 import { GlDrawLayerId, GlDrawMode, LayerId, SourceId } from 'components/Map1/constants';
-import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialLawsonStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
+import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 import CompetitorStorePopupFC from 'components/CustomPopup/CompetitorStorePopup';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
-type LawsonStoreActionType = LawsonStoreActionId.CREATE | LawsonStoreActionId.UPDATE | LawsonStoreActionId.DELETE;
+type StoreActionType = StoreActionId.CREATE | StoreActionId.UPDATE | StoreActionId.DELETE;
 
 export interface ToolbarProps {
 }
@@ -41,7 +41,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     // State Variables
     const [activeBtnId, setActiveBtnId] = useState<string>(ButtonId.HAND);
     const [isTriggerApi, setIsTriggerApi] = useState(false);
-    const [filteredLawsonStoreFeatures, setFilteredLawsonStoreFeatures] = useState<MapboxGl.MapboxGeoJSONFeature[]>([]);
+    const [filteredAStoreFeatures, setFilteredAStoreFeatures] = useState<MapboxGl.MapboxGeoJSONFeature[]>([]);
     const [aggregatedPopulationObj, setAggregatedPopulationObj] = useState<PopulationInfo>(initialPopulationInfo);
     const [aggregatedCompetitorStoreObj, setAggregatedCompetitorStoreObj] = useState<CompetitorStoreInfo>(initialCompetitorStoreInfo);
     const [isLoadingBiReport, setIsLoadingBiReport] = useState(false);
@@ -52,9 +52,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [unSaveModifyTradeAreaFeatureId, setUnSaveModifyTradeAreaFeatureId] = useState<string | undefined>(undefined);
     const [storeStatisticsCircleFeatureId, setStoreStatisticsCircleFeatureId] = useState<string | undefined>(undefined);
 
-    const [lawsonStoreApiActionType, setLawsonStoreApiActionType] = useState<LawsonStoreActionType | undefined>(undefined);
-    const [lawsonStoreFeature, setLawsonStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
-    const [mockLawsonStoreFeature, setMockLawsonStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
+    const [aStoreApiActionType, setAStoreApiActionType] = useState<StoreActionType | undefined>(undefined);
+    const [aStoreFeature, setAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
+    const [mockAStoreFeature, setMockAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
 
     // Ref Variables
     const navigationRef = useRef<HTMLDivElement>(null);
@@ -162,10 +162,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const { current: mapEventRef } = useRef({
         canvas: undefined as HTMLElement | undefined,
         mapObj: undefined as MapboxGl.Map | undefined,
-        unSaveLawsonStoreFeatureId: undefined as string | undefined,
+        unSaveAStoreFeatureId: undefined as string | undefined,
         /**
          * This function triggered on dragging
-         * of lawson store icon
+         * of "A" store icon
          * @param event
          */
         onMapMouseMove: (e: any) => {
@@ -190,12 +190,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             modifyPoint.latitude = latitude;
             modifyPoint.longitude = longitude;
 
-            mapEventRef.unSaveLawsonStoreFeatureId = unSaveFeatureId;
-            showUnSaveLawsonStoreFeatureOnMap(map, unSaveFeatureId, latitude, longitude);
+            mapEventRef.unSaveAStoreFeatureId = unSaveFeatureId;
+            showUnSaveAStoreFeatureOnMap(map, unSaveFeatureId, latitude, longitude);
         },
         /**
          * This function triggered on dropping
-         * of lawson store icon
+         * of "A" store icon
          * @param event
          */
         onMapMouseUp: (e: any) => {
@@ -212,7 +212,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             let { modifyPolygonArea } = btnObjRef;
 
-            if (modifyPolygonArea.point.isEnable === true && mapEventRef.unSaveLawsonStoreFeatureId !== undefined) {
+            if (modifyPolygonArea.point.isEnable === true && mapEventRef.unSaveAStoreFeatureId !== undefined) {
                 storeModifyModalToggle();
             }
         },
@@ -238,7 +238,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const { isShown: isRadiusRestrictionErrorModalShown, toggle: radiusRestrictionErrorModalToggle } = useModal();
     const { isShown: isUnSavedShapeErrorModalShown, toggle: unSavedShapeErrorModalToggle } = useModal();
 
-    // Lawson Store Info Popup
+    // Store Info Popup
     const { toggle: togglePopup } = usePopup();
 
     useEffect(() => {
@@ -253,20 +253,21 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             map.on('draw.selectionchange', onDrawSelectionChange);
 
             // Remove the existing click event
-            map.off('click', LayerId.LAWSON_STORE_LAYER, onLawsonStoreClick);
-            map.off('click', LayerId.FAMILIMART_STORE_LAYER, onFamilyStoreClick);
-            map.off('click', LayerId.MINISTOP_STORE_LAYER, onMinistopStoreClick);
-            map.off('click', LayerId.SEVEN_ELEVEN_STORE_LAYER, onSevenElevenStoreClick);
+            map.off('click', LayerId.A_STORE_LAYER, onAStoreClick);
+            map.off('click', LayerId.C_STORE_LAYER, onCStoreClick);
+            map.off('click', LayerId.D_STORE_LAYER, onDStoreClick);
+            map.off('click', LayerId.B_STORE_LAYER, onBStoreClick);
+            map.off('click', LayerId.E_STORE_LAYER, onEStoreClick);
             map.off('click', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdClick);
             map.off('click', GlDrawLayerId.GL_DRAW_POLYGON_STROKE_INACTIVE_COLD, onGlDrawPolygonStrokeInActiveColdClick);
             map.off('click', onMapClick);
 
             // add new click event
-            map.on('click', LayerId.LAWSON_STORE_LAYER, onLawsonStoreClick);
-            map.on('click', LayerId.FAMILIMART_STORE_LAYER, onFamilyStoreClick);
-            map.on('click', LayerId.MINISTOP_STORE_LAYER, onMinistopStoreClick);
-            map.on('click', LayerId.SEVEN_ELEVEN_STORE_LAYER, onSevenElevenStoreClick);
-            map.on('click', LayerId.TESCO_LOTUS_EXPRESS_LAYER, onTescoLotusExpressStoreClick);
+            map.on('click', LayerId.A_STORE_LAYER, onAStoreClick);
+            map.on('click', LayerId.C_STORE_LAYER, onCStoreClick);
+            map.on('click', LayerId.D_STORE_LAYER, onDStoreClick);
+            map.on('click', LayerId.B_STORE_LAYER, onBStoreClick);
+            map.on('click', LayerId.E_STORE_LAYER, onEStoreClick);
             map.on('click', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdClick);
             map.on('click', GlDrawLayerId.GL_DRAW_POLYGON_STROKE_INACTIVE_COLD, onGlDrawPolygonStrokeInActiveColdClick);
             map.on('click', onMapClick);
@@ -290,10 +291,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             map.on('contextmenu', GlDrawLayerId.GL_DRAW_POLYGON_FILL_INACTIVE_COLD, onGlDrawPolygonFillInActiveColdRightClick);
 
             // Remove the existing mouse down event
-            map.off('mousedown', LayerId.LAWSON_STORE_LAYER, onLawsonStoreMouseDown);
+            map.off('mousedown', LayerId.A_STORE_LAYER, onAStoreMouseDown);
 
             // add new mouse down event
-            map.on('mousedown', LayerId.LAWSON_STORE_LAYER, onLawsonStoreMouseDown);
+            map.on('mousedown', LayerId.A_STORE_LAYER, onAStoreMouseDown);
 
             map.on('mousedown', function () {
                 let { mapOperation } = btnObjRef;
@@ -387,12 +388,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             case ButtonId.SELECT:
                 arrow.isEnable = true;
                 break;
-            case ButtonId.CHART:
+            case ButtonId.TRADE_AREA_CHART:
                 report.isEnable = true;
                 map.getCanvas().style.cursor = "pointer";
                 mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
                 break;
-            case ButtonId.LAWSON_CHART:
+            case ButtonId.A_STORE_CHART:
                 storeReport.isEnable = true;
                 map.getCanvas().style.cursor = "pointer";
                 break;
@@ -415,35 +416,35 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         if (isTriggerApi === true) {
             deleteAndCreateApiCall();
         }
-    }, [filteredLawsonStoreFeatures]);
+    }, [filteredAStoreFeatures]);
 
     useEffect(() => {
         switch (tradeAreaApiActionType) {
             case TradeAreaActionId.CREATE:
-                createLawsonTradeAreaApiCall(tradeAreaFeature);
+                createTradeAreaApiCall(tradeAreaFeature);
                 break;
             case TradeAreaActionId.UPDATE:
-                updateLawsonTradeAreaApiCall(tradeAreaFeature);
+                updateTradeAreaApiCall(tradeAreaFeature);
                 break;
             case TradeAreaActionId.DELETE:
-                deleteLawsonTradeAreaApiCall(tradeAreaFeature);
+                deleteTradeAreaApiCall(tradeAreaFeature);
                 break;
         }
     }, [tradeAreaFeature]);
 
     useEffect(() => {
-        switch (lawsonStoreApiActionType) {
-            case LawsonStoreActionId.CREATE:
-                createLawsonStoreApiCall(lawsonStoreFeature);
+        switch (aStoreApiActionType) {
+            case StoreActionId.CREATE:
+                createAStoreApiCall(aStoreFeature);
                 break;
-            case LawsonStoreActionId.UPDATE:
-                updateLawsonStoreApiCall(lawsonStoreFeature);
+            case StoreActionId.UPDATE:
+                updateAStoreApiCall(aStoreFeature);
                 break;
-            case LawsonStoreActionId.DELETE:
-                deleteLawsonStoreApiCall(lawsonStoreFeature);
+            case StoreActionId.DELETE:
+                deleteAStoreApiCall(aStoreFeature);
                 break;
         }
-    }, [lawsonStoreFeature]);
+    }, [aStoreFeature]);
 
     /**
      * This function is used to compare
@@ -461,11 +462,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to find the
-     * lawson trade area layer is checked or not
+     * trade area layer is checked or not
      * @return Boolean value
      */
-    function isVisibleLawsonTradeAreaLayer() {
-        return layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].isEnable ? true : false;
+    function isVisibleTradeAreaLayer() {
+        return layerObj[LayerId.TRADE_AREA_LAYER].isEnable ? true : false;
     }
 
     /**
@@ -490,7 +491,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 selfIntersectionErrorModalToggle();
                 mapDraw.delete(featureId);
 
-                let feature = getLawsonTradeAreaFeatureById(featureId);
+                let feature = getTradeAreaFeatureById(featureId);
                 if (feature !== undefined) {
                     mapDraw.add(feature);
                 } else {
@@ -528,7 +529,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             alert('You can save modified polygon by right clicking the polygon');
             return true;
         }
-        if (mapEventRef.unSaveLawsonStoreFeatureId !== undefined) {
+        if (mapEventRef.unSaveAStoreFeatureId !== undefined) {
             alert('Please save the edited store A');
             return true;
         }
@@ -541,7 +542,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @return Boolean value
      */
     function isAddOrDeleteVertexExist(id: string) {
-        let existingFeature = getLawsonTradeAreaFeatureById(id);
+        let existingFeature = getTradeAreaFeatureById(id);
         let updatedFeature = mapDraw.get(id);
 
         if (existingFeature !== undefined && updatedFeature !== undefined) {
@@ -571,140 +572,140 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
-     * This function is used to get the lawson
+     * This function is used to get the "A"
      * store featureList from layer object
-     * @return feature list of lawson store
+     * @return feature list of "A" store
      */
-    function getLawsonStoreFeatureList() {
-        return layerObj[LayerId.LAWSON_STORE_LAYER].featureList;
+    function getAStoreFeatureList() {
+        return layerObj[LayerId.A_STORE_LAYER].featureList;
     }
 
     /**
-     * This function is used to set the new lawson
+     * This function is used to set the new "A"
      * store featureList into layer object
-     * @param feature list of lawson store
+     * @param feature list of "A" store
      */
-    function setLawsonStoreFeatureList(featureList: GeoJSON.Feature[]) {
-        layerObj[LayerId.LAWSON_STORE_LAYER].featureList = featureList;
+    function setAStoreFeatureList(featureList: GeoJSON.Feature[]) {
+        layerObj[LayerId.A_STORE_LAYER].featureList = featureList;
     }
 
     /**
      * This function is used to get the specified
-     * lawson store feature from featureList
+     * "A" store feature from featureList
      * @param feature id
-     * @return feature of lawson store
+     * @return feature of "A" store
      */
-    function getLawsonStoreFeatureById(id: string) {
-        return getLawsonStoreFeatureList().find(f => f.id === id);
+    function getAStoreFeatureById(id: string) {
+        return getAStoreFeatureList().find(f => f.id === id);
     }
 
     /**
      * This function is used to add the new
-     * lawson store feature into featureList
+     * "A" store feature into featureList
      * @param geojson
      */
-    function addLawsonStoreFeatureList(geojson: any) {
-        layerObj[LayerId.LAWSON_STORE_LAYER].featureList.push(geojson as any);
-        showLawsonStoreFeatureOnMap();
+    function addAStoreFeatureList(geojson: any) {
+        layerObj[LayerId.A_STORE_LAYER].featureList.push(geojson as any);
+        showAStoreFeatureOnMap();
     }
 
     /**
      * This function is used to delete the specified
-     * lawson store feature from featureList
+     * "A" store feature from featureList
      * @param geojson
      */
-    function deleteLawsonStoreFeatureList(geojson: any) {
-        let featureList = getLawsonStoreFeatureList();
+    function deleteAStoreFeatureList(geojson: any) {
+        let featureList = getAStoreFeatureList();
         let deletedFeatureIndex = featureList.findIndex(f => f.id === geojson.id);
-        layerObj[LayerId.LAWSON_STORE_LAYER].featureList.splice(deletedFeatureIndex, 1);
-        showLawsonStoreFeatureOnMap();
+        layerObj[LayerId.A_STORE_LAYER].featureList.splice(deletedFeatureIndex, 1);
+        showAStoreFeatureOnMap();
     }
 
     /**
      * This function is used to update the specified
-     * lawson store feature in featureList
+     * "A" store feature in featureList
      * @param geojson
      */
-    function updateLawsonStoreFeatureList(geojson: any) {
-        let featureList = getLawsonStoreFeatureList();
+    function updateAStoreFeatureList(geojson: any) {
+        let featureList = getAStoreFeatureList();
         let updatedFeatureList = featureList.map(f => {
             if (f.id === geojson.id) {
                 f = geojson;
             }
             return f;
         });
-        setLawsonStoreFeatureList(updatedFeatureList);
-        showLawsonStoreFeatureOnMap();
+        setAStoreFeatureList(updatedFeatureList);
+        showAStoreFeatureOnMap();
     }
 
     /**
-     * This function is used to get the lawson
+     * This function is used to get the
      * trade area featureList from layer object
-     * @return feature list of lawson trade area
+     * @return feature list of trade area
      */
-    function getLawsonTradeAreaFeatureList() {
-        return layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].featureList;
+    function getTradeAreaFeatureList() {
+        return layerObj[LayerId.TRADE_AREA_LAYER].featureList;
     }
 
     /**
      * This function is used to get the specified
-     * lawson trade area feature from featureList
+     * trade area feature from featureList
      * @param feature id
-     * @return feature of lawson trade area
+     * @return feature of trade area
      */
-    function getLawsonTradeAreaFeatureById(id: string) {
-        let featureList = getLawsonTradeAreaFeatureList();
+    function getTradeAreaFeatureById(id: string) {
+        let featureList = getTradeAreaFeatureList();
         return featureList.find(f => f.id === id);
     }
     
     /**
-     * This function is used to set the new lawson
+     * This function is used to set the new
      * trade area featureList into layer object
-     * @param feature list of lawson trade area
+     * @param feature list of trade area
      */
-    function setLawsonTradeAreaFeatureList(list: GeoJSON.Feature[]) {
-        layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].featureList = list;
+    function setTradeAreaFeatureList(list: GeoJSON.Feature[]) {
+        layerObj[LayerId.TRADE_AREA_LAYER].featureList = list;
     }
     
     /**
      * This function is used to add the new
-     * lawson trade area feature into featureList
+     * trade area feature into featureList
      * @param feature
      */
-    function addLawsonTradeAreaFeatureList(feature: GeoJSON.Feature) {
-        layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].featureList.push(feature);
+    function addTradeAreaFeatureList(feature: GeoJSON.Feature) {
+        layerObj[LayerId.TRADE_AREA_LAYER].featureList.push(feature);
     }
     
     /**
      * This function is used to delete the specified
-     * lawson trade area feature from featureList
+     * trade area feature from featureList
      * @param feature id
      */
-    function deleteLawsonTradeAreaFeatureList(featureId: string) {
-        let featureList = getLawsonTradeAreaFeatureList();
+    function deleteTradeAreaFeatureList(featureId: string) {
+        let featureList = getTradeAreaFeatureList();
         let deletedFeatureIndex = featureList.findIndex(f => f.id === featureId);
-        layerObj[LayerId.LAWSON_TRADE_AREA_LAYER].featureList.splice(deletedFeatureIndex, 1);
+        layerObj[LayerId.TRADE_AREA_LAYER].featureList.splice(deletedFeatureIndex, 1);
     }
     
     /**
      * This function is used to update the specified
-     * lawson trade area feature in featureList
+     * trade area feature in featureList
      * @param feature
      */
-    function updateLawsonTradeAreaFeatureList(feature: GeoJSON.Feature) {
-        let featureList = getLawsonTradeAreaFeatureList();
+    function updateTradeAreaFeatureList(feature: GeoJSON.Feature) {
+        let featureList = getTradeAreaFeatureList();
         featureList = featureList.map((f) => {
             if (f.id === feature.id) {
                 f = feature;
             }
             return f;
         });
-        setLawsonTradeAreaFeatureList(featureList);
+        setTradeAreaFeatureList(featureList);
     }
 
     /**
      * This function is used to fit the specified
-     * lawson trade area feature on Mapbox view
+     * trade area feature on Mapbox view
      */
     function setMapFitBoundsOnStatistics() {
         if (map === undefined) {
@@ -798,7 +799,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         modifyPoint.latitude = 0;
         modifyPoint.longitude = 0;
         modifyPolygonArea.featureId = '';
-        mapEventRef.unSaveLawsonStoreFeatureId = undefined;
+        mapEventRef.unSaveAStoreFeatureId = undefined;
     }
 
     /**
@@ -814,18 +815,18 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to reset the
-     * lawson store selected layer data
+     * "A" store selected layer data
      */
-    function removeLawsonStoreSelectedIcon() {
+    function removeAStoreSelectedIcon() {
         if (map === undefined) return;
 
-        let lawsonStationGeojson = {
+        let aStoreSelectedGeojson = {
             'type': 'FeatureCollection',
             'features': [],
         } as any;
 
-        let source = map.getSource(SourceId.LAWSON_STATION_SOURCE) as any;
-        source.setData(lawsonStationGeojson);
+        let source = map.getSource(SourceId.A_STORE_SELECTION_SOURCE) as any;
+        source.setData(aStoreSelectedGeojson);
     }
 
     /**
@@ -1089,32 +1090,32 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             let filterdCompetitorStoreFeatureList = filterCompetitorStoreDataWithInPolygonByLayerIds(layers, map, polygonFeatureList);
             return filterdCompetitorStoreFeatureList.length;
         };
-        let getTotalMinistopStore = () => {
-            let layers: LayerType[] = [LayerId.MINISTOP_STORE_LAYER];
+        let getTotalDStore = () => {
+            let layers: LayerType[] = [LayerId.D_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let getTotalFamilymartStore = () => {
-            let layers: LayerType[] = [LayerId.FAMILIMART_STORE_LAYER];
+        let getTotalCStore = () => {
+            let layers: LayerType[] = [LayerId.C_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let getTotalSevenElevenStore = () => {
-            let layers: LayerType[] = [LayerId.SEVEN_ELEVEN_STORE_LAYER];
+        let getTotalBStore = () => {
+            let layers: LayerType[] = [LayerId.B_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let getTotalTescoLotusExpressStore = () => {
-            let layers: LayerType[] = [LayerId.TESCO_LOTUS_EXPRESS_LAYER];
+        let getTotalEStore = () => {
+            let layers: LayerType[] = [LayerId.E_STORE_LAYER];
             return getTotalStoreByLayerIds(layers);
         };
-        let totalMiniStop = getTotalMinistopStore();
-        let totalFamilyMart = getTotalFamilymartStore();
-        let totalSevenEleven = getTotalSevenElevenStore();
-        let totalTescoLotusExpress = getTotalTescoLotusExpressStore();
-        let totalCompetitiores = totalMiniStop + totalFamilyMart + totalSevenEleven + totalTescoLotusExpress;
+        let totalBStore = getTotalBStore();
+        let totalCStore = getTotalCStore();
+        let totalDStore = getTotalDStore();
+        let totalEStore = getTotalEStore();
+        let totalCompetitiores = totalBStore + totalCStore + totalDStore + totalEStore;
         return {
-            ministop: totalMiniStop,
-            familymart: totalFamilyMart,
-            sevenEleven: totalSevenEleven,
-            tescoLotusExpress: totalTescoLotusExpress,
+            bStore: totalBStore,
+            cStore: totalCStore,
+            dStore: totalDStore,
+            eStore: totalEStore,
             tatal: totalCompetitiores,
         };
     }
@@ -1226,16 +1227,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to filter the
-     * lawson store inside trade area (circle or polygon)
+     * "A" store inside trade area (circle or polygon)
      * @param Map object
      * @param lost of polygon features
-     * @return list of lawson store features
+     * @return list of "A" store features
      */
     function filterStoreDataWithInPolygon(map: MapboxGl.Map, polygonFeatureList: GeoJSON.Feature[]) {
         let filteredStoreFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
         if (polygonFeatureList.length > 0) {
             // get all the features on the map
-            var storeFeatureList = map.queryRenderedFeatures(undefined, { layers: [LayerId.LAWSON_STORE_LAYER] });
+            var storeFeatureList = map.queryRenderedFeatures(undefined, { layers: [LayerId.A_STORE_LAYER] });
             let storeFeatureListCollection = {
                 "type": "FeatureCollection",
                 "features": storeFeatureList
@@ -1254,7 +1255,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to set the state value of
-     * lawson trade area api action name and feature
+     * trade area api action name and feature
      * @param action name
      * @param geojson feature
      */
@@ -1265,20 +1266,20 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to set the state value of
-     * lawson store api action name and feature
+     * "A" store api action name and feature
      * @param action name
      * @param geojson feature
      */
-    function triggerLawsonStoreApiActions(actionName: LawsonStoreActionType, feature: GeoJSON.Feature) {
-        setLawsonStoreApiActionType(actionName);
-        setLawsonStoreFeature(JSON.parse(JSON.stringify(feature)));
+    function triggerAStoreApiActions(actionName: StoreActionType, feature: GeoJSON.Feature) {
+        setAStoreApiActionType(actionName);
+        setAStoreFeature(JSON.parse(JSON.stringify(feature)));
     }
 
     /**
      * This function is used to set the state value of
      * aggregated population and competitor store object and
-     * filtered lawson store feature list
-     * @param filtered lawson store feature list
+     * filtered "A" store feature list
+     * @param filtered "A" store feature list
      * @param aggregated population object
      * @param aggregated competitor store object
      */
@@ -1286,38 +1287,38 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         setIsTriggerApi(true);
         setAggregatedPopulationObj(populationObj);
         setAggregatedCompetitorStoreObj(competitorObj);
-        setFilteredLawsonStoreFeatures(featureList);
+        setFilteredAStoreFeatures(featureList);
     }
 
     /**
      * This function is used to show all the
-     * lawson store feature on mapbox view
+     * "A" store feature on mapbox view
      */
-    function showLawsonStoreFeatureOnMap() {
+    function showAStoreFeatureOnMap() {
         if (map == undefined) {
             return;
         }
-        let lawsonStoreFeatureList = getLawsonStoreFeatureList();
-        let lawsonStoreGeojson = {
+        let aStoreFeatureList = getAStoreFeatureList();
+        let aStoreGeojson = {
             'type': 'FeatureCollection',
-            'features': lawsonStoreFeatureList,
+            'features': aStoreFeatureList,
         } as any;
         
-        let source = map.getSource(SourceId.LAWSON_STORE_SOURCE) as any;
-        source.setData(lawsonStoreGeojson);
+        let source = map.getSource(SourceId.A_STORE_SOURCE) as any;
+        source.setData(aStoreGeojson);
     }
 
     /**
      * This function is used to show unsave
-     * lawson store feature on mapbox view
+     * "A" store feature on mapbox view
      * @param Map object
      * @param unsave feature id
      * @param latitude
      * @param longitude
      */
-    function showUnSaveLawsonStoreFeatureOnMap(map: MapboxGl.Map, unSaveFeatureId: string, latitude: number, longitude: number) {
-        let lawsonStoreFeatureList = getLawsonStoreFeatureList().slice();
-        let unSaveLawsonStoreFeatureList = lawsonStoreFeatureList.map(feature => {
+    function showUnSaveAStoreFeatureOnMap(map: MapboxGl.Map, unSaveFeatureId: string, latitude: number, longitude: number) {
+        let aStoreFeatureList = getAStoreFeatureList().slice();
+        let unSaveAStoreFeatureList = aStoreFeatureList.map(feature => {
             let f = JSON.parse(JSON.stringify(feature));
             if (f.id === unSaveFeatureId) {
                 (f.geometry as GeoJSON.Point).coordinates = [longitude, latitude];
@@ -1333,13 +1334,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             }
             return f;
         });
-        let unSaveLawsonStoreGeojson = {
+        let unSaveAStoreGeojson = {
             'type': 'FeatureCollection',
-            'features': unSaveLawsonStoreFeatureList,
+            'features': unSaveAStoreFeatureList,
         } as any;
         
-        let source = map.getSource(SourceId.LAWSON_STORE_SOURCE) as any;
-        source.setData(unSaveLawsonStoreGeojson);
+        let source = map.getSource(SourceId.A_STORE_SOURCE) as any;
+        source.setData(unSaveAStoreGeojson);
     }
 
     /**
@@ -1482,13 +1483,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show lawson store info popup
+     * 1. show "A" store info popup
      * 2. show circle modal
-     * 3. delete the lawson store
+     * 3. delete the "A" store
      * 4. store report generation
      * @param event
      */
-    function onLawsonStoreClick(e: any) {
+    function onAStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1498,7 +1499,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         let { mapOperation, createTradeArea, modifyPolygonArea, createStatistics } = btnObjRef;
         if (mapOperation.info.isEnable === true) {
-            showLawsonStoreInfoPopup(map, e);
+            showAStoreInfoPopup(map, e);
         }
         if (createTradeArea.circle.isEnable === true) {
             showCircleModal(map, e);
@@ -1509,15 +1510,15 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             mapDraw?.changeMode(GlDrawMode.STATIC);
         }
         if (createStatistics.storeReport.isEnable === true) {
-            let selectedStoreDetails = getLawsonStoreFeatureById(e.features[0].properties.crcef_duplicatelawsonstoredataid);
+            let selectedStoreDetails = getAStoreFeatureById(e.features[0].properties.crcef_duplicatelawsonstoredataid);
 
-            let lawsonStationGeojson = {
+            let aStoreSelectedGeojson = {
                 'type': 'FeatureCollection',
                 'features': [selectedStoreDetails],
             } as any;
 
-            let source = map.getSource(SourceId.LAWSON_STATION_SOURCE) as any;
-            source.setData(lawsonStationGeojson);
+            let source = map.getSource(SourceId.A_STORE_SELECTION_SOURCE) as any;
+            source.setData(aStoreSelectedGeojson);
 
             showStoreStatisticsModel(map, e);
         }
@@ -1526,10 +1527,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show familt mart store info popup
+     * 1. show "C" store info popup
      * @param event
      */
-    function onFamilyStoreClick(e: any) {
+    function onCStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1546,10 +1547,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show ministop store info popup
+     * 1. show "D" store info popup
      * @param event
      */
-    function onMinistopStoreClick(e: any) {
+    function onDStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1566,10 +1567,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * based on the toolbar button selected
-     * 1. show seven eleven store info popup
+     * 1. show "B" store info popup
      * @param event
      */
-    function onSevenElevenStoreClick(e: any) {
+    function onBStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1583,7 +1584,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
     }
 
-    function onTescoLotusExpressStoreClick(e: any) {
+    /**
+     * This function is used to handle the below action
+     * based on the toolbar button selected
+     * 1. show "E" store info popup
+     * @param event
+     */
+    function onEStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
         if (map === undefined || isExist === true) {
@@ -1720,10 +1727,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * if modify point is enable
-     * 1. dragging lawson store icon
+     * 1. dragging "A" store icon
      * @param event
      */
-    function onLawsonStoreMouseDown(e: any) {
+    function onAStoreMouseDown(e: any) {
         e.preventDefault();
         if (map === undefined) {
             return;
@@ -1753,8 +1760,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     /**
      * This function is used to handle the below action
      * on click of map
-     * 1. create lawson store feature
-     * 2. open lawson store error modal if store feature id is not there
+     * 1. create "A" store feature
+     * 2. open "A" store error modal if store feature id is not there
      * @param event
      */
     function onMapClick(e: any) {
@@ -1767,7 +1774,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         let createTradeArea = btnObjRef.createTradeArea;
         if (createTradeArea.point.isEnable === true) {
-            createLawsonStorePoint(e);
+            createAStorePoint(e);
         }
         if (createTradeArea.circle.isEnable === true) {
             if (createTradeArea.circle.storeFeatureId == '' || createTradeArea.circle.storeFeatureId == undefined || createTradeArea.circle.storeFeatureId == null) {
@@ -1842,11 +1849,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to show the information
-     * of lawson store
+     * of "A" store
      * @param Map object
      * @param MapLayerMouseEvent
      */
-    function showLawsonStoreInfoPopup(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent) {
+    function showAStoreInfoPopup(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent) {
         let event: MapboxGl.MapLayerMouseEvent = (e as any);
         if (map === undefined || event.features === undefined) {
             return;
@@ -1869,11 +1876,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             let val = (
                 <CustomPopupFC coordinates={coordinates} hide={togglePopup}>
-                    <LawsonStorePopupFC
+                    <AStorePopupFC
                         property={p}
                         hide={togglePopup}
                         attributeErrorModalToggle={attributeErrorModalToggle}
-                    ></LawsonStorePopupFC>
+                    ></AStorePopupFC>
                 </CustomPopupFC>
             );
             togglePopup(val);
@@ -1967,10 +1974,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to create
-     * new lawson store feature
+     * new "A" store feature
      * @param event
      */
-    function createLawsonStorePoint(e: any) {
+    function createAStorePoint(e: any) {
         if (e.features === undefined) {
             let lngLat = e.lngLat;
             let crcef_lat: string = lngLat.lat.toString();
@@ -1988,16 +1995,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
             };
 
-            triggerLawsonStoreApiActions(LawsonStoreActionId.CREATE, geojson as any);
+            triggerAStoreApiActions(StoreActionId.CREATE, geojson as any);
         }
     }
 
     /**
      * This function is used to create
-     * lawson trade area into D635
+     * trade area into D635
      * @param drawnFeature
      */
-    function createLawsonTradeAreaApiCall(drawnFeature: any) {
+    function createTradeAreaApiCall(drawnFeature: any) {
         let drawnFeatureId = drawnFeature.id;
         let drawnFeatureProp = Object.assign(drawnFeature.properties, { "id": drawnFeatureId, "risk": true });
         let geojson = {
@@ -2017,7 +2024,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         WebApiClient.Create(request)
             .then(function (response: any) {
                 // Process response
-                addLawsonTradeAreaFeatureList(geojson as any);
+                addTradeAreaFeatureList(geojson as any);
             })
             .catch(function (error: any) {
                 // Handle error
@@ -2028,10 +2035,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to update the
-     * existing lawson trade area into D635
+     * existing trade area into D635
      * @param drawnFeature
      */
-    function updateLawsonTradeAreaApiCall(drawnFeature: any) {
+    function updateTradeAreaApiCall(drawnFeature: any) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_lawsontradearea").then((result) => {
                 let updatedFeatureId = drawnFeature.id;
@@ -2064,7 +2071,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         WebApiClient.Update(request)
                             .then(function (response: any) {
                                 // Process response
-                                updateLawsonTradeAreaFeatureList(geojson as any);
+                                updateTradeAreaFeatureList(geojson as any);
                             })
                             .catch(function (error: any) {
                                 // Handle error
@@ -2078,10 +2085,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to delete the
-     * existing lawson trade area from D635
+     * existing trade area from D635
      * @param drawnFeature
      */
-    function deleteLawsonTradeAreaApiCall(drawnFeature: any) {
+    function deleteTradeAreaApiCall(drawnFeature: any) {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_lawsontradearea").then((result) => {
                 let deletableDrawnFeatureId = drawnFeature.id;
@@ -2097,7 +2104,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         Xrm.WebApi.deleteRecord("crcef_lawsontradearea", d365RecordID)
                             .then(function (response: any) {
                                 // Process response
-                                deleteLawsonTradeAreaFeatureList(deletableDrawnFeatureId);
+                                deleteTradeAreaFeatureList(deletableDrawnFeatureId);
                             })
                             .catch(function (error: any) {
                                 // Handle error
@@ -2109,10 +2116,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to create
-     * lawson store into D635
+     * "A" store into D635
      * @param storeFeature
      */
-    function createLawsonStoreApiCall(storeFeature: any) {
+    function createAStoreApiCall(storeFeature: any) {
         let prop = storeFeature.properties;
         let request = {
             entityName: "crcef_duplicatelawsonstoredata",
@@ -2132,7 +2139,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         geojson.id = createdguid;
                         geojson.properties.crcef_duplicatelawsonstoredataid = createdguid;
 
-                        addLawsonStoreFeatureList(geojson as any);
+                        addAStoreFeatureList(geojson as any);
                     }
                 }
             })
@@ -2143,10 +2150,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to update the
-     * existing lawson store into D635
+     * existing "A" store into D635
      * @param storeFeature
      */
-    function updateLawsonStoreApiCall(storeFeature: any) {
+    function updateAStoreApiCall(storeFeature: any) {
         let prop = storeFeature.properties;
         let request = {
             entityName: "crcef_duplicatelawsonstoredata",
@@ -2160,7 +2167,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         WebApiClient.Update(request)
             .then(function(response : any) {
                 // Process response
-                updateLawsonStoreFeatureList(storeFeature);
+                updateAStoreFeatureList(storeFeature);
             })
             .catch(function(error : any) {
                 // Handle error
@@ -2169,10 +2176,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to delete the
-     * existing lawson store from D635
+     * existing "A" store from D635
      * @param storeFeature
      */
-    function deleteLawsonStoreApiCall(storeFeature: any) {
+    function deleteAStoreApiCall(storeFeature: any) {
         let prop = storeFeature.properties;
         let request = {
             entityName: "crcef_duplicatelawsonstoredata",
@@ -2182,7 +2189,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let deletePromise = WebApiClient.Delete(request) as any;
         deletePromise
             .then(function(response: any){
-                deleteLawsonStoreFeatureList(storeFeature);
+                deleteAStoreFeatureList(storeFeature);
             })
             .catch(function(error: any) {
             });
@@ -2190,16 +2197,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to create
-     * duplicate lawson store into D635
+     * duplicate "A" store into D635
      */
-    function createFilteredLawsonStoreFeaturesApiCall() {
+    function createFilteredAStoreFeaturesApiCall() {
         var randomNumber = Math.floor(Math.random() * 100) + 1;
         let promisesArray = [];
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
-        const { ministop: totalMinistop, familymart: totalFamilymart, sevenEleven: totalSevenEleven, tescoLotusExpress: totalTescoLotusExpress, tatal: totalTatal } = aggregatedCompetitorStoreObj;
+        const { bStore: totalBStore, cStore: totalCStore, dStore: totalDStore, eStore: totalEStore, tatal: totalTatal } = aggregatedCompetitorStoreObj;
 
-        for (var i = 0; i < filteredLawsonStoreFeatures.length; i++) {
-            let feature = filteredLawsonStoreFeatures[i];
+        for (var i = 0; i < filteredAStoreFeatures.length; i++) {
+            let feature = filteredAStoreFeatures[i];
             if (feature !== null) {
                 let property: any = feature.properties;
                 let totalff = getTotalFootFall(property);
@@ -2302,10 +2309,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         crcef_woman90: property.crcef_woman90,
                         crcef_woman100: property.crcef_woman100,
                         crcef_total: totalPopulation,
-                        crcef_7eleven: totalSevenEleven,
-                        crcef_familymart: totalFamilymart,
-                        crcef_ministop: totalMinistop,
-                        crcef_tescolotusexpress: totalTescoLotusExpress,
+                        crcef_7eleven: totalBStore,
+                        crcef_familymart: totalCStore,
+                        crcef_ministop: totalDStore,
+                        crcef_tescolotusexpress: totalEStore,
                         crcef_tatal: totalTatal,
                         crcef_0oclockweekend: property.crcef_0oclockweekend,
                         crcef_1oclockweekend: property.crcef_1oclockweekend,
@@ -2374,7 +2381,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to delete existing
-     * duplicate lawson store and create new into D365
+     * duplicate "A" store and create new into D365
      */
     function deleteAndCreateApiCall() {
         Xrm.WebApi
@@ -2393,18 +2400,18 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     promisesArray.push(promise);
                 }
                 Promise.all(promisesArray).then(() => {
-                    createFilteredLawsonStoreFeaturesApiCall();
+                    createFilteredAStoreFeaturesApiCall();
                 });
             });
     }
 
     /**
      * This function is used to validate the
-     * lawson trade area is checked or not in layerlist
+     * trade area is checked or not in layerlist
      * @param selected button id
      */
-    function handleLawsonTradeAreaLayerValidation(btnId: string) {
-        if (isVisibleLawsonTradeAreaLayer() === true) {
+    function handleTradeAreaLayerValidation(btnId: string) {
+        if (isVisibleTradeAreaLayer() === true) {
             setActiveBtnId(btnId);
         } else {
             alert("Please select the trade area layer");
@@ -2461,7 +2468,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onCreatePolygonClick(e: React.MouseEvent, btnId: string) {
-        handleLawsonTradeAreaLayerValidation(btnId);
+        handleTradeAreaLayerValidation(btnId);
     }
 
     /**
@@ -2471,12 +2478,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onCreateCircleClick(e: React.MouseEvent, btnId: string) {
-        handleLawsonTradeAreaLayerValidation(btnId);
+        handleTradeAreaLayerValidation(btnId);
     }
 
     /**
      * This function is used to create the
-     * new lawson store
+     * new "A" store
      * @param React.MouseEvent
      * @param selected button id
      */
@@ -2486,7 +2493,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to modify the
-     * the existing lawson store
+     * the existing "A" store
      * @param React.MouseEvent
      * @param selected button id
      */
@@ -2501,7 +2508,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onModifyPolygonClick(e: React.MouseEvent, btnId: string) {
-        handleLawsonTradeAreaLayerValidation(btnId);
+        handleTradeAreaLayerValidation(btnId);
     }
 
     /**
@@ -2511,12 +2518,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onModifyCircleClick(e: React.MouseEvent, btnId: string) {
-        handleLawsonTradeAreaLayerValidation(btnId);
+        handleTradeAreaLayerValidation(btnId);
     }
 
     /**
      * This function is used to delete the
-     * the existing lawson store, circle and polygon trade area
+     * the existing "A" store, circle and polygon trade area
      * @param React.MouseEvent
      * @param selected button id
      */
@@ -2526,7 +2533,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to select the
-     * the lawson store, circle and polygon trade area
+     * the "A" store, circle and polygon trade area
      * @param React.MouseEvent
      * @param selected button id
      */
@@ -2540,17 +2547,17 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param React.MouseEvent
      * @param selected button id
      */
-    function onChartClick(e: React.MouseEvent, btnId: string) {
+    function onTradeAreaChartClick(e: React.MouseEvent, btnId: string) {
         setActiveBtnId(btnId);
     }
 
     /**
      * This function is used to generate the
-     * the report for lawson store
+     * the report for "A" store
      * @param React.MouseEvent
      * @param selected button id
      */
-    function onLawsonChartClick(e: React.MouseEvent, btnId: string) {
+    function onAStoreChartClick(e: React.MouseEvent, btnId: string) {
         setActiveBtnId(btnId);
     }
 
@@ -2577,7 +2584,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
         if (storeStatisticsCircleFeatureId !== undefined) {
             mapDraw.delete(storeStatisticsCircleFeatureId);
-            removeLawsonStoreSelectedIcon();
+            removeAStoreSelectedIcon();
             setStoreStatisticsCircleFeatureId(undefined);
         }
 
@@ -2618,11 +2625,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             case ButtonId.SELECT:
                 onArrowClick(e, btnId);
                 break;
-            case ButtonId.CHART:
-                onChartClick(e, btnId);
+            case ButtonId.TRADE_AREA_CHART:
+                onTradeAreaChartClick(e, btnId);
                 break;
-            case ButtonId.LAWSON_CHART:
-                onLawsonChartClick(e, btnId);
+            case ButtonId.A_STORE_CHART:
+                onAStoreChartClick(e, btnId);
                 break;
             case ButtonId.REFRESH:
                 onRefreshClick(e,btnId);
@@ -2713,7 +2720,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         // Waiting time for enable the spinner and new circle is drawing by mapDraw.add method
         setTimeout(() => {
             let filteredStoreFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
-            let selectedStoreFeature = getLawsonStoreFeatureById(btnObjRef.createStatistics.storeReport.storeFeatureId);
+            let selectedStoreFeature = getAStoreFeatureById(btnObjRef.createStatistics.storeReport.storeFeatureId);
             if (selectedStoreFeature !== undefined) {
                 filteredStoreFeatureList.push(selectedStoreFeature as MapboxGl.MapboxGeoJSONFeature);
             }
@@ -2733,7 +2740,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to generate the
-     * lawson store statistics report
+     * "A" store statistics report
      * @param radiusInMeter
      */
     function onStoreStatisticsConfirm(radiusInMeter : number){
@@ -2762,7 +2769,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to cancel the
-     * lawson store statistics report and reset the values
+     * "A" store statistics report and reset the values
      */
     function onStoreStatisticsCancel(){
         if (map === undefined) {
@@ -2773,39 +2780,39 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         // Deselect logic
         setActiveBtnId('');
         resetStoreStatesticsRefValue();
-        removeLawsonStoreSelectedIcon();
+        removeAStoreSelectedIcon();
         setStoreStatisticsCircleFeatureId(undefined);
     }
 
     /**
      * This function is used to modify the
-     * existing lawson store feature
+     * existing "A" store feature
      */
     function onStoreModifyConfirm() {
         let { modifyPolygonArea } = btnObjRef;
         let { featureId: modifyFeatureId } = modifyPolygonArea;
 
-        let storeFeature = getLawsonStoreFeatureById(modifyFeatureId);
+        let storeFeature = getAStoreFeatureById(modifyFeatureId);
         if (storeFeature !== undefined) {
-            let updateLawsonStoreFeature = JSON.parse(JSON.stringify(storeFeature));
+            let updateAStoreFeature = JSON.parse(JSON.stringify(storeFeature));
             let { point: modifyPoint } = modifyPolygonArea;
             let { latitude, longitude } = modifyPoint;
 
             // Construct feature properties
-            if (updateLawsonStoreFeature.properties === null) {
-                updateLawsonStoreFeature.properties = {};
-                updateLawsonStoreFeature.properties.crcef_duplicatelawsonstoredataid = modifyFeatureId;
+            if (updateAStoreFeature.properties === null) {
+                updateAStoreFeature.properties = {};
+                updateAStoreFeature.properties.crcef_duplicatelawsonstoredataid = modifyFeatureId;
             }
-            let updatedFeatureProp = Object.assign({}, updateLawsonStoreFeature.properties, {
+            let updatedFeatureProp = Object.assign({}, updateAStoreFeature.properties, {
                 "crcef_lat": latitude,
                 "crcef_lon": longitude
             });
-            updateLawsonStoreFeature.properties = updatedFeatureProp;
+            updateAStoreFeature.properties = updatedFeatureProp;
 
             // set geometry coords
-            (updateLawsonStoreFeature.geometry as GeoJSON.Point).coordinates = [longitude, latitude];
+            (updateAStoreFeature.geometry as GeoJSON.Point).coordinates = [longitude, latitude];
             // trigger update api
-            triggerLawsonStoreApiActions(LawsonStoreActionId.UPDATE, updateLawsonStoreFeature);
+            triggerAStoreApiActions(StoreActionId.UPDATE, updateAStoreFeature);
         } else {
             console.error('onStoreModifyConfirm error');
         }
@@ -2819,28 +2826,28 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to cancel the
-     * existing lawson store feature modification
+     * existing "A" store feature modification
      */
     function onStoreModifyCancel() {
         storeModifyModalToggle();
 
         // Deselect logic
-        showLawsonStoreFeatureOnMap();
+        showAStoreFeatureOnMap();
         resetModifyPointRefValue();
         setActiveBtnId('');
     }
 
     /**
      * This function is used to delete the
-     * existing lawson store feature
+     * existing "A" store feature
      */
     function onStoreDeleteConfirm() {
         let { modifyPolygonArea } = btnObjRef;
         let { featureId: deleteFeatureId } = modifyPolygonArea;
 
-        let storeFeature = getLawsonStoreFeatureById(deleteFeatureId);
+        let storeFeature = getAStoreFeatureById(deleteFeatureId);
         if (storeFeature != undefined) {
-            triggerLawsonStoreApiActions(LawsonStoreActionId.DELETE, storeFeature);
+            triggerAStoreApiActions(StoreActionId.DELETE, storeFeature);
         } else {
             console.error('onStoreDeleteConfirm error');
         }
@@ -2854,7 +2861,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to cancel the
-     * existing lawson store feature deletion
+     * existing "A" store feature deletion
      */
     function onStoreDeleteCancel() {
         storeDeleteModalToggle();
@@ -2866,7 +2873,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to create the
-     * new lawson trade area feature
+     * new trade area feature
      */
     function onTradeAreaCreateConfirm() {
         if (unSaveNewTradeAreaFeatureId !== undefined) {
@@ -2889,7 +2896,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     
     /**
      * This function is used to cancel the
-     * new lawson trade area feature creation
+     * new trade area feature creation
      */
     function onTradeAreaCreateCancel() {
         if (unSaveNewTradeAreaFeatureId !== undefined) {
@@ -2911,7 +2918,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to modify the
-     * existing lawson trade area feature
+     * existing trade area feature
      */
     function onTradeAreaModifyConfirm() {
         if (unSaveModifyTradeAreaFeatureId !== undefined) {
@@ -2931,13 +2938,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to cancel the
-     * existing lawson trade area feature modification
+     * existing trade area feature modification
      */
     function onTradeAreaModifyCancel() {
         if (unSaveModifyTradeAreaFeatureId !== undefined) {
             mapDraw?.delete(unSaveModifyTradeAreaFeatureId);
 
-            let unSaveTradeAreaFeature = getLawsonTradeAreaFeatureById(unSaveModifyTradeAreaFeatureId);
+            let unSaveTradeAreaFeature = getTradeAreaFeatureById(unSaveModifyTradeAreaFeatureId);
             if (unSaveTradeAreaFeature !== undefined) {
                 mapDraw?.add(unSaveTradeAreaFeature);
             } else {
@@ -2957,7 +2964,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to delete the
-     * existing lawson trade area feature
+     * existing trade area feature
      */
     function onTradeAreaDeleteConfirm() {
         let id = btnObjRef.modifyPolygonArea.featureId;
@@ -2980,7 +2987,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to cancel the
-     * existing lawson trade area feature deletion
+     * existing trade area feature deletion
      */
     function onTradeAreaDeleteCancel() {
         tradeAreaDeleteModalToggle();
@@ -2992,7 +2999,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to generate the
-     * lawson trade area statistics report
+     * trade area statistics report
      */
     function onTradeAreaStatisticsConfirm() {
         if (map === undefined) {
@@ -3007,14 +3014,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             let filteredStoreFeatureList = filterStoreDataWithInPolygon(map, polygonFeatureList);
             if (filteredStoreFeatureList.length === 0) {
-                let initialLawsonStoreFeature = JSON.parse(JSON.stringify(initialLawsonStoreGeojsonInfo));
-                initialLawsonStoreFeature.properties = Object.assign(initialLawsonStoreFeature.properties, {
+                let initialAStoreFeature = JSON.parse(JSON.stringify(initialAStoreGeojsonInfo));
+                initialAStoreFeature.properties = Object.assign(initialAStoreFeature.properties, {
                     crcef_storename: 'Trade Area Without Store A',
-                    crcef_duplicatelawsonstoredataid: initialLawsonStoreFeature.id
+                    crcef_duplicatelawsonstoredataid: initialAStoreFeature.id
                 });
 
-                setMockLawsonStoreFeature(initialLawsonStoreFeature);
-                filteredStoreFeatureList = [initialLawsonStoreFeature];
+                setMockAStoreFeature(initialAStoreFeature);
+                filteredStoreFeatureList = [initialAStoreFeature];
             }
 
             let populationObj = constructPopulationObj(map, polygonFeatureList);
@@ -3031,7 +3038,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     /**
      * This function is used to cancel the
-     * lawson trade area statistics report generation
+     * trade area statistics report generation
      */
     function onTradeAreaStatisticsCancel() {
         tradeAreaStatisticsModalToggle();
@@ -3059,8 +3066,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let orgurl = globalContext.getClientUrl();
 
         let dashboardUrl = '';
-        if (mockLawsonStoreFeature !== undefined) {
-            setMockLawsonStoreFeature(undefined);
+        if (mockAStoreFeature !== undefined) {
+            setMockAStoreFeature(undefined);
             dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=b1262a4d-7743-eb11-a813-000d3a1a2401&dashboardType=1030&pagemode=iframe`;
         } else {
             dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=9DD79E5B-07F8-EA11-A815-000D3A8FAAA7&dashboardType=1030&pagemode=iframe`;
@@ -3134,11 +3141,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                             </ToolbarButtonFC>
                         </div>
                         <div className="button-group-content">
-                            <ToolbarButtonFC tooltipName={TooltipName.CHART} btnId={ButtonId.CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
-                                <image href={chartImg} />
+                            <ToolbarButtonFC tooltipName={TooltipName.TRADE_AREA_CHART} btnId={ButtonId.TRADE_AREA_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
+                                <image href={tradeAreaChartImg} />
                             </ToolbarButtonFC>
-                            <ToolbarButtonFC tooltipName={TooltipName.LAWSON_CHART} btnId={ButtonId.LAWSON_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
-                                <image href={storeImg} />
+                            <ToolbarButtonFC tooltipName={TooltipName.A_STORE_CHART} btnId={ButtonId.A_STORE_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
+                                <image href={storeChartImg} />
                             </ToolbarButtonFC>
                         </div>
                         <div className="button-group-content">

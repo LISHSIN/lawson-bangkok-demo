@@ -1,12 +1,12 @@
 import * as MapboxGl from 'mapbox-gl';
 
 /**
- * Show and Hide the lawson trade area layer
+ * Show and Hide the trade area layer
  * which are in the mapdraw plugin
  * @param Map object
  * @param isVisible boolean value
  */
-export function showHideLawsonTradeAreaLayer(map: MapboxGl.Map, isVisible: boolean) {
+export function showHideTradeAreaLayer(map: MapboxGl.Map, isVisible: boolean) {
     let allLayers = map.getStyle().layers;
     if (allLayers !== undefined) {
         let filteredGlDrawPolygonLayers = allLayers.filter((layer) => layer.id.indexOf('gl-draw-polygon') !== -1);

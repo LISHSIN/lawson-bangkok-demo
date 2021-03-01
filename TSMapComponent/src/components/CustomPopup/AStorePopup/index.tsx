@@ -2,18 +2,18 @@ import React from 'react';
 import WebApiClient from 'xrm-webapi-client';
 import "./index.css";
 
-export interface LawsonStorePopupProps {
+export interface AStorePopupProps {
     property: any;
     hide: (popup: JSX.Element | undefined) => void;
     attributeErrorModalToggle: () => void;
 }
 
-export const LawsonStorePopupFC: React.FC<LawsonStorePopupProps> = (props => {
+export const AStorePopupFC: React.FC<AStorePopupProps> = (props => {
     const { property, hide, attributeErrorModalToggle } = props;
 
     /**
      * This function is used to edit the
-     * lawson store field in D365 using xrm webapi
+     * "A store" field in D365 using xrm webapi
      */
     function onEditClick() {
         let guid = property.crcef_duplicatelawsonstoredataid;
@@ -38,16 +38,16 @@ export const LawsonStorePopupFC: React.FC<LawsonStorePopupProps> = (props => {
 
     return (
         <>
-            <div className="lawson-store-info">
+            <div className="store-info">
                 <div><b>StoreName: </b>{property.crcef_storename}</div>
                 <div><b>Address: </b>{property.crcef_addresspluscode}</div>
                 <div><b>TEL: </b>{property.crcef_tell}</div>
             </div>
-            <div className="lawson-store-info-buttons">
+            <div className="store-info-buttons">
                 <button type="button" onClick={onEditClick}>Edit</button>
             </div>
         </>
     );
 });
 
-export default LawsonStorePopupFC;
+export default AStorePopupFC;

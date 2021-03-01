@@ -3,7 +3,7 @@ import * as MapboxGl from 'mapbox-gl';
 import { mapboxReactContext } from 'components/MapboxContext';
 import { layerReactContext, LayerType } from 'components/LayerContext';
 import { LayerId } from 'components/Map1/constants';
-import { showHideLawsonTradeAreaLayer } from 'components/LayerList/constants';
+import { showHideTradeAreaLayer } from 'components/LayerList/constants';
 
 export interface CheckboxProps {
     checked: boolean;
@@ -26,8 +26,8 @@ export const CheckboxFC: React.FC<CheckboxProps> = (props => {
     useEffect(() => {
       if (map !== undefined) {
         switch (layerId) {
-          case LayerId.LAWSON_TRADE_AREA_LAYER:
-            showHideLawsonTradeAreaLayer(map, isChecked);
+          case LayerId.TRADE_AREA_LAYER:
+            showHideTradeAreaLayer(map, isChecked);
             break;
           default:
             showHideLayer(map);
