@@ -22,7 +22,7 @@ import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, AttributeErrorMo
 
 import { CircleInfo } from './module';
 import { ButtonId, TradeAreaActionId, StoreActionId, TooltipName } from './constants';
-import { GlDrawLayerId, GlDrawMode, LayerId, SourceId } from 'components/Map1/constants';
+import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'components/Map1/constants';
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 import CompetitorStorePopupFC from 'components/CustomPopup/CompetitorStorePopup';
 
@@ -830,6 +830,21 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
+     * This function is used to get the
+     * selected drawn circle features from
+     * either Trade Area Layer/Source
+     * @param Map object
+     */
+    function getSelectedDrawnCircleFeatures(map: MapboxGl.Map) {
+        let selectedDrawnFeatures = map.queryRenderedFeatures(undefined, { layers: [GlDrawLayerId.GL_DRAW_POLYGON_FILL_ACTIVE_COLD]});
+
+        if (selectedDrawnFeatures.length === 0 && btnObjRef.createStatistics.storeReport.isEnable === true) {
+            selectedDrawnFeatures = map.querySourceFeatures(GlDrawSourceId.MAPBOX_GL_DRAW_COLD);
+        }
+        return selectedDrawnFeatures;
+    }
+
+    /**
      * This function is used to construct the
      * circle geometry coordinates
      * @param Map object
@@ -838,7 +853,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function constructCircleCoordinates(map: MapboxGl.Map, feature: GeoJSON.Feature) {
         let circleFeature = undefined;
-        let selectedDrawnFeatures = map.queryRenderedFeatures(undefined, { layers: [GlDrawLayerId.GL_DRAW_POLYGON_FILL_ACTIVE_COLD]});
+        let selectedDrawnFeatures = getSelectedDrawnCircleFeatures(map);
         let filteredSelectedDrawnFeatures = selectedDrawnFeatures.filter((f: MapboxGl.MapboxGeoJSONFeature) => (f.properties as any).id === feature.id);
 
         if (filteredSelectedDrawnFeatures.length > 0) {
@@ -2761,6 +2776,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             newCircle.properties.risk = true;
             mapDraw.add(newCircle);
             mapDraw.changeMode(GlDrawMode.DIRECT_SELECT, {featureId: circleFeaureId});
+            setMapFitBoundsOnStatistics();
 
             setStoreStatisticsCircleFeatureId(circleFeaureId);
         }

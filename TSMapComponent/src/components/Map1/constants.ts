@@ -198,6 +198,10 @@ export enum GlDrawLayerId {
     GL_DRAW_POLYGON_STROKE_STATIC_COLD = "gl-draw-polygon-stroke-static.cold",
 }
 
+export enum GlDrawSourceId {
+    MAPBOX_GL_DRAW_COLD = "mapbox-gl-draw-cold",
+}
+
 export enum GlDrawPaintPropertyId {
     LINE_COLOR = "line-color",
 
