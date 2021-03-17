@@ -363,10 +363,9 @@ Describe as follows.
 Enclose the comment with "/* ~ */" and add "*" at the beginning of the line that does not contain "/*" or "*/".
 Add the same indentation as the target code. <br/>
  /* <br />
-  * Until there are no more records <br/>
-  * Read the data <br />
+  *Read the data until there are no more records<br />
   */ <br />
- for (counter = 0; counter < maxLoops; counter ++) {<br />
+ for (counter = 0; counter < maxLoops; counter++) {<br />
     rtn = readData(kind, data); <br />
     if (rtn == -1) {<br />
         ... <br />
