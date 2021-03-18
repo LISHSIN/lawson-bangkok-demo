@@ -48,7 +48,7 @@ export const LegendFC: React.FC<LegendProps> = (props => {
       let isAnyAgeAndGenderEnable = false;
       for (let i = 0; i < visibleLayers.length; i++) {
         let layer = visibleLayers[i];
-        if (allMaleAgeWiseLayers.indexOf(layer) !== -1 || allFemaleAgeWiseLayers .indexOf(layer) !== -1) {
+        if ((allMaleAgeWiseLayers.indexOf(layer) !== -1) || (allFemaleAgeWiseLayers .indexOf(layer) !== -1)) {
           isAnyAgeAndGenderEnable = true;
           break;
         }
@@ -70,7 +70,7 @@ export const LegendFC: React.FC<LegendProps> = (props => {
     }
 
     let legendClasses;
-    if (showAllPopulationLegend === false && showAgeAndGenderWisePopulationLegend === false) {
+    if ((showAllPopulationLegend === false) && (showAgeAndGenderWisePopulationLegend === false)) {
       legendClasses = 'legend hide';
     } else {
       legendClasses = 'legend show';

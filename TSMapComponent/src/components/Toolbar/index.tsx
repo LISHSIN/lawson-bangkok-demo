@@ -83,7 +83,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             let navEl = navigationRef.current;
             let parentEl = e.currentTarget.closest(".toolbar-container");
 
-            if (el !== null && navEl !== null) {
+            if ((el !== null) && (navEl !== null)) {
                 let hasActive = el.classList.contains('active') ? true : false;
                 if (hasActive) {
                     el.classList.remove('active');
@@ -170,7 +170,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
          */
         onMapMouseMove: (e: any) => {
             let { mapObj: map, canvas } = mapEventRef;
-            if (map === undefined || canvas === undefined) {
+            if ((map === undefined) || (canvas === undefined)) {
                 return;
             }
 
@@ -200,7 +200,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
          */
         onMapMouseUp: (e: any) => {
             let { mapObj: map, canvas } = mapEventRef;
-            if (map === undefined || canvas === undefined) {
+            if ((map === undefined) || (canvas === undefined)) {
                 return;
             }
 
@@ -212,7 +212,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             let { modifyPolygonArea } = btnObjRef;
 
-            if (modifyPolygonArea.point.isEnable === true && mapEventRef.unSaveAStoreFeatureId !== undefined) {
+            if ((modifyPolygonArea.point.isEnable === true) && (mapEventRef.unSaveAStoreFeatureId !== undefined)) {
                 storeModifyModalToggle();
             }
         },
@@ -319,7 +319,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             document.addEventListener("keydown", function(e: any) {
                 let { createTradeArea } = btnObjRef;
                 if (e.key === "Escape") {
-                    if (createTradeArea.polygon.isEnable === true && createTradeArea.featureId === '') {
+                    if ((createTradeArea.polygon.isEnable === true) && (createTradeArea.featureId === '')) {
                         setTimeout(function(e: any){
                             setActiveBtnId('');
                         }, 500)
@@ -521,7 +521,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function isUnSaveFeatureExist() {
         let unSaveCircleExist = isUnSaveCircleExist();
-        if (unSaveNewTradeAreaFeatureId !== undefined || unSaveCircleExist === true) {
+        if ((unSaveNewTradeAreaFeatureId !== undefined) || (unSaveCircleExist === true)) {
             alert('You can save created trade area by right clicking the trade area');
             return true;
         }
@@ -545,7 +545,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let existingFeature = getTradeAreaFeatureById(id);
         let updatedFeature = mapDraw.get(id);
 
-        if (existingFeature !== undefined && updatedFeature !== undefined) {
+        if ((existingFeature !== undefined) && (updatedFeature !== undefined)) {
             let existingGeometry: GeoJSON.Polygon = existingFeature.geometry as GeoJSON.Polygon;
             let existingCoordinates: GeoJSON.Position[] = existingGeometry.coordinates[0];
 
@@ -818,7 +818,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * "A" store selected layer data
      */
     function removeAStoreSelectedIcon() {
-        if (map === undefined) return;
+        if (map === undefined){
+            return;
+        }
 
         let aStoreSelectedGeojson = {
             'type': 'FeatureCollection',
@@ -1381,7 +1383,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let { modifyPolygonArea } = btnObjRef;
 
         let updatedFeature = drawnFeatureList.find((f: GeoJSON.Feature) => f.id === modifyPolygonArea.featureId);
-        if (updatedFeature === undefined || updatedFeature.properties.risk === true || !isValidPolygon(e)) {
+        if ((updatedFeature === undefined) || (updatedFeature.properties.risk === true) || (!isValidPolygon(e))) {
             return;
         }
 
@@ -1409,7 +1411,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param event
      */
     function onDrawCreate(e: any) {
-        if (map === undefined || !isValidPolygon(e)) {
+        if ((map === undefined) || (!isValidPolygon(e))) {
             return;
         }
 
@@ -1439,7 +1441,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function onDrawSelectionChange(e: any) {
         let currentDrawMode = mapDraw.getMode();
-        if (map === undefined || currentDrawMode !== GlDrawMode.DIRECT_SELECT) {
+        if ((map === undefined) || (currentDrawMode !== GlDrawMode.DIRECT_SELECT)) {
             return;
         }
 
@@ -1471,10 +1473,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
             }
 
-            if (isCicle === false && modifyPolygon.isEnable === true) {
+            if ((isCicle === false) && (modifyPolygon.isEnable === true)) {
                 mapDraw.setFeatureProperty(featureId, 'risk', false);
             }
-            if (isCicle === true && modifyCircle.isEnable === true) {
+            if ((isCicle === true) && (modifyCircle.isEnable === true)) {
                 mapDraw.setFeatureProperty(featureId, 'risk', false);
             }
         }
@@ -1492,7 +1494,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function onAStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
-        if (map === undefined || isExist === true) {
+        if ((map === undefined) || (isExist === true)) {
             mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
             return;
         }
@@ -1533,7 +1535,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function onCStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
-        if (map === undefined || isExist === true) {
+        if ((map === undefined) || (isExist === true)) {
             mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
             return;
         }
@@ -1553,7 +1555,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function onDStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
-        if (map === undefined || isExist === true) {
+        if ((map === undefined) || (isExist === true)) {
             mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
             return;
         }
@@ -1573,7 +1575,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function onBStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
-        if (map === undefined || isExist === true) {
+        if ((map === undefined) || (isExist === true)) {
             mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
             return;
         }
@@ -1593,7 +1595,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function onEStoreClick(e: any) {
         e.preventDefault();
         let isExist = isUnSaveFeatureExist();
-        if (map === undefined || isExist === true) {
+        if ((map === undefined) || (isExist === true)) {
             mapDraw?.changeMode(GlDrawMode.SIMPLE_SELECT);
             return;
         }
@@ -1625,7 +1627,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let isChangeModePrevent = true;
         let featureList = e.features;
 
-        if (featureList !== undefined && featureList.length > 0) {
+        if ((featureList !== undefined) && (featureList.length > 0)) {
             let selectedInactiveFeature = featureList[0];
             if (selectedInactiveFeature !== undefined) {
                 let feature = mapDraw.get(selectedInactiveFeature.properties.id);
@@ -1634,10 +1636,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     let { circle: modifyCircle, polygon: modifyPolygon, delete: modifyDelete } = modifyPolygonArea;
                     let isCicle = MapboxDrawGeodesic.isCircle(feature);
 
-                    if (isCicle === false && modifyPolygon.isEnable === true) {
+                    if ((isCicle === false) && (modifyPolygon.isEnable === true)) {
                         isChangeModePrevent = false;
                     }
-                    if (isCicle === true && modifyCircle.isEnable === true) {
+                    if ((isCicle === true) && (modifyCircle.isEnable === true)) {
                         isChangeModePrevent = false;
                     }
                     if (modifyDelete.isEnable === true) {
@@ -1695,12 +1697,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 tradeAreaStatisticsModalToggle();
             }, 100);
         }
-        if (createPolygon.isEnable === true || createCircle.isEnable === true) {
+        if ((createPolygon.isEnable === true) || (createCircle.isEnable === true)) {
             tradeAreaCreateModalToggle();
         }
 
         let addOrDeleteVertexExist = isAddOrDeleteVertexExist(modifyPolygonArea.featureId);
-        if (modifyPolygon.isEnable === true && addOrDeleteVertexExist === true) {
+        if ((modifyPolygon.isEnable === true) && (addOrDeleteVertexExist === true)) {
             tradeAreaModifyModalToggle();
         }
     }
@@ -1742,7 +1744,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         let features = e.features;
-        if (features !== undefined && features.length > 0 && e.originalEvent.button == 0) { // mouse left click
+        if ((features !== undefined) && (features.length > 0) && (e.originalEvent.button == 0)) { // mouse left click
             let { modifyPolygonArea } = btnObjRef;
             let { point: modifyPoint } = modifyPolygonArea;
 
@@ -1777,7 +1779,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             createAStorePoint(e);
         }
         if (createTradeArea.circle.isEnable === true) {
-            if (createTradeArea.circle.storeFeatureId == '' || createTradeArea.circle.storeFeatureId == undefined || createTradeArea.circle.storeFeatureId == null) {
+            if ((createTradeArea.circle.storeFeatureId == '') || (createTradeArea.circle.storeFeatureId == undefined) || (createTradeArea.circle.storeFeatureId == null)) {
                 selectOnStoreErrorModalToggle();
             }
         }
@@ -1791,7 +1793,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function showCompetitorStoreInfoPopup(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent) {
         let event: MapboxGl.MapLayerMouseEvent = (e as any);
-        if (map === undefined || event.features === undefined) {
+        if ((map === undefined) || (event.features === undefined)) {
             return;
         }
 
@@ -1834,14 +1836,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let modifyTradeArea = btnObjRef.modifyPolygonArea;
         let createTradeArea = btnObjRef.createTradeArea;
 
-        if (createTradeArea.polygon.isEnable === true || createTradeArea.circle.isEnable == true) {
+        if ((createTradeArea.polygon.isEnable === true) || (createTradeArea.circle.isEnable == true)) {
             if (createTradeArea.featureId != '') {
                 tradeAreaCreateModalToggle();
             }
         }
 
         if (modifyTradeArea.polygon.isEnable === true) {
-            if (modifyTradeArea.featureId != undefined && modifyTradeArea.featureId != '' && modifyTradeArea.featureId != null) {
+            if ((modifyTradeArea.featureId != undefined) && (modifyTradeArea.featureId != '') && (modifyTradeArea.featureId != null)) {
                 tradeAreaModifyModalToggle();
             }
         }
@@ -1855,7 +1857,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function showAStoreInfoPopup(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent) {
         let event: MapboxGl.MapLayerMouseEvent = (e as any);
-        if (map === undefined || event.features === undefined) {
+        if ((map === undefined) || (event.features === undefined)) {
             return;
         }
 
@@ -1895,7 +1897,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function showCircleModal(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent) {
         let event: MapboxGl.MapLayerMouseEvent = (e as any);
-        if (map === undefined || event.features === undefined) {
+        if ((map === undefined) || (event.features === undefined)) {
             return;
         }
 
@@ -1926,7 +1928,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function showStoreStatisticsModel(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent){
         let event: MapboxGl.MapLayerMouseEvent = (e as any);
-        if (map === undefined || event.features === undefined) {
+        if ((map === undefined)|| (event.features === undefined)) {
             return;
         }
 
@@ -2425,7 +2427,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onHandClick(e: React.MouseEvent, btnId: string) {
-        if (map === undefined) return;
+        if (map === undefined){
+            return;
+        }
         setActiveBtnId(btnId);
     }
 
@@ -2436,7 +2440,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onZoomInClick(e: React.MouseEvent, btnId: string) {
-        if (map === undefined) return;
+        if (map === undefined){
+            return;
+        }
         map.zoomIn();
     }
 
@@ -2447,7 +2453,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onZoomOutClick(e: React.MouseEvent, btnId: string) {
-        if (map === undefined) return;
+        if (map === undefined){
+            return;
+        }
         map.zoomOut();
     }
 
@@ -2647,7 +2655,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @return boolean value
      */
     function isCircleRadiusValid(radiusInMeter : number){
-        if (radiusInMeter < 10 || radiusInMeter > 10000) {
+        if ((radiusInMeter < 10) || (radiusInMeter > 10000)) {
             radiusRestrictionErrorModalToggle();
             return false;
         }
@@ -2660,7 +2668,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param radiusInMeter
      */
     function onCircleConfirm(radiusInMeter: number) {
-        if (map === undefined || isCircleRadiusValid(radiusInMeter) === false) {
+        if ((map === undefined) || (isCircleRadiusValid(radiusInMeter) === false)) {
             return;
         }
 
@@ -2744,7 +2752,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param radiusInMeter
      */
     function onStoreStatisticsConfirm(radiusInMeter : number){
-        if (map === undefined || isCircleRadiusValid(radiusInMeter) === false) {
+        if ((map === undefined) || (isCircleRadiusValid(radiusInMeter) === false)) {
             return;
         }
 
