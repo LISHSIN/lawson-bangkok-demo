@@ -1184,7 +1184,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function filterCompetitorStoreDataWithInPolygonByLayerIds(competitorLayerList: LayerType[], map: MapboxGl.Map, polygonFeatureList: GeoJSON.Feature[]) {
         let filteredCompetitorStoreFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
         if (polygonFeatureList.length > 0) {
-            var competitorStoreFeatureList = map.queryRenderedFeatures(undefined, { layers: competitorLayerList });
+            let competitorStoreFeatureList = map.queryRenderedFeatures(undefined, { layers: competitorLayerList });
             let competitorStoreFeatureListCollection = {
                 "type": "FeatureCollection",
                 "features": competitorStoreFeatureList
@@ -1211,7 +1211,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function filterPopulationDataWithInPolygonByLayerIds(populationLayerList: LayerType[], map: MapboxGl.Map, polygonFeatureList: GeoJSON.Feature[]) {
         let filteredPopulationFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
         if (polygonFeatureList.length > 0) {
-            var populationFeatureList = map.queryRenderedFeatures(undefined, { layers: populationLayerList });
+            let populationFeatureList = map.queryRenderedFeatures(undefined, { layers: populationLayerList });
             let populationFeatureListCollection = {
                 "type": "FeatureCollection",
                 "features": populationFeatureList
@@ -1238,7 +1238,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let filteredStoreFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
         if (polygonFeatureList.length > 0) {
             // get all the features on the map
-            var storeFeatureList = map.queryRenderedFeatures(undefined, { layers: [LayerId.A_STORE_LAYER] });
+            let storeFeatureList = map.queryRenderedFeatures(undefined, { layers: [LayerId.A_STORE_LAYER] });
             let storeFeatureListCollection = {
                 "type": "FeatureCollection",
                 "features": storeFeatureList
@@ -1798,7 +1798,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         let feature = event.features[0];
-        var properties = feature.properties;
+        let properties = feature.properties;
 
         if (properties !== null) {
             let p = properties;
@@ -1862,7 +1862,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         let feature = event.features[0];
-        var properties = feature.properties;
+        let properties = feature.properties;
 
         if (properties !== null) {
             let p = properties;
@@ -2046,7 +2046,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 let updatedFeatureId = drawnFeature.id;
                 let entityList = result.entities;
 
-                for (var i = 0; i < entityList.length; i++) {
+                for (let i = 0; i < entityList.length; i++) {
                     let entity = entityList[i];
                     let individualResults = JSON.parse(entity.crcef_tradeareajson);
                     let featureID = individualResults.id;
@@ -2096,7 +2096,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 let deletableDrawnFeatureId = drawnFeature.id;
                 let entityList = result.entities;
 
-                for (var i = 0; i < entityList.length; i++) {
+                for (let i = 0; i < entityList.length; i++) {
                     let entity = entityList[i];
                     let individualResults = JSON.parse(entity.crcef_tradeareajson);
                     let featureID = individualResults.id;
@@ -2202,12 +2202,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * duplicate "A" store into D635
      */
     function createFilteredAStoreFeaturesApiCall() {
-        var randomNumber = Math.floor(Math.random() * 100) + 1;
+        let randomNumber = Math.floor(Math.random() * 100) + 1;
         let promisesArray = [];
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
         const { bStore: totalBStore, cStore: totalCStore, dStore: totalDStore, eStore: totalEStore, tatal: totalTatal } = aggregatedCompetitorStoreObj;
 
-        for (var i = 0; i < filteredAStoreFeatures.length; i++) {
+        for (let i = 0; i < filteredAStoreFeatures.length; i++) {
             let feature = filteredAStoreFeatures[i];
             if (feature !== null) {
                 let property: any = feature.properties;
@@ -2391,7 +2391,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 let entities = result.entities;
                 let promisesArray = [];
 
-                for (var i = 0; i < entities.length; i++) {
+                for (let i = 0; i < entities.length; i++) {
                     let storeId = entities[i].crcef_lawsonstoreid;
                     let promise = new Promise<void>((resolve, reject) => {
                         Xrm.WebApi

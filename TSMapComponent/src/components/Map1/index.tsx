@@ -116,7 +116,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_ministop").then((result) => {
                 dStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -152,7 +152,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_familymart").then((result) => {
                 cStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -188,7 +188,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_seveneleven").then((result) => {
                 bStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -224,7 +224,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_tescolotusexpress").then((result) => {
                 eStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -263,7 +263,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                 aStoreFeatureList.length = 0;
                 aStoreGeojson.features = [];
 
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     for (let key of Object.keys(entity)) {
                         let entityVal = entity[key];
@@ -453,7 +453,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                 tradeAreaFeatureList.length = 0;
                 mapDraw?.deleteAll();
 
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let individualResults = JSON.parse(result.entities[i].crcef_tradeareajson);
                     let feature = individualResults;
                     feature.properties.risk = true;
