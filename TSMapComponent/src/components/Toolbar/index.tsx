@@ -175,7 +175,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             }
 
             // Set a UI indicator for dragging.
-            canvas.style.cursor = 'grabbing';
+            canvas.style.cursor = "grabbing";
 
             let coords = e.lngLat;
             let newCoords = {
@@ -205,7 +205,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             }
 
             // Set a UI indicator for dragging.
-            canvas.style.cursor = '';
+            canvas.style.cursor = "";
 
             map.off('mousemove', mapEventRef.onMapMouseMove);
             // map.off('touchmove', mapEventRef.onMapMouseMove);
@@ -772,7 +772,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         map.getCanvas().style.cursor = "";
         mapDraw?.changeMode(GlDrawMode.STATIC);
-        modifyPolygonArea.featureId = '';
+        modifyPolygonArea.featureId = "";
         togglePopup(undefined);
     }
 
@@ -783,10 +783,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function resetCreateCircleRefValue() {
         let { createTradeArea } = btnObjRef;
         let { circle: createCircle } = createTradeArea;
-        createCircle.id = '';
+        createCircle.id = "";
         createCircle.center = [0, 0];
         createCircle.radiusInKm = 0;
-        createCircle.storeFeatureId = '';
+        createCircle.storeFeatureId = "";
     }
 
     /**
@@ -798,7 +798,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let { point: modifyPoint } = modifyPolygonArea;
         modifyPoint.latitude = 0;
         modifyPoint.longitude = 0;
-        modifyPolygonArea.featureId = '';
+        modifyPolygonArea.featureId = "";
         mapEventRef.unSaveAStoreFeatureId = undefined;
     }
 
@@ -810,7 +810,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let { modifyPolygonArea, createStatistics } = btnObjRef;
         let { storeReport } = createStatistics;
         storeReport.center = [0, 0];
-        modifyPolygonArea.featureId = '';
+        modifyPolygonArea.featureId = "";
     }
 
     /**
@@ -1364,7 +1364,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         // Deselect logic
-        btnObjRef.modifyPolygonArea.featureId = '';
+        btnObjRef.modifyPolygonArea.featureId = "";
     }
 
     /**
@@ -1740,7 +1740,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         let { canvas } = mapEventRef;
         if (canvas !== undefined) {
-            canvas.style.cursor = 'grab';
+            canvas.style.cursor = "grab";
         }
 
         let features = e.features;
@@ -2896,7 +2896,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let { createTradeArea } = btnObjRef;
 
         // Deselect logic
-        createTradeArea.featureId = '';
+        createTradeArea.featureId = "";
         resetCreateCircleRefValue();
         setUnSaveNewTradeAreaFeatureId(undefined);
         setActiveBtnId('');
@@ -2918,7 +2918,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let { createTradeArea } = btnObjRef;
 
         // Deselect logic
-        createTradeArea.featureId = '';
+        createTradeArea.featureId = "";
         resetCreateCircleRefValue();
         setUnSaveNewTradeAreaFeatureId(undefined);
         setActiveBtnId('');
@@ -2941,7 +2941,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         // Deselect logic
         setUnSaveModifyTradeAreaFeatureId(undefined);
         setActiveBtnId('');
-        btnObjRef.modifyPolygonArea.featureId = '';
+        btnObjRef.modifyPolygonArea.featureId = "";
     }
 
     /**
@@ -2967,7 +2967,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         // Deselect logic
         setUnSaveModifyTradeAreaFeatureId(undefined);
         setActiveBtnId('');
-        btnObjRef.modifyPolygonArea.featureId = '';
+        btnObjRef.modifyPolygonArea.featureId = "";
     }
 
     /**
@@ -2989,7 +2989,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         tradeAreaDeleteModalToggle();
 
         // Deselect logic
-        btnObjRef.modifyPolygonArea.featureId = '';
+        btnObjRef.modifyPolygonArea.featureId = "";
         setActiveBtnId('');
     }
 
@@ -3001,7 +3001,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         tradeAreaDeleteModalToggle();
 
         // Deselect logic
-        btnObjRef.modifyPolygonArea.featureId = '';
+        btnObjRef.modifyPolygonArea.featureId = "";
         setActiveBtnId('');
     }
 
@@ -3073,7 +3073,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let globalContext = Xrm.Utility.getGlobalContext();
         let orgurl = globalContext.getClientUrl();
 
-        let dashboardUrl = '';
+        let dashboardUrl = "";
         if (mockAStoreFeature !== undefined) {
             setMockAStoreFeature(undefined);
             dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=b1262a4d-7743-eb11-a813-000d3a1a2401&dashboardType=1030&pagemode=iframe`;

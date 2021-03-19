@@ -19,11 +19,11 @@ export const AccordionFC: React.FC<AccordionProps> = (props => {
       setIsShown(!isShown);
     }
 
-    let accordionClass = '';
+    let accordionClass = "";
     if (isShown === true) {
-        accordionClass = 'accordion show';
+        accordionClass = "accordion show";
     } else {
-        accordionClass = 'accordion';
+        accordionClass = "accordion";
     }
 
     return (

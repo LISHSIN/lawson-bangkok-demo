@@ -71,19 +71,19 @@ export const LegendFC: React.FC<LegendProps> = (props => {
 
     let legendClasses;
     if ((showAllPopulationLegend === false) && (showAgeAndGenderWisePopulationLegend === false)) {
-      legendClasses = 'legend hide';
+      legendClasses = "legend hide";
     } else {
-      legendClasses = 'legend show';
+      legendClasses = "legend show";
     }
 
-    let allPopulationClasses = '';
+    let allPopulationClasses = "";
     if (showAllPopulationLegend === false) {
-      allPopulationClasses = 'disabled';
+      allPopulationClasses = "disabled";
     }
 
-    let ageAndGenderWisePopulationClasses = '';
+    let ageAndGenderWisePopulationClasses = "";
     if (showAgeAndGenderWisePopulationLegend === false) {
-      ageAndGenderWisePopulationClasses = 'disabled';
+      ageAndGenderWisePopulationClasses = "disabled";
     }
 
     return (
