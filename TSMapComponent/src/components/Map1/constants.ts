@@ -1,4 +1,4 @@
-export const MapboxConfig = {
+export const MAPBOX_CONFIG = {
     /* store-opening-hsin User */
     STYLE: "mapbox://styles/store-opening-hsin/ckkrswsur0j3o17uwfnxmurqu",
 

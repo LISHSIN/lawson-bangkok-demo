@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import * as MapboxGl from 'mapbox-gl';
 import { mapboxReactContext } from 'components/MapboxContext';
-import { MapboxConfig, BaseMapName } from 'components/Map1/constants';
+import { MAPBOX_CONFIG, BaseMapName } from 'components/Map1/constants';
 
 export interface BaseMapProps {
 }
@@ -27,16 +27,16 @@ export const BaseMapFC: React.FC<BaseMapProps> = (props => {
 
     useEffect(() => {
         if (map !== undefined) {
-            let url = MapboxConfig.STYLE;
+            let url = MAPBOX_CONFIG.STYLE;
             switch (selectedMapName) {
                 case BaseMapName.BASIC:
-                    url = MapboxConfig.STYLE;
+                    url = MAPBOX_CONFIG.STYLE;
                     break;
                 case BaseMapName.SATELLITE:
-                    url = MapboxConfig.SATELLITE_STYLE;
+                    url = MAPBOX_CONFIG.SATELLITE_STYLE;
                     break;
                 case BaseMapName.MONOCHROME:
-                    url = MapboxConfig.MONOCHROME_STYLE;
+                    url = MAPBOX_CONFIG.MONOCHROME_STYLE;
                     break;
             }
             setStyleUrl(url);

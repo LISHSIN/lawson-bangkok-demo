@@ -16,7 +16,7 @@ export const ToolbarButtonFC: React.FC<ToolbarButtonProps> = (props => {
      * current button selection and their parent clickhandler
      */
     function onButtonClick(e: React.MouseEvent) {
-        let selectedBtnId = '';
+        let selectedBtnId = "";
         if (btnId !== activeBtnId) {
             selectedBtnId = btnId;
         }
@@ -25,9 +25,9 @@ export const ToolbarButtonFC: React.FC<ToolbarButtonProps> = (props => {
 
     let classNames = "";
     if (btnId === activeBtnId) {
-        classNames = 'toolbar-button active';
+        classNames = "toolbar-button active";
     } else {
-        classNames = 'toolbar-button';
+        classNames = "toolbar-button";
     }
 
     return (

@@ -1,8 +1,8 @@
 import * as MapboxGl from 'mapbox-gl';
 
-export const showMockData: boolean = true;
+export const SHOW_MOCK_DATA: boolean = true;
 
-const featureProperties = {
+const FEATURE_PROPERTIES= {
     "#": 1,
     "Store Name": "Store A",
     "Address(Plus Code)": "H259+4X マカティ フィリピン Metro Manila",
@@ -104,13 +104,13 @@ const featureProperties = {
     "Tatal": 14
 }
 
-export const mockFeatureData: MapboxGl.MapboxGeoJSONFeature = {
+export const MOCK_FEATURE_DATA: MapboxGl.MapboxGeoJSONFeature = {
     "geometry": {
         "type": "Point",
         "coordinates": [121.04659080505371, 14.557665544950098]
     },
     "type": "Feature",
-    "properties": featureProperties,
+    "properties": FEATURE_PROPERTIES,
     "id": 1,
     "layer": {
         "id": "Store",

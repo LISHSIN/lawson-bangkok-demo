@@ -43,7 +43,7 @@ export const LayerListFC: React.FC<LayerListProps> = (props => {
             let navEl = navigationRef.current;
             let parentEl = e.currentTarget.closest(".layerlist-container");
 
-            if (el !== null && navEl !== null) {
+            if ((el !== null) && (navEl !== null)) {
                 let hasActive = el.classList.contains('active') ? true : false;
                 if (hasActive) {
                     el.classList.remove('active');

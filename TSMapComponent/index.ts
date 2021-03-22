@@ -8,12 +8,12 @@ type DataSet = ComponentFramework.PropertyTypes.DataSet;
 
 export class TSMapComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
-  private contextObj: ComponentFramework.Context<IInputs>;
+  private _contextObj: ComponentFramework.Context<IInputs>;
   
   // reference to the container div
-  private theContainer: HTMLDivElement;
+  private _theContainer: HTMLDivElement;
 
-  private props: AppProps = {
+  private _props: AppProps = {
   }
 
   /**
@@ -35,7 +35,7 @@ export class TSMapComponent implements ComponentFramework.StandardControl<IInput
   public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container:HTMLDivElement)
   {
     // Add control initialization code
-    this.theContainer = container;
+    this._theContainer = container;
   }
 
 
@@ -45,22 +45,22 @@ export class TSMapComponent implements ComponentFramework.StandardControl<IInput
    */
   public updateView(context: ComponentFramework.Context<IInputs>): void
   {
-    this.contextObj = context;
+    this._contextObj = context;
 
     if (!context.parameters.dataSetGrid.loading) {
 
       // Get sorted columns on View
       let columnsOnView = this.getSortedColumnsOnView(context);
 
-      if (!columnsOnView || columnsOnView.length === 0) {
+      if ((!columnsOnView) ||(columnsOnView.length === 0)) {
         return;
       }
     }
     // Render the React component into the div container
     ReactDOM.render(
       // Create the React component
-      React.createElement(App, this.props),
-      this.theContainer
+      React.createElement(App, this._props),
+      this._theContainer
     );
   }
 
@@ -80,7 +80,7 @@ export class TSMapComponent implements ComponentFramework.StandardControl<IInput
   public destroy(): void
   {
     // Add code to cleanup control if necessary
-    ReactDOM.unmountComponentAtNode(this.theContainer);
+    ReactDOM.unmountComponentAtNode(this._theContainer);
   }
 
   /**

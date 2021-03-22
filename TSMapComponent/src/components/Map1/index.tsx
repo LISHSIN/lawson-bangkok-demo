@@ -15,7 +15,7 @@ import dStoreImg from './images/dStore.png';
 import eStoreImg from './images/eStore.png';
 import aStoreSelectedImg from './images/aStoreSelected.png';
 
-import { MapboxConfig, LayerId, SourceId, ImageId, GlDrawColorId, GlDrawPaintPropertyId, GlDrawLayerId, GlDrawMode } from './constants';
+import { MAPBOX_CONFIG, LayerId, SourceId, ImageId, GlDrawColorId, GlDrawPaintPropertyId, GlDrawLayerId, GlDrawMode } from './constants';
 import { mapboxReactContext } from 'components/MapboxContext';
 import { layerReactContext, LayerType } from 'components/LayerContext';
 import { showHideTradeAreaLayer } from 'components/LayerList/constants';
@@ -24,7 +24,7 @@ import { initialAStoreFeatureProperty, AStoreFeaturePropertyInfo, AStoreGeojsonI
 import { mockCompititorBStoreFeatureList, mockCompititorCStoreFeatureList, mockCompititorDStoreFeatureList, mockCompititorEStoreFeatureList, mockFeatureList, mockTradeAreaFeatureList } from './mock';
 
 const Mapbox = ReactMapboxGl({
-    accessToken: MapboxConfig.ACCESS_TOKEN,
+    accessToken: MAPBOX_CONFIG.ACCESS_TOKEN,
 });
 
 export interface Map1Props {
@@ -96,7 +96,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
     }, [mapStyle, mapDraw]);
 
     useEffect(() => {
-        if (mapContext !== undefined && isRefreshAllLayers === true) {
+        if ((mapContext !== undefined) && (isRefreshAllLayers === true)) {
             retriveAStoreDataFromD365(mapContext);
             retriveTradeAreaDataFromD365(mapContext);
             retriveBStoreDataFromD365(mapContext);
@@ -116,7 +116,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_ministop").then((result) => {
                 dStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -152,7 +152,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_familymart").then((result) => {
                 cStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -188,7 +188,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_seveneleven").then((result) => {
                 bStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -224,7 +224,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_tescolotusexpress").then((result) => {
                 eStoreGeojson.features = [];
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     let geojson = {
                         'type': 'Feature',
@@ -263,7 +263,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                 aStoreFeatureList.length = 0;
                 aStoreGeojson.features = [];
 
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let entity = result.entities[i];
                     for (let key of Object.keys(entity)) {
                         let entityVal = entity[key];
@@ -453,7 +453,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                 tradeAreaFeatureList.length = 0;
                 mapDraw?.deleteAll();
 
-                for (var i = 0; i < result.entities.length; i++) {
+                for (let i = 0; i < result.entities.length; i++) {
                     let individualResults = JSON.parse(result.entities[i].crcef_tradeareajson);
                     let feature = individualResults;
                     feature.properties.risk = true;
@@ -491,7 +491,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let aStoreSourceId = SourceId.A_STORE_SOURCE;
 
         map.loadImage(aStoreImg, (error: any, image: any) => {
-            if (error) return;
+            if (error){
+                return;
+            }
 
             let hasStoreImage = map.hasImage(aStoreIconId);
             if (hasStoreImage === false) {
@@ -537,7 +539,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let aStoreSelectedSourceId = SourceId.A_STORE_SELECTION_SOURCE;
 
         map.loadImage(aStoreSelectedImg, (error: any, image: any) => {
-            if (error) return;
+            if (error){
+                return;
+            }
 
             let hasStoreImage = map.hasImage(aStoreSelectedIconId);
             if (hasStoreImage === false) {
@@ -582,7 +586,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let cStoreSourceId = SourceId.C_STORE_SOURCE;
 
         map.loadImage(cStoreImg, (error: any, image: any) => {
-            if (error) return;
+            if (error){
+                return;
+            }
 
             let hasStoreImage = map.hasImage(cStoreIconId);
             if (hasStoreImage === false) {
@@ -628,7 +634,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let bStoreSourceId = SourceId.B_STORE_SOURCE;
 
         map.loadImage(bStoreImg, (error: any, image: any) => {
-            if (error) return;
+            if (error){
+                return;
+            }
 
             let hasStoreImage = map.hasImage(bStoreIconId);
             if (hasStoreImage === false) {
@@ -674,7 +682,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let dStoreSourceId = SourceId.D_STORE_SOURCE;
 
         map.loadImage(dStoreImg, (error: any, image: any) => {
-            if (error) return;
+            if (error){
+                return;
+            }
 
             let hasStoreImage = map.hasImage(dStoreIconId);
             if (hasStoreImage === false) {
@@ -720,7 +730,9 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let eStoreSourceId = SourceId.E_STORE_SOURCE;
 
         map.loadImage(eStoreImg, (error: any, image: any) => {
-            if (error) return;
+            if (error){
+                return;
+            }
 
             let hasStoreImage = map.hasImage(eStoreIconId);
             if (hasStoreImage === false) {
@@ -772,7 +784,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
      */
     function addGeoCoder(map: MapboxGl.Map) {
         const geocoder = new MapboxGeocoder({
-            accessToken: MapboxConfig.ACCESS_TOKEN,
+            accessToken: MAPBOX_CONFIG.ACCESS_TOKEN,
             mapboxgl: MapboxGl
         });
         geocoder.on('result', function (event: any) {
