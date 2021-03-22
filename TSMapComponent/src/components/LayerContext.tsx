@@ -7,7 +7,7 @@ import { LayerId } from './Map1/constants';
 
 export type LayerType = LayerId.A_STORE_LAYER | LayerId.TRADE_AREA_LAYER | LayerId.B_STORE_LAYER | LayerId.C_STORE_LAYER | LayerId.D_STORE_LAYER | LayerId.E_STORE_LAYER | LayerId.POPULATION_COUNT | LayerId.TOTAL_MALE_AND_FEMALE_POPULATION | LayerId.TOTAL_MALE_AND_FEMALE_POPULATION_AS_POLYGON | LayerId.TOTAL_MALE_POPULATION | LayerId.TOTAL_MALE_POPULATION_AS_POLYGON | LayerId.TOTAL_FEMALE_POPULATION | LayerId.TOTAL_FEMALE_POPULATION_AS_POLYGON | LayerId.MALE_POPULATION_FOR_AGE0 | LayerId.MALE_POPULATION_FOR_AGE1 | LayerId.MALE_POPULATION_FOR_AGE5 | LayerId.MALE_POPULATION_FOR_AGE10 | LayerId.MALE_POPULATION_FOR_AGE15 | LayerId.MALE_POPULATION_FOR_AGE20 | LayerId.MALE_POPULATION_FOR_AGE25 | LayerId.MALE_POPULATION_FOR_AGE30 | LayerId.MALE_POPULATION_FOR_AGE35 | LayerId.MALE_POPULATION_FOR_AGE40 | LayerId.MALE_POPULATION_FOR_AGE45 | LayerId.MALE_POPULATION_FOR_AGE50 | LayerId.MALE_POPULATION_FOR_AGE55 | LayerId.MALE_POPULATION_FOR_AGE60 | LayerId.MALE_POPULATION_FOR_AGE65 | LayerId.MALE_POPULATION_FOR_AGE70 | LayerId.MALE_POPULATION_FOR_AGE75 | LayerId.MALE_POPULATION_FOR_AGE80 | LayerId.FEMALE_POPULATION_FOR_AGE0 | LayerId.FEMALE_POPULATION_FOR_AGE1 | LayerId.FEMALE_POPULATION_FOR_AGE5 | LayerId.FEMALE_POPULATION_FOR_AGE10 | LayerId.FEMALE_POPULATION_FOR_AGE15 | LayerId.FEMALE_POPULATION_FOR_AGE20 | LayerId.FEMALE_POPULATION_FOR_AGE25 | LayerId.FEMALE_POPULATION_FOR_AGE30 | LayerId.FEMALE_POPULATION_FOR_AGE35 | LayerId.FEMALE_POPULATION_FOR_AGE40 | LayerId.FEMALE_POPULATION_FOR_AGE45 | LayerId.FEMALE_POPULATION_FOR_AGE50 | LayerId.FEMALE_POPULATION_FOR_AGE55 | LayerId.FEMALE_POPULATION_FOR_AGE60 | LayerId.FEMALE_POPULATION_FOR_AGE65 | LayerId.FEMALE_POPULATION_FOR_AGE70 | LayerId.FEMALE_POPULATION_FOR_AGE75 | LayerId.FEMALE_POPULATION_FOR_AGE80 |  LayerId.A_STORE_SELECTION_LAYER;
 
-export type LayersContextInfo = {
+export type LayersContextInfoType = {
     [key in LayerType]: LayersInfo
 }
 
@@ -27,7 +27,7 @@ export const LayerContext: React.FC<LayerContextProps> = (props) => {
     const [visibleLayers, setVisibleLayers] = useState<LayerType[]>([]);
 
     // Ref Variables
-    const { current: layerObjRef } = useRef<LayersContextInfo>(globalContextValue.layerObj);
+    const { current: layerObjRef } = useRef<LayersContextInfoType>(globalContextValue.layerObj);
 
     /**
      * Update the visible layers array
@@ -73,7 +73,7 @@ const LayerContextInitializer: React.FC<LayerContextInitializerProps> = (props) 
 }
 
 export interface ContextType {
-    layerObj: LayersContextInfo;
+    layerObj: LayersContextInfoType;
     visibleLayers: LayerType[];
     updateVisibleLayers: (list: LayerType[]) => void;
     isRefreshAllLayers: boolean;
