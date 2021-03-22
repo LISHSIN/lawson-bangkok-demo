@@ -15,7 +15,7 @@ import dStoreImg from './images/dStore.png';
 import eStoreImg from './images/eStore.png';
 import aStoreSelectedImg from './images/aStoreSelected.png';
 
-import { MapboxConfig, LayerId, SourceId, ImageId, GlDrawColorId, GlDrawPaintPropertyId, GlDrawLayerId, GlDrawMode } from './constants';
+import { MAPBOX_CONFIG, LayerId, SourceId, ImageId, GlDrawColorId, GlDrawPaintPropertyId, GlDrawLayerId, GlDrawMode } from './constants';
 import { mapboxReactContext } from 'components/MapboxContext';
 import { layerReactContext, LayerType } from 'components/LayerContext';
 import { showHideTradeAreaLayer } from 'components/LayerList/constants';
@@ -24,7 +24,7 @@ import { initialAStoreFeatureProperty, AStoreFeaturePropertyInfo, AStoreGeojsonI
 import { mockCompititorBStoreFeatureList, mockCompititorCStoreFeatureList, mockCompititorDStoreFeatureList, mockCompititorEStoreFeatureList, mockFeatureList, mockTradeAreaFeatureList } from './mock';
 
 const Mapbox = ReactMapboxGl({
-    accessToken: MapboxConfig.ACCESS_TOKEN,
+    accessToken: MAPBOX_CONFIG.ACCESS_TOKEN,
 });
 
 export interface Map1Props {
@@ -784,7 +784,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
      */
     function addGeoCoder(map: MapboxGl.Map) {
         const geocoder = new MapboxGeocoder({
-            accessToken: MapboxConfig.ACCESS_TOKEN,
+            accessToken: MAPBOX_CONFIG.ACCESS_TOKEN,
             mapboxgl: MapboxGl
         });
         geocoder.on('result', function (event: any) {
