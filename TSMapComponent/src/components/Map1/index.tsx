@@ -491,7 +491,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let aStoreSourceId = SourceId.A_STORE_SOURCE;
 
         map.loadImage(aStoreImg, (error: any, image: any) => {
-            if (error){
+            if (error) {
                 return;
             }
 
@@ -539,7 +539,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let aStoreSelectedSourceId = SourceId.A_STORE_SELECTION_SOURCE;
 
         map.loadImage(aStoreSelectedImg, (error: any, image: any) => {
-            if (error){
+            if (error) {
                 return;
             }
 
@@ -586,7 +586,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let cStoreSourceId = SourceId.C_STORE_SOURCE;
 
         map.loadImage(cStoreImg, (error: any, image: any) => {
-            if (error){
+            if (error) {
                 return;
             }
 
@@ -634,7 +634,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let bStoreSourceId = SourceId.B_STORE_SOURCE;
 
         map.loadImage(bStoreImg, (error: any, image: any) => {
-            if (error){
+            if (error) {
                 return;
             }
 
@@ -682,7 +682,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let dStoreSourceId = SourceId.D_STORE_SOURCE;
 
         map.loadImage(dStoreImg, (error: any, image: any) => {
-            if (error){
+            if (error) {
                 return;
             }
 
@@ -730,7 +730,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
         let eStoreSourceId = SourceId.E_STORE_SOURCE;
 
         map.loadImage(eStoreImg, (error: any, image: any) => {
-            if (error){
+            if (error) {
                 return;
             }
 

@@ -818,7 +818,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * "A" store selected layer data
      */
     function removeAStoreSelectedIcon() {
-        if (map === undefined){
+        if (map === undefined) {
             return;
         }
 
@@ -1845,7 +1845,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function onMapRightClick(e:any) {
         e.preventDefault();
-        if (map === undefined){
+        if (map === undefined) {
             return;
         }
         let modifyTradeArea = btnObjRef.modifyPolygonArea;
@@ -1943,7 +1943,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function showStoreStatisticsModel(map: MapboxGl.Map, e: MapboxGl.MapLayerMouseEvent){
         let event: MapboxGl.MapLayerMouseEvent = (e as any);
-        if ((map === undefined)|| (event.features === undefined)) {
+        if ((map === undefined) || (event.features === undefined)) {
             return;
         }
 
@@ -2442,7 +2442,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onHandClick(e: React.MouseEvent, btnId: string) {
-        if (map === undefined){
+        if (map === undefined) {
             return;
         }
         setActiveBtnId(btnId);
@@ -2455,7 +2455,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onZoomInClick(e: React.MouseEvent, btnId: string) {
-        if (map === undefined){
+        if (map === undefined) {
             return;
         }
         map.zoomIn();
@@ -2468,7 +2468,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param selected button id
      */
     function onZoomOutClick(e: React.MouseEvent, btnId: string) {
-        if (map === undefined){
+        if (map === undefined) {
             return;
         }
         map.zoomOut();

@@ -4,7 +4,6 @@ import * as ReactDOM from "react-dom";
 import App, { AppProps } from "./src/App";
 
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
-type DataSet = ComponentFramework.PropertyTypes.DataSet;
 
 export class TSMapComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
