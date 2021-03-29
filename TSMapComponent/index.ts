@@ -51,7 +51,7 @@ export class TSMapComponent implements ComponentFramework.StandardControl<IInput
       // Get sorted columns on View
       let columnsOnView = this.getSortedColumnsOnView(context);
 
-      if ((!columnsOnView) ||(columnsOnView.length === 0)) {
+      if ((!columnsOnView) || (columnsOnView.length === 0)) {
         return;
       }
     }
