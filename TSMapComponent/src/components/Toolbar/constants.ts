@@ -215,7 +215,7 @@ export enum TradeAreaActionId {
     DELETE = "delete",
 }
 
-export enum StoreActionId {
+export enum AStoreActionId {
     CREATE = "create",
 
     UPDATE = "update",

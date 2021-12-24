@@ -21,13 +21,13 @@ import CustomPopupFC, { usePopup, AStorePopupFC } from 'components/CustomPopup';
 import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC } from 'components/Modal';
 
 import { CircleInfo } from './module';
-import { ButtonId, TradeAreaActionId, StoreActionId, TooltipName } from './constants';
+import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName } from './constants';
 import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'components/Map1/constants';
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 import CompetitorStorePopupFC from 'components/CustomPopup/CompetitorStorePopup';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
-type StoreActionType = StoreActionId.CREATE | StoreActionId.UPDATE | StoreActionId.DELETE;
+type AStoreActionType = AStoreActionId.CREATE | AStoreActionId.UPDATE | AStoreActionId.DELETE;
 
 export interface ToolbarProps {
 }
@@ -52,7 +52,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [unSaveModifyTradeAreaFeatureId, setUnSaveModifyTradeAreaFeatureId] = useState<string | undefined>(undefined);
     const [storeStatisticsCircleFeatureId, setStoreStatisticsCircleFeatureId] = useState<string | undefined>(undefined);
 
-    const [aStoreApiActionType, setAStoreApiActionType] = useState<StoreActionType | undefined>(undefined);
+    const [aStoreApiActionType, setAStoreApiActionType] = useState<AStoreActionType | undefined>(undefined);
     const [aStoreFeature, setAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
     const [mockAStoreFeature, setMockAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
 
@@ -434,13 +434,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     useEffect(() => {
         switch (aStoreApiActionType) {
-            case StoreActionId.CREATE:
+            case AStoreActionId.CREATE:
                 createAStoreApiCall(aStoreFeature);
                 break;
-            case StoreActionId.UPDATE:
+            case AStoreActionId.UPDATE:
                 updateAStoreApiCall(aStoreFeature);
                 break;
-            case StoreActionId.DELETE:
+            case AStoreActionId.DELETE:
                 deleteAStoreApiCall(aStoreFeature);
                 break;
         }
@@ -1287,7 +1287,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param action name
      * @param geojson feature
      */
-    function triggerAStoreApiActions(actionName: StoreActionType, feature: GeoJSON.Feature) {
+    function triggerAStoreApiActions(actionName: AStoreActionType, feature: GeoJSON.Feature) {
         setAStoreApiActionType(actionName);
         setAStoreFeature(JSON.parse(JSON.stringify(feature)));
     }
@@ -2012,7 +2012,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
             };
 
-            triggerAStoreApiActions(StoreActionId.CREATE, geojson as any);
+            triggerAStoreApiActions(AStoreActionId.CREATE, geojson as any);
         }
     }
 
@@ -2836,7 +2836,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             // set geometry coords
             (updateAStoreFeature.geometry as GeoJSON.Point).coordinates = [longitude, latitude];
             // trigger update api
-            triggerAStoreApiActions(StoreActionId.UPDATE, updateAStoreFeature);
+            triggerAStoreApiActions(AStoreActionId.UPDATE, updateAStoreFeature);
         } else {
             console.error('onStoreModifyConfirm error');
         }
@@ -2871,7 +2871,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         let storeFeature = getAStoreFeatureById(deleteFeatureId);
         if (storeFeature != undefined) {
-            triggerAStoreApiActions(StoreActionId.DELETE, storeFeature);
+            triggerAStoreApiActions(AStoreActionId.DELETE, storeFeature);
         } else {
             console.error('onStoreDeleteConfirm error');
         }
