@@ -1,23 +1,24 @@
 import React from 'react';
 import "./index.css";
 
-interface VerticesRestrictionErrorModalProps {
+interface nearApiErrorModalProps {
     onConfirm: () => void;
+    message: string | undefined;
 }
 
-export const VerticesRestrictionErrorModalFC: React.FC<VerticesRestrictionErrorModalProps> = (props => {
+export const NearApiErrorModalFC: React.FC<nearApiErrorModalProps> = (props => {
     /**
      * This function is used to close
-     * the vertices restriction error modal
+     * the near api error modal
      */
     function onConfirmClick() {
         props.onConfirm();
     }
 
     return (
-        <div className="vertices-restriction-error-modal">
+        <div className="near-api-error-modal">
             <div className="row">
-                <div className="message">Specify the number of polygon vertices within the range of 3 to 100.</div>
+                <div className="message">{props.message}</div>
             </div>
             <div className="buttons">
                 <button className="ok" onClick={onConfirmClick}>Ok</button>
@@ -26,4 +27,4 @@ export const VerticesRestrictionErrorModalFC: React.FC<VerticesRestrictionErrorM
     );
 });
 
-export default VerticesRestrictionErrorModalFC;
+export default NearApiErrorModalFC;

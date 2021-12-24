@@ -12,10 +12,18 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    outline: 0;
     z-index: 700;
     width: inherit;
-    outline: 0;
+    transform: translate(-50%, -50%);
+}
+.App .modal-wrapper[data-modal-id="competitorReport"] {
+    right: 1px;
+    bottom: 1px;
+    top: unset;
+    left: unset;
+    height: inherit;
+    transform: none;
 }
 
 .App .modal-container {
@@ -23,6 +31,7 @@
     background: white;
     position: relative;
     margin: auto;
+    height: inherit;
 }
 
 .App .modal-header {
@@ -53,7 +62,8 @@
 .App .modal-content {
     color: #000000;
     padding: 10px;
-    max-height: 30rem;
+    max-height: 39.3rem;
     overflow-x: hidden;
     overflow-y: auto;
+    height: inherit;
 }

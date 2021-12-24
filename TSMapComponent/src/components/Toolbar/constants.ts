@@ -170,6 +170,8 @@ export enum ButtonId {
 
     A_STORE_CHART = "StoreStatistics",
 
+    COMPETITOR_CHART = "CompetitorAnalysis",
+
     REFRESH = "refresh",
 }
 
@@ -204,6 +206,8 @@ export enum TooltipName {
 
     A_STORE_CHART = "Store Statistics",
 
+    COMPETITOR_CHART = "Competitor analysis",
+
     REFRESH = "Refresh",
 }
 
@@ -221,4 +225,16 @@ export enum AStoreActionId {
     UPDATE = "update",
 
     DELETE = "delete",
+}
+
+export enum PowerBIReportType {
+    TRADE_AREA = "Trade area statistics",
+
+    STORE = "A store statistics",
+}
+
+export enum ReportTypeValue {
+    STATISTICS = 657950000,
+
+    COMPETITOR = 657950001
 }

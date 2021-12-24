@@ -15,7 +15,7 @@ export const UnSavedShapeErrorModalFC: React.FC<UnSavedShapeErrorModalProps> = (
     }
 
     return (
-        <div className="attribute-error-modal">
+        <div className="unsaved-shape-error-modal">
             <div className="row">
                 <div className="message">The edit result of the figure could not be saved.</div>
                 <div className="message">If restarting the application does not help, please contact your administrator.</div>

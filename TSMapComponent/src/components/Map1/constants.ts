@@ -8,6 +8,7 @@ export const MAPBOX_CONFIG = {
 
     ACCESS_TOKEN: "pk.eyJ1Ijoic3RvcmUtb3BlbmluZy1oc2luIiwiYSI6ImNra3FqM2M0ejBmZjYyeHBmcmJhd2drdzgifQ.He2KZ2j5Rdr84gAMz22Ijg",
 
+    /* bangkok */
     CENTER: [100.52302, 13.75615] as [number, number],
 
     ZOOM: [12] as [number],

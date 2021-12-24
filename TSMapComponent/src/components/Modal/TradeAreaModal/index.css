@@ -1,0 +1,63 @@
+.create-trade-area-modal {
+    border-radius: 5px;
+}
+
+.create-trade-area-modal input[type=text],
+.create-trade-area-modal select,
+.create-trade-area-modal textarea {
+    width: 92%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.create-trade-area-modal label {
+    padding: 3px 6px 6px 0;
+    display: inline-block;
+}
+
+.create-trade-area-modal .row {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+/* Clear floats after the columns */
+.create-trade-area-modal .row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.create-trade-area-modal .col-35 {
+    float: left;
+    width: 35%;
+    margin-top: 6px;
+}
+
+.create-trade-area-modal .col-65 {
+    float: left;
+    width: 65%;
+    margin-top: 6px;
+}
+
+.create-trade-area-modal .buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.create-trade-area-modal .buttons button {
+    margin-left: 10px;
+}
+.create-trade-area-modal .buttons button:first-child {
+    margin-left: 0;
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+    .create-trade-area-modal .col-35,
+    .create-trade-area-modal .col-65 {
+        width: 100%;
+        margin-top: 0;
+    }
+}

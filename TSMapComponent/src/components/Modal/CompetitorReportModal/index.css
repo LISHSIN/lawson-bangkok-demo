@@ -1,0 +1,164 @@
+.App .competitor-report-modal {
+    width: 400px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    height: inherit;
+}
+
+.App .competitor-report-modal .list-of-history-data-container,
+.App .competitor-report-modal .new-report-container {
+    padding-right: 10px;
+}
+
+.App .competitor-report-modal .new-report-container {
+    margin-top: 10px;
+}
+.App .competitor-report-modal .new-report-container > div {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .row .show-delete-btn-container {
+    float: left;
+    width: 40%;
+    margin-top: 6px;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items {
+    width: initial;
+    overflow: auto;
+    margin-left: 20px;
+    border: 1px solid #000;
+    height: 200px;
+    min-height: 100px;
+    max-height: 165px;
+}
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items {
+    border: none;
+    max-height: 195px;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items .no-data,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .no-data {
+    font-size: 0.9rem;
+    margin-left: 20px;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items .row,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .row {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    margin-right: 6px;
+}
+
+/* Clear floats after the columns */
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items .row:after,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items .input-checkbox-container,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .input-radio-container {
+    float: left;
+    width: 60%;
+    margin-top: 6px;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items .input-checkbox-container {
+    width: 95%;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items input[type=checkbox],
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items input[type=radio] {
+    width: auto;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items label,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items label {
+    padding: 0;
+    margin-bottom: -2px;
+    display: inline-block;
+    cursor: pointer;
+}
+.App .competitor-report-modal .new-report-container .list-of-trade-area-container .list-of-trade-area-items label.ellipsis,
+.App .competitor-report-modal .list-of-history-data-container .list-of-historical-items label.ellipsis {
+    white-space: nowrap;
+    width: 85%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.App .competitor-report-modal .new-report-container .generate-new-report-container input[type=text] {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.App .competitor-report-modal .new-report-container .generate-new-report-container .row,
+.App .competitor-report-modal .new-report-container .date-container .date-row {
+    width: initial;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 7px;
+    margin-left: 20px;
+    justify-content: space-between;
+}
+
+.App .competitor-report-modal .new-report-container .date-container .date-row .start-date input[type=date],
+.App .competitor-report-modal .new-report-container .date-container .date-row .end-date input[type=date] {
+    width: initial;
+}
+
+.App .competitor-report-modal .new-report-container .generate-new-report-container .label-column {
+    flex: 20%;
+    margin-bottom: 3px;
+}
+
+.App .competitor-report-modal button {
+    margin-left: 10px;
+    background-color: darkslateblue;
+    color: white;
+    border: 0;
+    padding: 5px 10px;
+}
+.App .competitor-report-modal button:disabled {
+    opacity: 0.5;
+}
+
+.App .competitor-report-modal .show-delete-btn-container button:first-child {
+    margin-left: 0;
+}
+.App .competitor-report-modal .show-delete-btn-container button.show {
+    margin-left: 10px;
+}
+
+.App .competitor-report-modal button.generate-new-report-btn {
+    padding: 7px 10px;
+}
+
+
+@media screen and (max-width: 600px) {
+    .App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .show-delete-btn-container,
+    .App .competitor-report-modal .list-of-history-data-container .list-of-historical-items .input-radio-container {
+        width: 100%;
+        margin-top: 0;
+    }
+    .App .competitor-report-modal .new-report-container .generate-new-report-container .label-column,
+    .App .competitor-report-modal .new-report-container .generate-new-report-container .row .input-column,
+    .App .competitor-report-modal .new-report-container .generate-new-report-container .row .button-column {
+        flex: 100%;
+        margin-bottom: 5px;
+    }
+    .App .competitor-report-modal .new-report-container .generate-new-report-container .row .button-column {
+        margin-top: 15px;
+        text-align: center;
+    }
+}

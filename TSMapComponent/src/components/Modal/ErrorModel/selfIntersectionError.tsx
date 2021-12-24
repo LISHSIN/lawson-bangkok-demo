@@ -15,7 +15,7 @@ export const SelfIntersectionErrorModalFC: React.FC<SelfIntersectionErrorModalPr
     }
 
     return (
-        <div className="attribute-error-modal">
+        <div className="self-intersection-error-modal">
             <div className="row">
                 <div className="message">The polygon contains self-intersections.</div>
                 <div className="message">Specify a figure without self-intersection.</div>

@@ -1,17 +1,38 @@
 .App .attribute-error-modal .message,
-.App .crm-license-error-modal .message {
+.App .crm-license-error-modal .message,
+.App .vertices-restriction-error-modal .message,
+.App .select-on-store-error-modal .message,	
+.App .self-intersection-error-modal .message,
+.App .near-api-error-modal .message,
+.App .statistics-report-error-modal .message,
+.App .unsaved-shape-error-modal .message,
+.App .vertices-restriction-error-modal .message {
     font-size: 0.9rem;
     margin-bottom: 10px;
     text-align: center;
 }
 
 .App .attribute-error-modal .buttons,
-.App .crm-license-error-modal .buttons {
+.App .crm-license-error-modal .buttons,
+.App .vertices-restriction-error-modal .buttons,
+.App .select-on-store-error-modal .buttons,	
+.App .self-intersection-error-modal .buttons,
+.App .near-api-error-modal .buttons,
+.App .statistics-report-error-modal .buttons,
+.App .unsaved-shape-error-modal .buttons,
+.App .vertices-restriction-error-modal .buttons {
     display: flex;
     justify-content: center;
 }
 
 .App .attribute-error-modal .buttons button,
-.App .crm-license-error-modal .buttons button {
+.App .crm-license-error-modal .buttons button,
+.App .vertices-restriction-error-modal .buttons button,
+.App .select-on-store-error-modal .buttons button,	
+.App .self-intersection-error-modal .buttons button,
+.App .near-api-error-modal .buttons button,
+.App .statistics-report-error-modal .buttons button,
+.App .unsaved-shape-error-modal .buttons button,
+.App .vertices-restriction-error-modal .buttons button {
     width: 3rem;
 }

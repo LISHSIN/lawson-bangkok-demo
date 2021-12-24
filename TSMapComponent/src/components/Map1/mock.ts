@@ -192,6 +192,7 @@ export const mockTradeAreaFeatureList: GeoJSON.Feature[] = [
         "properties": {
             circleRadius: 0.444,
             risk: true,
+            name: "Trade Area 1"
         },
     },
     {
@@ -209,6 +210,7 @@ export const mockTradeAreaFeatureList: GeoJSON.Feature[] = [
         "type": "Feature",
         "properties": {
             risk: true,
+            name: "Trade Area 2"
         },
     },
 ];

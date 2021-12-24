@@ -4,10 +4,12 @@ import "./index.css";
 
 import { usePopup } from './usePopup';
 import AStorePopupFC from './AStorePopup';
+import CompetitorStorePopupFC from './CompetitorStorePopup';
 
 export {
     usePopup,
-    AStorePopupFC
+    AStorePopupFC,
+    CompetitorStorePopupFC
 }
 
 export interface CustomPopupProps {

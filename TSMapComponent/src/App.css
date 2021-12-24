@@ -69,6 +69,7 @@
 }
 
 .App .wrapper {
+    height: inherit;
     position: relative;
 }
 .App .toolbar-container {
@@ -86,7 +87,7 @@
 }
 .App .button-group-grid {
     padding: 10px;
-    grid-template-columns: 182px 152px 182px 102px 62px;
+    grid-template-columns: 182px 152px 182px 152px 62px;
 }
 .App .toolbar-button {
     width: 40px;

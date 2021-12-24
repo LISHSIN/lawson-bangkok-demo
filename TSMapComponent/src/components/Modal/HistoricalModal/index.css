@@ -1,0 +1,205 @@
+.App .list-of-historical-modal {
+    width: 420px;
+    border-radius: 5px;
+}
+
+.App .list-of-historical-modal .list-of-historical-items {
+    width: 100%;
+    overflow: auto;
+    max-height: 220px;
+}
+
+.App .list-of-historical-modal .list-of-historical-items input[type=radio] {
+    width: auto;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.App .list-of-historical-modal .list-of-historical-items label {
+    padding: 0;
+    margin-bottom: -2px;
+    display: inline-block;
+    cursor: pointer;
+}
+.App .list-of-historical-modal .list-of-historical-items label.ellipsis {
+    white-space: nowrap;
+    width: 85%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.App .list-of-historical-modal .list-of-historical-items .row {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+/* Clear floats after the columns */
+.App .list-of-historical-modal .list-of-historical-items .row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.App .list-of-historical-modal .list-of-historical-items .input-radio-container {
+    float: left;
+    width: 65%;
+    margin-top: 6px;
+}
+
+.App .list-of-historical-modal .list-of-historical-items .show-delete-btn-container {
+    float: left;
+    width: 35%;
+    margin-top: 6px;
+}
+
+.App .list-of-historical-modal .list-of-historical-items .no-history-data {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.App .list-of-historical-modal .generate-new-report-container {
+    width: 100%;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.App .list-of-historical-modal .generate-new-report-container input[type=text],
+.App .list-of-historical-modal .generate-new-report-container select,
+.App .list-of-historical-modal .generate-new-report-container textarea {
+    width: 92%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.App .list-of-historical-modal .generate-new-report-container .row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.App .list-of-historical-modal .generate-new-report-container .row .label-column {
+    flex: 20%;
+}
+.App .list-of-historical-modal .generate-new-report-container .row .input-column {
+    flex: 38%;
+}
+.App .list-of-historical-modal .generate-new-report-container .row .button-column {
+    flex: 38%;
+}
+
+.App .list-of-historical-modal button {
+    margin-left: 10px;
+    background-color: darkslateblue;
+    color: white;
+    border: 0;
+    padding: 5px 10px;
+}
+.App .list-of-historical-modal button:disabled {
+    opacity: 0.5;
+}
+
+.App .list-of-historical-modal .show-delete-btn-container button:first-child {
+    margin-left: 0;
+}
+.App .list-of-historical-modal .show-delete-btn-container button.show {
+    margin-left: 10px;
+}
+
+.App .list-of-historical-modal button.generate-new-report-btn {
+    padding: 7px 10px;
+}
+
+.App .list-of-historical-modal .info-container {
+    font-size: 0.9rem;
+    color: #000000;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.App .list-of-historical-modal .info-icon {
+    color: darkslateblue;
+    margin-right: 5px;
+}
+
+.saveFootfall-modal {
+    border-radius: 5px;
+}
+
+.saveFootfall-modal input[type=text],
+.saveFootfall-modal select,
+.saveFootfall-modal textarea {
+    width: 92%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.saveFootfall-modal label {
+    padding: 3px 6px 6px 0;
+    display: inline-block;
+}
+
+.saveFootfall-modal .row {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+/* Clear floats after the columns */
+.saveFootfall-modal .row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.saveFootfall-modal .col-35 {
+    float: left;
+    width: 35%;
+    margin-top: 6px;
+}
+
+.saveFootfall-modal .col-65 {
+    float: left;
+    width: 65%;
+    margin-top: 6px;
+}
+
+.saveFootfall-modal .buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.saveFootfall-modal .buttons button {
+    margin-left: 10px;
+}
+.saveFootfall-modal .buttons button:first-child {
+    margin-left: 0;
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+    .App .list-of-historical-modal .list-of-historical-items .show-delete-btn-container,
+    .App .list-of-historical-modal .list-of-historical-items .input-radio-container {
+        width: 100%;
+        margin-top: 0;
+    }
+    .App .list-of-historical-modal .generate-new-report-container .row .label-column,
+    .App .list-of-historical-modal .generate-new-report-container .row .input-column,
+    .App .list-of-historical-modal .generate-new-report-container .row .button-column {
+        flex: 100%;
+        margin-bottom: 5px;
+    }
+    .App .list-of-historical-modal .generate-new-report-container .row .button-column {
+        margin-top: 15px;
+        text-align: center;
+    }
+    .saveFootfall-modal .col-35,
+    .saveFootfall-modal .col-65 {
+        width: 100%;
+        margin-top: 0;
+    }
+}

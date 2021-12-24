@@ -15,7 +15,7 @@ export const RadiusRestrictionErrorModalFC: React.FC<RadiusRestrictionErrorModal
     }
 
     return (
-        <div className="attribute-error-modal">
+        <div className="radius-restriction-error-modal">
             <div className="row">
                 <div className="message">The radius of the circle can be specified in the range of 10m to 10,000m.</div>
             </div>

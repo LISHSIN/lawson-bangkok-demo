@@ -15,7 +15,7 @@ export const SelectOnStoreErrorModalFC: React.FC<SelectOnStoreErrorModalProps> =
     }
 
     return (
-        <div className="attribute-error-modal">
+        <div className="select-on-store-error-modal">
             <div className="row">
                 <div className="message">Select one of the store / candidate store /competing store shapes</div>
             </div>

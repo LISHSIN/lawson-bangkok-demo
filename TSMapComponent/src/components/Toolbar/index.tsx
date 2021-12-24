@@ -8,23 +8,25 @@ import handImg from './images/hand.png';
 import infoImg from './images/info.png';
 import pointImg from './images/point.png';
 import deleteImg from './images/delete.png';
-import tradeAreaChartImg from './images/trade-area-chart.png';
-import storeChartImg from './images/store-chart.png';
 import refreshImg from './images/refresh-icon.png';
+import storeReportImg from './images/report-for-store.png';
+import tradeAreaReportImg from './images/report-for-trade-area.png';
+import competitorAnalysisReportImg from './images/report-for-competitor-analysis.png';
 
 import { mapboxReactContext } from 'components/MapboxContext';
 import { layerReactContext, LayerType } from 'components/LayerContext';
 
 import SpinnerFC from 'components/Spinner';
 import ToolbarButtonFC from 'components/ToolbarButton';
-import CustomPopupFC, { usePopup, AStorePopupFC } from 'components/CustomPopup';
-import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC } from 'components/Modal';
+import CustomPopupFC, { usePopup, AStorePopupFC, CompetitorStorePopupFC } from 'components/CustomPopup';
+import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, CreateTradeAreaModalFC, ListOfHistoricalModalFC, SaveFootfallModalFC, CompetitorReportModalFC, AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC, StatisticsReportErrorModalFC, NearApiErrorModalFC } from 'components/Modal';
 
-import { CircleInfo } from './module';
-import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName } from './constants';
 import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'components/Map1/constants';
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
-import CompetitorStorePopupFC from 'components/CustomPopup/CompetitorStorePopup';
+
+import { mockHistoryList, mockTradeAreaList, mockCompetitorHistoryData } from './mock';
+import { CircleInfo, ProcessedAStoreData, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo } from './module';
+import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName, PowerBIReportType, ReportTypeValue } from './constants';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
 type AStoreActionType = AStoreActionId.CREATE | AStoreActionId.UPDATE | AStoreActionId.DELETE;
@@ -45,16 +47,37 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [aggregatedPopulationObj, setAggregatedPopulationObj] = useState<PopulationInfo>(initialPopulationInfo);
     const [aggregatedCompetitorStoreObj, setAggregatedCompetitorStoreObj] = useState<CompetitorStoreInfo>(initialCompetitorStoreInfo);
     const [isLoadingBiReport, setIsLoadingBiReport] = useState(false);
+    const [nearApiErrorMessage, setNearApiErrorMessage] = useState<string | undefined>(undefined);
 
     const [tradeAreaApiActionType, setTradeAreaApiActionType] = useState<TradeAreaActionType | undefined>(undefined);
     const [tradeAreaFeature, setTradeAreaFeature] = useState<GeoJSON.Feature | undefined>(undefined);
     const [unSaveNewTradeAreaFeatureId, setUnSaveNewTradeAreaFeatureId] = useState<string | undefined>(undefined);
     const [unSaveModifyTradeAreaFeatureId, setUnSaveModifyTradeAreaFeatureId] = useState<string | undefined>(undefined);
     const [storeStatisticsCircleFeatureId, setStoreStatisticsCircleFeatureId] = useState<string | undefined>(undefined);
+    const [selectedStatisticsFeature, setSelectedStatisticsFeature] = useState<GeoJSON.Feature | undefined>(undefined);
 
     const [aStoreApiActionType, setAStoreApiActionType] = useState<AStoreActionType | undefined>(undefined);
     const [aStoreFeature, setAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
     const [mockAStoreFeature, setMockAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
+
+    //Historical Modal
+    const [historicalFootfallData, setHistoricalFootfallData] = useState<HistoryInfo[]>([]);
+    const [selectedHistoricalDataGuid, setSelectedHistoricalDataGuid] = useState<string | undefined>(undefined);
+    const [aStoreRecordCreationResponse, setAStoreRecordCreationResponse] = useState<any>(undefined);
+    const [selectedReportType, setSelectedReportType] = useState<PowerBIReportType | undefined>(undefined);
+    const [historyRecordName, setHistoryRecordName] = useState<string>('');
+
+    const [tradeAreaRecordName, setTradeAreaRecordName] = useState<string>('');
+
+    //Competitor Modal
+    const [tradeAreaList, setTradeAreaList] = useState<TradeAreaInfo[]>([]);
+    const [competitorHistoryList, setCompetitorHistoryList] = useState<CompetitorReportHistoryInfo[]>([]);
+
+    //Competitor analysis
+    const [comparisonTradeAreaList, setComparisonTradeAreaList] = useState<TradeAreaInfo[]>([]);
+    const [competitorHistoryGuid, setCompetitorHistoryGuid] = useState<string | undefined>(undefined);
+    const [historyRecordGuid, setHistoryRecordGuid] = useState<string>('');
+    const [competitorAnalysisDashboardURL, setCompetitorAnalysisDashboardURL] = useState<string>('');
 
     // Ref Variables
     const navigationRef = useRef<HTMLDivElement>(null);
@@ -130,6 +153,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         },
         modifyPolygonArea: {
             featureId: '',
+            recordName: '',
             point: {
                 isEnable: false,
                 latitude: 0,
@@ -229,6 +253,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const { isShown: isTradeAreaStatisticsModalShown, toggle: tradeAreaStatisticsModalToggle } = useModal();
     // Circle Modal
     const { isShown: isCircleModalShown, toggle: circleModalToggle } = useModal();
+    // Historical Modal
+    const { isShown: isListOfHistoricalModalShown, toggle: listOfHistoricalModalToggle } = useModal();
+    //const { isShown: isSaveFootfallDataModalShown, toggle: saveFootfallDataModalToggle } = useModal();
+    const {isShown: isDeleteCompetitorModalShown, toggle: deleteCompetitorModalToggle} = useModal();
+    const {isShown: isDeleteStatisticsModalShown, toggle: deleteStatisticsModalToggle} = useModal();
+    //Competitor Report Modal
+    const { isShown: isCompetitorReportModalShown, toggle: competitorReportModalToggle } = useModal();
     // Error Modal
     const { isShown: isAttributeErrorModalShown, toggle: attributeErrorModalToggle } = useModal();
     const { isShown: isCrmLicenseErrorModalShown, toggle: crmLicenseErrorModalToggle } = useModal();
@@ -237,6 +268,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const { isShown: isSelectOnStoreErrorModalShown, toggle: selectOnStoreErrorModalToggle } = useModal();
     const { isShown: isRadiusRestrictionErrorModalShown, toggle: radiusRestrictionErrorModalToggle } = useModal();
     const { isShown: isUnSavedShapeErrorModalShown, toggle: unSavedShapeErrorModalToggle } = useModal();
+    const { isShown: isStatisticsReportErrorModalShown, toggle: statisticsReportErrorModalToggle } = useModal();
+    const { isShown: isNearApiErrorModalShown, toggle: nearApiErrorModalToggle} = useModal();
 
     // Store Info Popup
     const { toggle: togglePopup } = usePopup();
@@ -446,6 +479,19 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
     }, [aStoreFeature]);
 
+    useEffect(() => {
+        if ((selectedStatisticsFeature !== undefined) && (selectedHistoricalDataGuid !== undefined)) {
+            let processedStoreDetails: ProcessedAStoreData = processFilteredAStores(); 
+            selectedTradeAreaApiCall(JSON.stringify(processedStoreDetails.nearAPIFeature)
+                                    , JSON.stringify(processedStoreDetails.additionalReportDetails));
+            setSelectedHistoricalDataGuid(undefined);
+        }
+    }, [selectedHistoricalDataGuid]);
+
+    useEffect(() => {
+        getCompetitorAnalysisDashboardURL();
+    }, []);
+
     /**
      * This function is used to compare
      * two coordinates
@@ -569,6 +615,61 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             }
         }
         return false;
+    }
+
+    /**
+     * This function is used to find a new generated report
+     * input parameters are valid or not
+     * @param recordName string
+     * @param fromDate date object
+     * @param toDate date object
+     * @return Boolean value
+     */
+    function isValidCompetitorReport(recordName: string, fromDate: Date, toDate: Date) {
+        if (comparisonTradeAreaList.length < 2) {
+            alert("Please select minimum 2 trade areas");
+            return false;
+        }
+
+        let today = new Date();
+        if (toDate > today) {
+            alert("To date cannot be future date");
+            return false;
+        }
+
+        if (fromDate > toDate) {
+            alert("From date is greater than to date");
+            return false;
+        }
+
+        let diffTime = toDate.getTime() - fromDate.getTime();
+        let diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
+        if (diffDays > 13) {
+            alert("Date interval is greater than 14 days");
+            return false;
+        }
+
+        let diffTimeToday = today.getTime() - toDate.getTime();
+        let diffDaysToday = Math.floor(diffTimeToday / (1000 * 3600 * 24));
+        if (diffDaysToday < 5) {
+            alert("To date should be 5 days before today");
+            return false;
+        }
+
+        if (recordName === '') {
+            alert("Please enter the record name");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * This function is used to get
+     * the current login user id
+     * @return user id
+     */
+    function getUserIdValue() {
+        return Xrm.Page.context.getUserId().replace("{", "").replace("}", "");
     }
 
     /**
@@ -704,10 +805,28 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
+     * This function is used to get
+     * Competitor Analysis Dashboard URL
+     */
+    function getCompetitorAnalysisDashboardURL() {
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'competitor'")
+            .then(function (response) {
+                // Process response
+                let url = response.entities[0].crcef_tradeareacoverageappid;
+                setCompetitorAnalysisDashboardURL(url);
+            })
+            .catch(function (error) {
+                // Handle error
+                console.log(error)
+            });
+    }
+
+    /**
      * This function is used to fit the specified
      * trade area feature on Mapbox view
      */
-    function setMapFitBoundsOnStatistics() {
+    function setMapFitBoundsOnStatistics(options?: MapboxGl.FitBoundsOptions) {
         if (map === undefined) {
             return;
         }
@@ -735,9 +854,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 bbox = turf.bbox(selectedFeature);
             }
             
-            map?.fitBounds(bbox, {
+            let defaultOptions = {
                 padding: {top: 15, bottom: 80, left: 15, right: 5}
-            });
+            };
+            let fitBoundOptions = (options !== undefined) ? options: defaultOptions;
+            map?.fitBounds(bbox, fitBoundOptions);
         }
     }
 
@@ -1468,6 +1589,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             let isCicle = MapboxDrawGeodesic.isCircle(feature);
 
             modifyPolygonArea.featureId = featureId;
+            modifyPolygonArea.recordName = feature.properties.name;
 
             if (modifyPolygon.isEnable === true) {
                 let pointsCount = e.points.length
@@ -2023,7 +2145,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function createTradeAreaApiCall(drawnFeature: any) {
         let drawnFeatureId = drawnFeature.id;
-        let drawnFeatureProp = Object.assign(drawnFeature.properties, { "id": drawnFeatureId, "risk": true });
+        let drawnFeatureProp = Object.assign(drawnFeature.properties, { "id": drawnFeatureId, "risk": true, "name": tradeAreaRecordName });
         let geojson = {
             'type': 'Feature',
             'id': drawnFeatureId,
@@ -2034,7 +2156,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             entityName: "crcef_lawsontradearea",
             entity: {
                 crcef_id: "TradeArea_" + drawnFeatureId,
-                crcef_tradeareajson: JSON.stringify(geojson)
+                crcef_tradeareajson: JSON.stringify(geojson),
+                crcef_recordname: tradeAreaRecordName
             }
         };
 
@@ -2042,12 +2165,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             .then(function (response: any) {
                 // Process response
                 addTradeAreaFeatureList(geojson as any);
+                updateIsRefreshAllLayers(true);
             })
             .catch(function (error: any) {
                 // Handle error
                 unSavedShapeErrorModalToggle();
                 mapDraw.delete(drawnFeatureId);
             });
+        setTradeAreaRecordName('');
     }
 
     /**
@@ -2070,7 +2195,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         let d365RecordID = entity.crcef_lawsontradeareaid;
 
                         let drawnFeatureId = drawnFeature.id;
-                        let drawnFeatureProp = Object.assign(drawnFeature.properties, { "id": drawnFeatureId, "risk": true });
+                        let drawnFeatureProp = Object.assign(drawnFeature.properties, { "id": drawnFeatureId, "risk": true, "name": tradeAreaRecordName });
                         let geojson = {
                             'type': 'Feature',
                             'id': drawnFeatureId,
@@ -2081,7 +2206,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                             entityName: "crcef_lawsontradearea",
                             entityId: d365RecordID,
                             entity: {
-                                crcef_tradeareajson: JSON.stringify(geojson)
+                                crcef_tradeareajson: JSON.stringify(geojson),
+                                crcef_recordname: tradeAreaRecordName
                             }
                         };
 
@@ -2089,6 +2215,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                             .then(function (response: any) {
                                 // Process response
                                 updateTradeAreaFeatureList(geojson as any);
+                                updateIsRefreshAllLayers(true);
                             })
                             .catch(function (error: any) {
                                 // Handle error
@@ -2098,6 +2225,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     }
                 }
             });
+
+        setTradeAreaRecordName('');
     }
 
     /**
@@ -2278,10 +2407,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         crcef_2635: property.crcef_2635,
                         crcef_3645: property.crcef_3645,
                         crcef_over45: property.crcef_over45,
-                        crcef_professionals: property.crcef_professionals,
-                        crcef_students: property.crcef_students,
-                        crcef_families: property.crcef_families,
-                        crcef_travelers: property.crcef_travelers,
+                        // crcef_professionals: property.crcef_professionals,
+                        // crcef_students: property.crcef_students,
+                        // crcef_families: property.crcef_families,
+                        // crcef_travelers: property.crcef_travelers,
                         crcef_home1lat: property.crcef_home1lat,
                         crcef_home1lon: property.crcef_home1lon,
                         crcef_home1ratio: property.crcef_home1ratio,
@@ -2300,9 +2429,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         crcef_work3lat: property.crcef_work3lat,
                         crcef_work3lon: property.crcef_work3lon,
                         crcef_work3ratio: property.crcef_work3ratio,
-                        crcef_incomehigh: property.crcef_incomehigh,
-                        crcef_incomemid: property.crcef_incomemid,
-                        crcef_incomerow: property.crcef_incomerow,
+                        // crcef_incomehigh: property.crcef_incomehigh,
+                        // crcef_incomemid: property.crcef_incomemid,
+                        // crcef_incomerow: property.crcef_incomerow,
                         crcef_man0: totalMan0,
                         crcef_man10: totalMan10,
                         crcef_man20: totalMan20,
@@ -2381,7 +2510,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     WebApiClient.Create(request)
                         .then(function (response: any) {
                             // Process response
-                            resolve();
+                            resolve(response);
                         })
                         .catch(function (error: any) {
                             // Handle error
@@ -2391,9 +2520,111 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 promisesArray.push(promise);
             }
         }
-        Promise.all(promisesArray).then(() => {
-            showPowerBiReport();
+        Promise.all(promisesArray).then((responses: any) => {
+            setAStoreRecordCreationResponse(responses);
+            fetchHistoricalFootfallData();
         });
+    }
+
+    /**
+     * This function is used to fetch store statistics history
+     * records from crcef_historicallawsondata entity
+     */
+    function fetchHistoricalFootfallData() {
+        let fetchHistoricalDataPromise = new Promise<void>((resolve, reject) => {
+            Xrm.WebApi
+                .retrieveMultipleRecords("crcef_historicallawsondata","?$filter=crcef_tradeareaid eq '" +  selectedStatisticsFeature?.id + "'")
+                .then(function (response: any) {
+                    // Process response
+                    resolve(response);
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                    reject();
+                });
+        });
+        fetchHistoricalDataPromise.then(function (result: any) { 
+            let entities = result.entities;
+            let historicalInfo : HistoryInfo;
+            let historicalInfoList : HistoryInfo[] = [];
+            
+            if (entities.length > 0) {
+                for (let i = 0; i < entities.length; i++) {
+                    historicalInfo = {
+                        crcef_historicalastoredataid: entities[i].crcef_historicallawsondataid,
+                        crcef_recordname: entities[i].crcef_recordname,
+                        crcef_tradeareaid: entities[i].crcef_tradeareaid,
+                        createdon: entities[i].createdon
+                    }
+                    historicalInfoList.push(historicalInfo);
+                }
+            }
+            setHistoricalFootfallData(historicalInfoList);
+
+            if (activeBtnId === ButtonId.TRADE_AREA_CHART) {
+                setIsLoadingBiReport(false);
+                listOfHistoricalModalToggle();
+            } else {
+                setSelectedHistoricalDataGuid('');
+            }
+        });
+    }
+
+    /**
+     * This function is used to create store features and "A" store entity
+     * records GUID list required for creating selected trade area entity
+     * details.
+     */
+    //NEAR API - get data for multiple stores in trade area
+    function processFilteredAStores() {
+        let processedAStore: ProcessedAStoreData;
+        let nearAPIFeature: GeoJSON.Feature | undefined;
+        let aStoreGuid: string;
+        let aStoreGuidList: string[] = [];
+
+        processedAStore = {
+            nearAPIFeature: undefined,
+            additionalReportDetails: {
+                aStoreGuids: [],
+                historicalAStoreDataGuid: "",
+                recordName: "",
+                selectedTradeAreaId: ""
+            }
+        }
+        
+        if (selectedHistoricalDataGuid === '') {
+            if (selectedStatisticsFeature) {
+                if (selectedStatisticsFeature.geometry.type == 'Polygon') {
+                    nearAPIFeature = {
+                        type: "Feature",
+                        id: "Statistics report area",
+                        geometry: {
+                            type: "Polygon",
+                            coordinates: selectedStatisticsFeature.geometry.coordinates
+                        },
+                        properties: {
+                            name: "Statistics report area"
+                        }
+                    }
+                }
+            }
+        }
+        
+        for (var i = 0; i < aStoreRecordCreationResponse.length; i++) {
+            aStoreGuid = aStoreRecordCreationResponse[i].slice(-37, -1);
+            aStoreGuidList.push(aStoreGuid);
+        }
+
+        processedAStore = {
+            nearAPIFeature: nearAPIFeature,
+            additionalReportDetails: {
+                aStoreGuids: aStoreGuidList,
+                historicalAStoreDataGuid: (selectedHistoricalDataGuid === undefined) ? '' : selectedHistoricalDataGuid,
+                recordName: historyRecordName,
+                selectedTradeAreaId: (selectedStatisticsFeature?.id === undefined || selectedReportType === PowerBIReportType.STORE) ? '' : selectedStatisticsFeature?.id
+            }
+        }
+        return processedAStore;
     }
 
     /**
@@ -2401,8 +2632,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * duplicate "A" store and create new into D365
      */
     function deleteAndCreateApiCall() {
+        let ownerIdValue = getUserIdValue();
         Xrm.WebApi
-            .retrieveMultipleRecords("crcef_lawsonstore", "?$select=crcef_lawsonstoreid,_ownerid_value&$filter=_ownerid_value eq " + Xrm.Page.context.getUserId().replace("{", "").replace("}", "") + "").then((result) => {
+            .retrieveMultipleRecords("crcef_lawsonstore", "?$select=crcef_lawsonstoreid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
                 let entities = result.entities;
                 let promisesArray = [];
 
@@ -2585,6 +2817,78 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
+     * This function is used to generate the
+     * the report for competitor statistics
+     * @param React.MouseEvent
+     * @param selected button id
+     */
+     function onCompetitorChartClick(e: React.MouseEvent, btnId: string) {
+        setActiveBtnId(btnId);
+        
+        let fetchTradeAreaListPromise = new Promise<void>((resolve, reject) => {
+            Xrm.WebApi
+                .retrieveMultipleRecords("crcef_lawsontradearea")
+                .then(function (response: any) {
+                    // Process response
+                    resolve(response);
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                    reject();
+                });
+        });
+        fetchTradeAreaListPromise.then(function (result: any) {
+            let entities = result.entities;
+            let tradeAreaInfo : TradeAreaInfo;
+            let tradeAreaInfoList : TradeAreaInfo[] = [];
+            
+            if (entities.length > 0) {
+                for (let i = 0; i < entities.length; i++) {
+                    let currentFeature = JSON.parse(entities[i].crcef_tradeareajson);
+                    tradeAreaInfo = {
+                        tradeAreaId: entities[i].crcef_lawsontradeareaid,
+                        tradeAreaName: entities[i].crcef_recordname,
+                        featureId: currentFeature.id,
+                        coordinates: currentFeature.geometry.coordinates
+                    }
+                    tradeAreaInfoList.push(tradeAreaInfo);
+                }
+            }
+            setTradeAreaList(tradeAreaInfoList);//mockTradeAreaList
+        })
+
+        let fetchCompetitorHistoryList = new Promise<void>((resolve, reject) => {
+            Xrm.WebApi
+                .retrieveMultipleRecords("crcef_competitoranalysishistoryheader")
+                .then(function (response: any) {
+                    // Process response
+                    resolve(response);
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                    reject();
+                });
+        });
+        fetchCompetitorHistoryList.then(function (result: any) {
+            let entities = result.entities;
+            let competitorHistoryInfo : CompetitorReportHistoryInfo;
+            let competitorHistoryList : CompetitorReportHistoryInfo[] = [];
+            
+            if (entities.length > 0) {
+                for (var i = 0; i < entities.length; i++) {
+                    competitorHistoryInfo = {
+                        recordName: entities[i].crcef_recordname,
+                        historicalRecordGuid: entities[i].crcef_competitoranalysishistoryheaderid
+                    }
+                    competitorHistoryList.push(competitorHistoryInfo);
+                }
+            }
+            setCompetitorHistoryList(competitorHistoryList);
+        })
+        competitorReportModalToggle();
+    }
+
+    /**
      * This function is used to refresh
      * all custom layers
      * @param React.MouseEvent
@@ -2653,6 +2957,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 break;
             case ButtonId.A_STORE_CHART:
                 onAStoreChartClick(e, btnId);
+                break;
+            case ButtonId.COMPETITOR_CHART:
+                onCompetitorChartClick(e, btnId);
                 break;
             case ButtonId.REFRESH:
                 onRefreshClick(e,btnId);
@@ -2736,29 +3043,57 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * store statistics api call
      */
     function onStoreStatisticsFeatureApiCall() {
+        setSelectedReportType(PowerBIReportType.STORE);
+
         if (map === undefined) {
             return;
         }
 
         // Waiting time for enable the spinner and new circle is drawing by mapDraw.add method
         setTimeout(() => {
-            let filteredStoreFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
-            let selectedStoreFeature = getAStoreFeatureById(btnObjRef.createStatistics.storeReport.storeFeatureId);
-            if (selectedStoreFeature !== undefined) {
-                filteredStoreFeatureList.push(selectedStoreFeature as MapboxGl.MapboxGeoJSONFeature);
-            }
-
             let selectedTradeAreaFeatures = [mapDraw.get(storeStatisticsCircleFeatureId)];
             let polygonFeatureList = constructPolygonFeatureList(map, selectedTradeAreaFeatures);
-            let populationObj = constructPopulationObj(map, polygonFeatureList);
-            let competitorObj = constructCompetitorStoreObj(map, polygonFeatureList);
 
-            triggerTradeAreaStatisticsApiAction(filteredStoreFeatureList, populationObj, competitorObj);
+            let isPolygonAreaAcceptable = validatePolygonArea(polygonFeatureList);
+            if (isPolygonAreaAcceptable === true) {
+                let filteredStoreFeatureList: MapboxGl.MapboxGeoJSONFeature[] = [];
+                let selectedStoreFeature = getAStoreFeatureById(btnObjRef.createStatistics.storeReport.storeFeatureId);
+                if (selectedStoreFeature !== undefined) {
+                    filteredStoreFeatureList.push(selectedStoreFeature as MapboxGl.MapboxGeoJSONFeature);
+                }
+    
+                let populationObj = constructPopulationObj(map, polygonFeatureList);
+                let competitorObj = constructCompetitorStoreObj(map, polygonFeatureList);
 
-            // Deselect logic
-            setActiveBtnId('');
-            resetStoreStatesticsRefValue();
+                setSelectedStatisticsFeature(polygonFeatureList[0]);
+
+                triggerTradeAreaStatisticsApiAction(filteredStoreFeatureList, populationObj, competitorObj);
+
+                // Deselect logic
+                setActiveBtnId('');
+                resetStoreStatesticsRefValue();
+            } else {
+                setActiveBtnId('');
+                setIsLoadingBiReport(false);
+                statisticsReportErrorModalToggle();
+            }
         }, 1000);
+    }
+
+    /**
+     * This function is used to validate the
+     * first polygon is valid or not
+     * @param polygon feature list
+     */
+    function validatePolygonArea(polygonFeatureList : any){
+        let sqMtArea = turf.area(polygonFeatureList[0]);
+        let sqFtArea = sqMtArea * 10.76391042;
+        
+        if (sqFtArea < 5000000) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -2899,23 +3234,32 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to create the
      * new trade area feature
      */
-    function onTradeAreaCreateConfirm() {
-        if (unSaveNewTradeAreaFeatureId !== undefined) {
-            let drawnFeature = mapDraw.get(unSaveNewTradeAreaFeatureId);
-            triggerTradeAreaApiActions(TradeAreaActionId.CREATE, drawnFeature);
-        } else {
-            console.error("onTradeAreaCreateConfirm error");
-        }
-    
-        tradeAreaCreateModalToggle();
-        
-        let { createTradeArea } = btnObjRef;
+    function onTradeAreaCreateConfirm(recordName: string) {
+        setTradeAreaRecordName(recordName);
 
-        // Deselect logic
-        createTradeArea.featureId = "";
-        resetCreateCircleRefValue();
-        setUnSaveNewTradeAreaFeatureId(undefined);
-        setActiveBtnId('');
+        let tradeAreaFeatureList = layerObj.tradeAreaLayer.featureList; 
+        let existingFeature = tradeAreaFeatureList.find(tradeArea => (tradeArea.properties!.name).toUpperCase() === recordName.toUpperCase());
+
+        if (existingFeature !== undefined) {
+            alert("Trade area with the same name exists");
+        } else {
+            if (unSaveNewTradeAreaFeatureId !== undefined) {
+                let drawnFeature = mapDraw.get(unSaveNewTradeAreaFeatureId);
+                triggerTradeAreaApiActions(TradeAreaActionId.CREATE, drawnFeature);
+            } else {
+                console.error("onTradeAreaCreateConfirm error");
+            }
+
+            tradeAreaCreateModalToggle();
+
+            let { createTradeArea } = btnObjRef;
+
+            // Deselect logic
+            createTradeArea.featureId = "";
+            resetCreateCircleRefValue();
+            setUnSaveNewTradeAreaFeatureId(undefined);
+            setActiveBtnId('');
+        }
     }
     
     /**
@@ -2928,9 +3272,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         } else {
             console.error("onTradeAreaCreateCancel error");
         }
-        
+
         tradeAreaCreateModalToggle();
-    
+
         let { createTradeArea } = btnObjRef;
 
         // Deselect logic
@@ -2944,20 +3288,28 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to modify the
      * existing trade area feature
      */
-    function onTradeAreaModifyConfirm() {
-        if (unSaveModifyTradeAreaFeatureId !== undefined) {
-            let updateDrawnFeature = mapDraw.get(unSaveModifyTradeAreaFeatureId);
-            triggerTradeAreaApiActions(TradeAreaActionId.UPDATE, updateDrawnFeature);
+    function onTradeAreaModifyConfirm(recordName: string) {
+        let tradeAreaFeatureList = layerObj.tradeAreaLayer.featureList; 
+        let existingFeature = tradeAreaFeatureList.find(tradeArea => tradeArea.id !== btnObjRef.modifyPolygonArea.featureId && (tradeArea.properties!.name).toUpperCase() === recordName.toUpperCase());
+
+        if (existingFeature !== undefined) {
+            alert("Trade area with the same name exists");
         } else {
-            console.error("onTradeAreaModifyConfirm error");
+            if ((unSaveModifyTradeAreaFeatureId !== undefined) || (btnObjRef.modifyPolygonArea.recordName !== recordName)) {
+                setTradeAreaRecordName(recordName);
+                let updateDrawnFeature = mapDraw.get(btnObjRef.modifyPolygonArea.featureId);
+                triggerTradeAreaApiActions(TradeAreaActionId.UPDATE, updateDrawnFeature);
+            } else {
+                console.error("onTradeAreaModifyConfirm error");
+            }
+
+            tradeAreaModifyModalToggle();
+
+            // Deselect logic
+            setUnSaveModifyTradeAreaFeatureId(undefined);
+            setActiveBtnId('');
+            btnObjRef.modifyPolygonArea.featureId = "";
         }
-
-        tradeAreaModifyModalToggle();
-
-        // Deselect logic
-        setUnSaveModifyTradeAreaFeatureId(undefined);
-        setActiveBtnId('');
-        btnObjRef.modifyPolygonArea.featureId = "";
     }
 
     /**
@@ -3026,6 +3378,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * trade area statistics report
      */
     function onTradeAreaStatisticsConfirm() {
+        setSelectedReportType(PowerBIReportType.TRADE_AREA);
+
         if (map === undefined) {
             return;
         }
@@ -3035,29 +3389,86 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         setTimeout(() => {
             let selectedTradeAreaFeatures = mapDraw.getSelected().features;
             let polygonFeatureList = constructPolygonFeatureList(map, selectedTradeAreaFeatures);
+            let isPolygonAreaAcceptable = validatePolygonArea(polygonFeatureList);
 
-            let filteredStoreFeatureList = filterStoreDataWithInPolygon(map, polygonFeatureList);
-            if (filteredStoreFeatureList.length === 0) {
-                let initialAStoreFeature = JSON.parse(JSON.stringify(initialAStoreGeojsonInfo));
-                initialAStoreFeature.properties = Object.assign(initialAStoreFeature.properties, {
-                    crcef_storename: 'Trade Area Without Store A',
-                    crcef_duplicatelawsonstoredataid: initialAStoreFeature.id
-                });
+            if (isPolygonAreaAcceptable === true) {
+                let filteredStoreFeatureList = filterStoreDataWithInPolygon(map, polygonFeatureList);
+                if (filteredStoreFeatureList.length === 0) {
+                    let initialAStoreFeature = JSON.parse(JSON.stringify(initialAStoreGeojsonInfo));
+                    initialAStoreFeature.properties = Object.assign(initialAStoreFeature.properties, {
+                        crcef_storename: 'Trade Area Without Store A',
+                        crcef_duplicatelawsonstoredataid: initialAStoreFeature.id
+                    });
 
-                setMockAStoreFeature(initialAStoreFeature);
-                filteredStoreFeatureList = [initialAStoreFeature];
+                    setMockAStoreFeature(initialAStoreFeature);
+                    filteredStoreFeatureList = [initialAStoreFeature];
+                }
+
+                let populationObj = constructPopulationObj(map, polygonFeatureList);
+                let competitorObj = constructCompetitorStoreObj(map, polygonFeatureList);
+
+                setSelectedStatisticsFeature(polygonFeatureList[0]);
+                triggerTradeAreaStatisticsApiAction(filteredStoreFeatureList, populationObj, competitorObj);
+                setActiveBtnId('');
+            } else {
+                setActiveBtnId('');
+                statisticsReportErrorModalToggle();
+                setIsLoadingBiReport(false);
             }
-
-            let populationObj = constructPopulationObj(map, polygonFeatureList);
-            let competitorObj = constructCompetitorStoreObj(map, polygonFeatureList);
-
-            triggerTradeAreaStatisticsApiAction(filteredStoreFeatureList, populationObj, competitorObj);
-
-            // Deselect logic
-            setActiveBtnId('');
         }, 1000);
 
         tradeAreaStatisticsModalToggle();
+    }
+
+    /**
+     * This function is used to delete the existing trade area record and 
+     * create the new selected trade area record and then show the power bi report
+     */
+    function selectedTradeAreaApiCall(polygonFeatureCoordinates: any, storeId: any) {
+        let ownerIdValue = getUserIdValue();
+        let request = {
+            entityName: "crcef_selectedtradearea",
+            entity: {
+                crcef_storeid : storeId,
+                crcef_tradeareajson: polygonFeatureCoordinates,
+                crcef_reporttype: ReportTypeValue.STATISTICS
+            }
+        };
+
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+                let promisesArray = [];
+
+                for (var i = 0; i < entities.length; i++) {
+                    let tradeareaId = entities[i].crcef_selectedtradeareaid;
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
+                                resolve();
+                            });
+                    });
+                    promisesArray.push(promise);
+                }
+
+                Promise.all(promisesArray).then(() => {
+                    WebApiClient.Create(request)
+                        .then(function (response: any) {
+                            // Process response
+                            showPowerBiStatisticsReport();
+                            setSelectedReportType(undefined);
+                        })
+                        .catch(function (error: any) {
+                            // Handle error
+                            let errorMessage: string = error.message;
+                            let errorContent = errorMessage.split(": ");
+                            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
+                            nearApiErrorModalToggle();
+                            setIsLoadingBiReport(false);
+                            console.log(error);
+                        });
+                });
+            });
     }
 
     /**
@@ -3066,9 +3477,250 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function onTradeAreaStatisticsCancel() {
         tradeAreaStatisticsModalToggle();
-
-        // Deselect logic
         setActiveBtnId('');
+    }
+
+    /**
+     * This function is used to fetch
+     * the historical data from D365 history entity
+     * @param historyId
+     */
+    function onListOfHistoricalShow(historyId: string) {
+        if (map === undefined) {
+            return;
+        }
+        setSelectedHistoricalDataGuid(historyId);
+        setIsLoadingBiReport(true);
+        listOfHistoricalModalToggle();
+    }
+    
+    /**
+     * This function is used to delete
+     * the historical data from D365 history entity
+     * @param historyId
+     */
+    function onListOfHistoricalDelete(historyId: string) {
+        setHistoryRecordGuid(historyId);
+        listOfHistoricalModalToggle();
+
+        deleteStatisticsModalToggle();
+    }
+
+    /**
+     * This function is used to generate new
+     * footfall and location data from Near Api Call
+     * @param recordName
+     */
+    function onListOfHistoricalGenerateNewReport(recordName: string) {
+        if (map === undefined) {
+            return;
+        }
+        setHistoryRecordName(recordName);
+        setSelectedHistoricalDataGuid('');
+        setIsLoadingBiReport(true);
+        listOfHistoricalModalToggle();
+    }
+
+    /**
+     * This function is used to reset the
+     * circle refs value and close the modal
+     */
+    function onListOfHistoricalCancel() {
+        setActiveBtnId('');
+        listOfHistoricalModalToggle();
+    }
+
+    function onCompetitorHistoryShow(historyId: string) {
+        if (map === undefined) {
+            return;
+        }
+        
+        setIsLoadingBiReport(true);
+        setCompetitorHistoryGuid(historyId);
+
+        let fetchHistoryDetails = {
+            competitorHistoryGuid : historyId,
+        };
+        
+        createCompetitorSelectedTradeArea(JSON.stringify(fetchHistoryDetails), '');
+    }
+
+    function createCompetitorSelectedTradeArea(additionalDetails: any, competitorFeatures: any) {
+        let ownerIdValue = getUserIdValue();
+        let request = {
+            entityName: "crcef_selectedtradearea",
+            entity: {
+                crcef_storeid : additionalDetails,
+                crcef_tradeareajson: competitorFeatures,
+                crcef_reporttype: ReportTypeValue.COMPETITOR,
+            }
+        };
+
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+                let promisesArray = [];
+
+                for (let i = 0; i < entities.length; i++) {
+                    let tradeareaId = entities[i].crcef_selectedtradeareaid;
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
+                                resolve();
+                            });
+                    });
+                    promisesArray.push(promise);
+                }
+
+                Promise.all(promisesArray).then(() => {
+                    WebApiClient.Create(request)
+                        .then(function (response: any) {
+                            // Process response
+                            showPowerBiCompetitorReport();
+                            setActiveBtnId('');
+                            setSelectedReportType(undefined);
+                        })
+                        .catch(function (error: any) {
+                            // Handle error
+                            setIsLoadingBiReport(false);
+                            setActiveBtnId('');
+                            setSelectedReportType(undefined);
+
+                            let errorMessage: string = error.message;
+                            let errorContent = errorMessage.split(": ");
+                            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
+                            nearApiErrorModalToggle();
+                            console.log(error);
+                        });
+                });
+            });
+        //set loader to true
+        competitorReportModalToggle();
+    }
+
+    function onDeleteStatisticsDataConfirm() {
+        if (map === undefined) {
+            return;
+        }
+        Xrm.WebApi
+            .deleteRecord("crcef_historicallawsondata", historyRecordGuid).then(function (response: any) {
+                    // Process response
+                    console.log("deleted successfully")
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                });
+        
+        deleteStatisticsModalToggle();
+        setSelectedReportType(undefined);
+        setHistoryRecordGuid('');
+    }
+
+    function onDeleteStatisticsDataCancel() {
+        setHistoryRecordGuid('');
+        deleteStatisticsModalToggle();
+        listOfHistoricalModalToggle();
+    }
+
+    function onCompetitorHistoryDelete(historyId: string) {
+        setHistoryRecordGuid(historyId);
+        competitorReportModalToggle();
+
+        deleteCompetitorModalToggle();
+    }
+
+    function onGenerateNewCompetitorReport(recordName: string, fromDate: Date, toDate: Date) {
+        if (map === undefined) {
+            return;
+        }
+        if (!isValidCompetitorReport(recordName, fromDate, toDate)) {
+            return;
+        }
+
+        setIsLoadingBiReport(true);
+        
+        let competitorFeaturesList = comparisonTradeAreaList.map(tradeArea => {
+            let competitorFeature: GeoJSON.Feature;
+            competitorFeature = {
+                type: "Feature",
+                id: tradeArea.tradeAreaId,
+                properties: {
+                    name: tradeArea.tradeAreaName 
+                },
+                geometry: {
+                    type: "Polygon",
+                    coordinates: tradeArea.coordinates
+                }
+            }
+            return competitorFeature;
+        })
+        
+        let periodStartDate = fromDate.toISOString().substring(0, 10);
+        let periodEndDate = toDate.toISOString().substring(0, 10);
+        let additionalDetails = {
+            recordName: recordName,
+            startDate: periodStartDate,
+            endDate: periodEndDate
+        }
+        
+        createCompetitorSelectedTradeArea(JSON.stringify(additionalDetails), JSON.stringify(competitorFeaturesList));
+
+        setComparisonTradeAreaList([]);
+    }
+
+    function onCompetitorReportCancel() {
+        competitorReportModalToggle();
+        setActiveBtnId('');
+    }
+
+    function onTradeAreaCheckboxChanged(tradeAreaId: string) {
+        let selectedTradeAreaIndex = comparisonTradeAreaList.findIndex(tradeArea => tradeArea.tradeAreaId === tradeAreaId);
+
+        if (selectedTradeAreaIndex >= 0) {
+            let refComparisonTradeAreaList = comparisonTradeAreaList;
+            refComparisonTradeAreaList.splice(selectedTradeAreaIndex, 1);
+            setComparisonTradeAreaList(refComparisonTradeAreaList);
+
+            mapDraw.changeMode(GlDrawMode.SIMPLE_SELECT);
+        } else {
+            let selectedTradeArea = tradeAreaList.find(tradeArea => tradeArea.tradeAreaId === tradeAreaId);
+            if (selectedTradeArea !== undefined) {
+                comparisonTradeAreaList.push(selectedTradeArea);
+                setComparisonTradeAreaList(comparisonTradeAreaList);
+
+                mapDraw.changeMode(GlDrawMode.DIRECT_SELECT, {featureId: selectedTradeArea.featureId});
+
+                let fitBoundOptions = {
+                    padding: {top: 15, bottom: 80, left: 15, right: 500}
+                };
+                setMapFitBoundsOnStatistics(fitBoundOptions);
+            }
+        }
+    }
+
+    function onDeleteCompetitorDataConfirm() {
+        if (map === undefined) {
+            return;
+        }
+        //Check if cascading delete happens in line records
+        Xrm.WebApi
+            .deleteRecord("crcef_competitoranalysishistoryheader", historyRecordGuid).then(function (response: any) {
+                    // Process response
+                    console.log("deleted successfully")
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                });
+
+        deleteCompetitorModalToggle();
+        setActiveBtnId('');
+        setHistoryRecordGuid('');
+    }
+
+    function onDeleteCompetitorDataCancel() {
+        setHistoryRecordGuid('');
+        deleteCompetitorModalToggle();
+        competitorReportModalToggle();
     }
 
     /**
@@ -3085,7 +3737,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to create the
      * dashboard url to generate the power bi report
      */
-    function showPowerBiReport() {
+    function showPowerBiStatisticsReport() {
         let globalContext = Xrm.Utility.getGlobalContext();
         let orgurl = globalContext.getClientUrl();
 
@@ -3100,6 +3752,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         setTimeout(() => {
             setIsLoadingBiReport(false);
             window.open(dashboardUrl);
+        }, 6000);
+    }
+
+    function showPowerBiCompetitorReport() {
+        setTimeout(() => {
+            setIsLoadingBiReport(false);
+            window.open(competitorAnalysisDashboardURL);
         }, 6000);
     }
 
@@ -3166,10 +3825,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         </div>
                         <div className="button-group-content">
                             <ToolbarButtonFC tooltipName={TooltipName.TRADE_AREA_CHART} btnId={ButtonId.TRADE_AREA_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
-                                <image href={tradeAreaChartImg} />
+                                <image href={tradeAreaReportImg} />
                             </ToolbarButtonFC>
                             <ToolbarButtonFC tooltipName={TooltipName.A_STORE_CHART} btnId={ButtonId.A_STORE_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
-                                <image href={storeChartImg} />
+                                <image href={storeReportImg} />
+                            </ToolbarButtonFC>
+                            <ToolbarButtonFC tooltipName={TooltipName.COMPETITOR_CHART} btnId={ButtonId.COMPETITOR_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
+                                <image href={competitorAnalysisReportImg} />
                             </ToolbarButtonFC>
                         </div>
                         <div className="button-group-content">
@@ -3196,17 +3858,17 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     />
                 } />
                 <ModalFC isShown={isTradeAreaCreateModalShown} hide={onTradeAreaCreateCancel} headerText={''} modalContent={
-                    <ConfirmationModalFC
+                    <CreateTradeAreaModalFC
                         onConfirm={onTradeAreaCreateConfirm}
                         onCancel={onTradeAreaCreateCancel}
-                        message="save the new feature?"
+                        defaultValue=""
                     />
                 } />
                 <ModalFC isShown={isTradeAreaModifyModalShown} hide={onTradeAreaModifyCancel} headerText={''} modalContent={
-                    <ConfirmationModalFC
+                    <CreateTradeAreaModalFC
                         onConfirm={onTradeAreaModifyConfirm}
                         onCancel={onTradeAreaModifyCancel}
-                        message="save the edited result?"
+                        defaultValue={btnObjRef.modifyPolygonArea.recordName}
                     />
                 } />
                 <ModalFC isShown={isTradeAreaDeleteModalShown} hide={onTradeAreaDeleteCancel} headerText={'Confirmation'} modalContent={
@@ -3270,6 +3932,49 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 <ModalFC isShown={isUnSavedShapeErrorModalShown} hide={unSavedShapeErrorModalToggle} headerText={'Error'} modalContent={
                     <UnSavedShapeErrorModalFC
                         onConfirm={unSavedShapeErrorModalToggle}
+                    />
+                } />
+                <ModalFC isShown={isStatisticsReportErrorModalShown} hide={statisticsReportErrorModalToggle} headerText={'Error'} modalContent={
+                    <StatisticsReportErrorModalFC
+                        onConfirm={statisticsReportErrorModalToggle}
+                    />
+                } />
+                <ModalFC isShown={isNearApiErrorModalShown} hide={nearApiErrorModalToggle} headerText={'Error'} modalContent={
+                    <NearApiErrorModalFC
+                        onConfirm={nearApiErrorModalToggle}
+                        message={nearApiErrorMessage}
+                    />
+                } />
+                <ModalFC isShown={isListOfHistoricalModalShown} hide={onListOfHistoricalCancel} headerText={'Historical Modal'} modalContent={
+                    <ListOfHistoricalModalFC
+                        onShow={onListOfHistoricalShow}
+                        onDelete={onListOfHistoricalDelete}
+                        onGenerateNewReport={onListOfHistoricalGenerateNewReport}
+                        historyList={historicalFootfallData}
+                    />
+                } />
+                <ModalFC isShown={isDeleteStatisticsModalShown} hide={onDeleteStatisticsDataCancel} headerText={'Confirmation'} modalContent={
+                    <ConfirmationModalFC
+                        onConfirm={onDeleteStatisticsDataConfirm}
+                        onCancel={onDeleteStatisticsDataCancel}
+                        message="Do you want to delete the selected data?"
+                    />
+                } />
+                 <ModalFC isShown={isCompetitorReportModalShown} hide={onCompetitorReportCancel} headerText={'Competitor Reports'} modalId="competitorReport" modalContent={
+                    <CompetitorReportModalFC
+                        tradeAreaList={tradeAreaList}
+                        historyList = {competitorHistoryList}
+                        onShow={onCompetitorHistoryShow}
+                        onDelete={onCompetitorHistoryDelete}
+                        onGenerateNewReport={onGenerateNewCompetitorReport}
+                        onCheckboxChanged={onTradeAreaCheckboxChanged}
+                    />
+                } />
+                <ModalFC isShown={isDeleteCompetitorModalShown} hide={onDeleteCompetitorDataCancel} headerText={'Confirmation'} modalContent={
+                    <ConfirmationModalFC
+                        onConfirm={onDeleteCompetitorDataConfirm}
+                        onCancel={onDeleteCompetitorDataCancel}
+                        message="Do you want to delete the selected data?"
                     />
                 } />
             </React.Fragment>
