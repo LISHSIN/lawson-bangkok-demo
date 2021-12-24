@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="SampleNamespace" constructor="TSMapComponent" version="0.0.1" display-name-key="TSMapComponent" description-key="TSMapComponent description" control-type="standard">
+  <control namespace="SampleNamespace" constructor="SLWithNearMapComponent" version="0.0.1" display-name-key="SLWithNearMapComponent" description-key="SLWithNearMapComponent description" control-type="standard">
     <!-- <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" /> -->
     <data-set name="dataSetGrid" display-name-key="DataSetGridProperty_Display_Key">
 	  </data-set>

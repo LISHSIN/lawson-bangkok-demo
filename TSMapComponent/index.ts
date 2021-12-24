@@ -5,7 +5,7 @@ import App, { AppProps } from "./src/App";
 
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
 
-export class TSMapComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
+export class SLWithNearMapComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
   private _contextObj: ComponentFramework.Context<IInputs>;
   
