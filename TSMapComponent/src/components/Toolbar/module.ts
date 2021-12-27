@@ -14,8 +14,8 @@ export interface ProcessedAStoreData {
 }
 
 export interface AdditionalReportDetails {
-    aStoreGuids : string[],
-    historicalAStoreDataGuid : string,
+    storeGuids : string[],
+    statisticsHistoryGuid : string,
     recordName : string,
     selectedTradeAreaId : string | number
 }

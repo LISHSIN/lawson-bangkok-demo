@@ -2585,8 +2585,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         processedAStore = {
             nearAPIFeature: undefined,
             additionalReportDetails: {
-                aStoreGuids: [],
-                historicalAStoreDataGuid: "",
+                storeGuids: [],
+                statisticsHistoryGuid: "",
                 recordName: "",
                 selectedTradeAreaId: ""
             }
@@ -2618,8 +2618,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         processedAStore = {
             nearAPIFeature: nearAPIFeature,
             additionalReportDetails: {
-                aStoreGuids: aStoreGuidList,
-                historicalAStoreDataGuid: (selectedHistoricalDataGuid === undefined) ? '' : selectedHistoricalDataGuid,
+                storeGuids: aStoreGuidList,
+                statisticsHistoryGuid: (selectedHistoricalDataGuid === undefined) ? '' : selectedHistoricalDataGuid,
                 recordName: historyRecordName,
                 selectedTradeAreaId: (selectedStatisticsFeature?.id === undefined || selectedReportType === PowerBIReportType.STORE) ? '' : selectedStatisticsFeature?.id
             }
