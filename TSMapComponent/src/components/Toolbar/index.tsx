@@ -650,12 +650,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             return false;
         }
 
-        let diffTime = toDate.getTime() - fromDate.getTime();
-        let diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
-        if (diffDays > 13) {
-            alert("Date interval is greater than 14 days");
-            return false;
-        }
+        // let diffTime = toDate.getTime() - fromDate.getTime();
+        // let diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
+        // if (diffDays > 13) {
+        //     alert("Date interval is greater than 14 days");
+        //     return false;
+        // }
 
         let diffTimeToday = today.getTime() - toDate.getTime();
         let diffDaysToday = Math.floor(diffTimeToday / (1000 * 3600 * 24));
