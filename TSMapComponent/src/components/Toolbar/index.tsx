@@ -78,6 +78,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [competitorHistoryGuid, setCompetitorHistoryGuid] = useState<string | undefined>(undefined);
     const [historyRecordGuid, setHistoryRecordGuid] = useState<string>('');
     const [competitorAnalysisDashboardURL, setCompetitorAnalysisDashboardURL] = useState<string>('');
+    const [errorTradeAreaName, setErrorTradeAreaName] = useState<string>('');
 
     // Ref Variables
     const navigationRef = useRef<HTMLDivElement>(null);
@@ -491,6 +492,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     useEffect(() => {
         getCompetitorAnalysisDashboardURL();
     }, []);
+
+    useEffect(() => {
+        if (errorTradeAreaName !== "") {
+            alert("Please unselect " + errorTradeAreaName + " as the trade area is larger in size for the selected time period.");
+            setErrorTradeAreaName("");
+        }
+    }, [errorTradeAreaName]);
 
     /**
      * This function is used to compare
@@ -3547,19 +3555,49 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     function createCompetitorSelectedTradeArea(additionalDetails: any, competitorFeatures: any) {
         let ownerIdValue = getUserIdValue();
-        let request = {
-            entityName: "crcef_selectedtradearea",
-            entity: {
+        let requests: any[] = [];
+
+        var Sdk = (window as any).Sdk || {};
+
+        Sdk.CreateRequest = function(entityName: string, payload: object) {
+            this.etn = entityName;
+            this.payload = payload;
+        };
+
+        Sdk.CreateRequest.prototype.getMetadata = function () {
+            return {
+                boundParameter: null,
+                parameterTypes: {},
+                operationType: 2, // This is a CRUD operation. Use '0' for actions and '1' for functions
+                operationName: "Create",
+            };
+        };
+
+        if (competitorFeatures.length !== 0) {
+            for (let i = 0; i< competitorFeatures.length; i++) {
+                let payload = {
+                    crcef_storeid : additionalDetails,
+                    crcef_tradeareajson: JSON.stringify(competitorFeatures[i]),
+                    crcef_reporttype: ReportTypeValue.COMPETITOR,
+                };
+                let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
+                requests.push(createRequest);
+            }
+        } else {
+            let payload = {
                 crcef_storeid : additionalDetails,
                 crcef_tradeareajson: competitorFeatures,
                 crcef_reporttype: ReportTypeValue.COMPETITOR,
-            }
-        };
+            };
+            let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
+            requests.push(createRequest);
+        }
 
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
                 let entities = result.entities;
-                let promisesArray = [];
+                let deletePromisesArray = [];
+                let createPromisesArray: Promise<void>[] = [];
 
                 for (let i = 0; i < entities.length; i++) {
                     let tradeareaId = entities[i].crcef_selectedtradeareaid;
@@ -3569,16 +3607,34 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                                 resolve();
                             });
                     });
-                    promisesArray.push(promise);
+                    deletePromisesArray.push(promise);
                 }
 
-                Promise.all(promisesArray).then(() => {
-                    WebApiClient.Create(request)
+                Promise.all(deletePromisesArray).then(() => {
+                    Xrm.WebApi.online.executeMultiple(requests)
                         .then(function (response: any) {
                             // Process response
-                            showPowerBiCompetitorReport();
-                            setActiveBtnId('');
-                            setSelectedReportType(undefined);
+                            let selectedTradeAreaGuid = response[0].headers._headers.Location.slice(-37,-1);
+                            if (selectedTradeAreaGuid !== undefined) {
+                                Xrm.WebApi.updateRecord("crcef_selectedtradearea", selectedTradeAreaGuid, {"crcef_pushdatatoazure":true})
+                                    .then(function (response: any) {
+                                        showPowerBiCompetitorReport();
+                                        setActiveBtnId('');
+                                        setSelectedReportType(undefined);
+                                    })    
+                                    .catch(function (error: any) {
+                                        // Handle error
+                                        setIsLoadingBiReport(false);
+                                        setActiveBtnId('');
+                                        setSelectedReportType(undefined);
+
+                                        let errorMessage: string = error.message;
+                                        let errorContent = errorMessage.split(": ");
+                                        setNearApiErrorMessage("Azure Plugin has return the following error" + errorMessage.toUpperCase());
+                                        nearApiErrorModalToggle();
+                                        console.log(error);
+                                    });
+                            }
                         })
                         .catch(function (error: any) {
                             // Handle error
@@ -3593,9 +3649,30 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                             console.log(error);
                         });
                 });
+            })
+            .catch(function (error: any) {
+                console.log(error);
             });
         //set loader to true
         competitorReportModalToggle();
+    }
+
+    function deleteCompetitorAnalysisEntity() {
+        let ownerIdValue = getUserIdValue();
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_competitoranalysis", "?$select=crcef_competitoranalysisid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+
+                for (var i = 0; i < entities.length; i++) {
+                    let tradeareaId = entities[i].crcef_competitoranalysisid;
+                    Xrm.WebApi
+                        .deleteRecord("crcef_competitoranalysis", tradeareaId).then((res) => {
+                        })
+                        .catch(function (error: any) {
+                            console.log(error);
+                        });
+                }
+            });
     }
 
     function onDeleteStatisticsDataConfirm() {
@@ -3604,12 +3681,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
         Xrm.WebApi
             .deleteRecord("crcef_historicallawsondata", historyRecordGuid).then(function (response: any) {
-                    // Process response
-                    console.log("deleted successfully")
-                })
-                .catch(function (error: any) {
-                    // Handle error
-                });
+                // Process response
+                console.log("deleted successfully")
+            })
+            .catch(function (error: any) {
+                // Handle error
+            });
         
         deleteStatisticsModalToggle();
         setSelectedReportType(undefined);
@@ -3638,7 +3715,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         setIsLoadingBiReport(true);
-        
+
         let competitorFeaturesList = comparisonTradeAreaList.map(tradeArea => {
             let competitorFeature: GeoJSON.Feature;
             competitorFeature = {
@@ -3655,17 +3732,96 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             return competitorFeature;
         })
         
-        let periodStartDate = fromDate.toISOString().substring(0, 10);
-        let periodEndDate = toDate.toISOString().substring(0, 10);
-        let additionalDetails = {
-            recordName: recordName,
-            startDate: periodStartDate,
-            endDate: periodEndDate
+        let ISOStartDate = fromDate.toISOString();
+        let ISOEndDate = toDate.toISOString();
+        let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")
+        let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
+
+        let randomNumber = Math.round(Math.random() * 1000000000).toString();
+        let competitorFeaturesListSplit = constructCompetitorFeatureSplit(new Date(periodStartDate), new Date(periodEndDate), competitorFeaturesList);
+
+        if (competitorFeaturesListSplit.length === 0) {
+            setIsLoadingBiReport(false);
+            return;
         }
-        
-        createCompetitorSelectedTradeArea(JSON.stringify(additionalDetails), JSON.stringify(competitorFeaturesList));
+        deleteCompetitorAnalysisEntity();
+        Xrm.WebApi.createRecord("crcef_competitoranalysishistoryheader", { "crcef_recordname": recordName })
+            .then(function success(result) {
+                let additionalDetails = {
+                    competitorHistoryGuid: result.id,
+                    startDate: periodStartDate,
+                    endDate: periodEndDate,
+                    randomNumber: randomNumber
+                };
+
+                createCompetitorSelectedTradeArea(JSON.stringify(additionalDetails), competitorFeaturesListSplit);
+            });
 
         setComparisonTradeAreaList([]);
+    }
+
+    function constructCompetitorFeatureSplit(periodStartDate: Date, periodEndDate: Date, competitorFeaturesList: any) {
+        let maxArea = 0;
+
+        competitorFeaturesList.forEach((feature : any) => {
+            let polygonArea = turf.area(feature.geometry);
+            feature.properties.area = polygonArea;
+        });
+
+        let weekdifference = Math.ceil((new Date(periodEndDate).getTime() - new Date(periodStartDate).getTime()) / (7 * 24 * 60 * 60 * 1000));
+
+        switch (weekdifference) {
+            case 1:
+                maxArea = 450000; 
+                break;
+            case 2:
+                maxArea = 350000;
+                break;
+            case 3:
+                maxArea = 180000;
+                break;
+            case 4:
+                maxArea = 125000;
+                break;
+            case 5:
+                maxArea = 75000;
+                break;
+            case 6:
+                maxArea = 50000;
+                break;
+        }
+
+        return splitCompetitorFeatureList(competitorFeaturesList,maxArea);
+    }
+
+    function splitCompetitorFeatureList(competitorFeaturesList: any, maxArea: number) {
+        let competitorFeaturesListSplit = [];
+        competitorFeaturesList.sort(function(a: any, b: any) { return b.properties.area - a.properties.area; });
+
+        while (competitorFeaturesList.length !== 0) {
+            let maxAreaLimit = maxArea;
+            let splittedarray: number[] = [];
+
+            for (let i = 0; i < competitorFeaturesList.length; i++) {
+                if (competitorFeaturesList[i].properties.area > maxArea) {
+                    setErrorTradeAreaName(competitorFeaturesList[i].properties.name);
+                    return [];
+                }
+
+                let conditionValue = maxAreaLimit - competitorFeaturesList[i].properties.area;
+                if (conditionValue === 0) {
+                    splittedarray.push(competitorFeaturesList[i]);
+                    break;
+                } else if (conditionValue > 0) {
+                    splittedarray.push(competitorFeaturesList[i]);
+                    maxAreaLimit = maxAreaLimit - competitorFeaturesList[i].properties.area;
+                }
+            }
+
+            competitorFeaturesListSplit.push(splittedarray);
+            competitorFeaturesList = competitorFeaturesList.filter((item:any) => !splittedarray.includes(item))
+        }
+        return competitorFeaturesListSplit;
     }
 
     function onCompetitorReportCancel() {
