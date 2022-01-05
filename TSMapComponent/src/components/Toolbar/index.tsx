@@ -3827,6 +3827,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function onCompetitorReportCancel() {
         competitorReportModalToggle();
         setActiveBtnId('');
+        setComparisonTradeAreaList([]);
     }
 
     function onTradeAreaCheckboxChanged(tradeAreaId: string) {
