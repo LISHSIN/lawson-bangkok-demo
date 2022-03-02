@@ -1,0 +1,39 @@
+.create-brand-affinity-modal {
+    border-radius: 5px;
+}
+
+.create-brand-affinity-modal .date-container{
+    font-size: 14px;
+}
+.create-brand-affinity-modal .date-row {
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    padding-bottom: 14px;
+}
+
+.create-brand-affinity-modal .date-container .date-row .start-date input[type=date],
+.create-brand-affinity-modal .date-container .date-row .end-date input[type=date] {
+    width: initial;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.create-brand-affinity-modal .buttons {
+    display: flex;
+    justify-content: center;
+    height: 25px;
+    padding-bottom: 12px;
+}
+
+.create-brand-affinity-modal .buttons button {
+    font-size: 14px;
+    background-color: darkslateblue;
+    color: white;
+    border: 0;
+    padding: 5px 10px;
+    height: 30px;
+}

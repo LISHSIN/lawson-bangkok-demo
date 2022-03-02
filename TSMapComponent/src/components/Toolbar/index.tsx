@@ -19,13 +19,13 @@ import { layerReactContext, LayerType } from 'components/LayerContext';
 import SpinnerFC from 'components/Spinner';
 import ToolbarButtonFC from 'components/ToolbarButton';
 import CustomPopupFC, { usePopup, AStorePopupFC, CompetitorStorePopupFC } from 'components/CustomPopup';
-import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, CreateTradeAreaModalFC, ListOfHistoricalModalFC, SaveFootfallModalFC, CompetitorReportModalFC, AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC, StatisticsReportErrorModalFC, NearApiErrorModalFC } from 'components/Modal';
+import ModalFC, { useModal, CircleModalFC, ConfirmationModalFC, CreateTradeAreaModalFC, ListOfHistoricalModalFC, SaveFootfallModalFC, CompetitorReportModalFC, AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC, StatisticsReportErrorModalFC, NearApiErrorModalFC, BrandAffinityReportModalFC } from 'components/Modal';
 
 import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'components/Map1/constants';
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 
 import { mockHistoryList, mockTradeAreaList, mockCompetitorHistoryData } from './mock';
-import { CircleInfo, ProcessedAStoreData, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo } from './module';
+import { CircleInfo, ProcessedAStoreData, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails } from './module';
 import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName, PowerBIReportType, ReportTypeValue } from './constants';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
@@ -261,6 +261,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const {isShown: isDeleteStatisticsModalShown, toggle: deleteStatisticsModalToggle} = useModal();
     //Competitor Report Modal
     const { isShown: isCompetitorReportModalShown, toggle: competitorReportModalToggle } = useModal();
+    // Brand Affinity Report Modal
+    const { isShown: isBrandAffinityReportModalShown, toggle: brandAffinityReportModalToggle } = useModal();
     // Error Modal
     const { isShown: isAttributeErrorModalShown, toggle: attributeErrorModalToggle } = useModal();
     const { isShown: isCrmLicenseErrorModalShown, toggle: crmLicenseErrorModalToggle } = useModal();
@@ -640,15 +642,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         let today = new Date();
-        if (toDate > today) {
-            alert("To date cannot be future date");
-            return false;
-        }
-
-        if (fromDate > toDate) {
-            alert("From date is greater than to date");
-            return false;
-        }
+        validateReportDates(fromDate, toDate, today);
 
         // let diffTime = toDate.getTime() - fromDate.getTime();
         // let diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
@@ -668,6 +662,20 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             alert("Please enter the record name");
             return false;
         }
+        return true;
+    }
+
+    function validateReportDates(fromDate: Date, toDate: Date, today: Date) {
+        if (toDate > today) {
+            alert("To date cannot be future date");
+            return false;
+        }
+
+        if (fromDate > toDate) {
+            alert("From date is greater than to date");
+            return false;
+        }
+
         return true;
     }
 
@@ -2349,11 +2357,59 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             });
     }
 
+    function fetchTradeAreaDemographics () {
+        let startDate0hr = "2022-01-09T00:00:00"; //periodStartDate.replace(' ', 'T');
+        let startDate23hr = "2022-01-09T23:59:59"; //startDate0hr.replace('00:00:00', '23:59:59');
+
+        let endDate0hr = "2022-01-22T00:00:00"; //endDate23hr.replace('23:59:59', '00:00:00');
+        let endDate23hr = "2022-01-22T23:59:59";//periodEndDate.replace(' ', 'T');
+
+        let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
+            Xrm.WebApi
+                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")
+                .then(function (response: any) {
+                    // Process response
+                    resolve(response);
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                    reject();
+                });
+        });
+        fetchDemographicsHeaderPromise.then(function (result: any) {
+            let entities = result.entities;
+            let demographicHeaderId = entities[0].crcef_demographicdataheaderid
+
+            //demo line
+            let demographicLinePromise = new Promise<void>((resolve, reject) => {
+                Xrm.WebApi
+                    .retrieveMultipleRecords("crcef_demographicdata","?$filter=_crcef_headerid_value eq '"+ demographicHeaderId + "'")
+                    .then((lineResponse: any) => {
+                        resolve(lineResponse);
+                    });
+            });
+
+            demographicLinePromise.then(function (result: any) {
+                let lineEntities = result.entities;
+                let tradeAreaDemographicLine;
+                for (let line = 0; line < lineEntities.length; line++)
+                {
+                    if (lineEntities[line]._crcef_tradearea_value === selectedStatisticsFeature?.properties?.tradeAreaGuid)
+                    {
+                        tradeAreaDemographicLine = lineEntities[line];
+                        break;
+                    }
+                }
+                createFilteredAStoreFeaturesApiCall(tradeAreaDemographicLine);
+            });
+        });
+    }
+
     /**
      * This function is used to create
      * duplicate "A" store into D635
      */
-    function createFilteredAStoreFeaturesApiCall() {
+    function createFilteredAStoreFeaturesApiCall(tradeAreaDemographics : any) {
         let randomNumber = Math.floor(Math.random() * 100) + 1;
         let promisesArray = [];
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
@@ -2364,155 +2420,298 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             if (feature !== null) {
                 let property: any = feature.properties;
                 let totalff = getTotalFootFall(property);
-                let request = {
-                    entityName: "crcef_lawsonstore",
-                    entity: {
-                        crcef_randomnumber: randomNumber,
-                        crcef_id: property.crcef_id,
-                        crcef_storename: property.crcef_storename,
-                        crcef_addresspluscode: property.crcef_addresspluscode,
-                        crcef_lat: property.crcef_lat,
-                        crcef_lon: property.crcef_lon,
-                        crcef_tell: property.crcef_tell,
-                        crcef_lastmonthssales: property.crcef_lastmonthssales,
-                        crcef_thismonthssales: property.crcef_thismonthssales,
-                        crcef_transactioncount: property.crcef_transactioncount,
-                        crcef_custmeravg: property.crcef_custmeravg,
-                        crcef_abca: property.crcef_abca,
-                        crcef_abcb: property.crcef_abcb,
-                        crcef_abcc: property.crcef_abcc,
-                        crcef_lankingtop1: property.crcef_lankingtop1,
-                        crcef_lankingtop2: property.crcef_lankingtop2,
-                        crcef_lankingtop3: property.crcef_lankingtop3,
-                        crcef_0oclock: property.crcef_0oclock,
-                        crcef_1oclock: property.crcef_1oclock,
-                        crcef_2oclock: property.crcef_2oclock,
-                        crcef_3oclock: property.crcef_3oclock,
-                        crcef_4oclock: property.crcef_4oclock,
-                        crcef_5oclock: property.crcef_5oclock,
-                        crcef_6oclock: property.crcef_6oclock,
-                        crcef_7oclock: property.crcef_7oclock,
-                        crcef_8oclock: property.crcef_8oclock,
-                        crcef_9oclock: property.crcef_9oclock,
-                        crcef_10oclock: property.crcef_10oclock,
-                        crcef_11oclock: property.crcef_11oclock,
-                        crcef_12oclock: property.crcef_12oclock,
-                        crcef_13oclock: property.crcef_13oclock,
-                        crcef_14oclock: property.crcef_14oclock,
-                        crcef_15oclock: property.crcef_15oclock,
-                        crcef_16oclock: property.crcef_16oclock,
-                        crcef_17oclock: property.crcef_17oclock,
-                        crcef_18oclock: property.crcef_18oclock,
-                        crcef_19oclock: property.crcef_19oclock,
-                        crcef_20oclock: property.crcef_20oclock,
-                        crcef_21oclock: property.crcef_21oclock,
-                        crcef_22oclock: property.crcef_22oclock,
-                        crcef_23oclock: property.crcef_23oclock,
-                        crcef_totalff: totalff,
-                        crcef_males: totalMales,
-                        crcef_females: totalFemales,
-                        crcef_1825: property.crcef_1825,
-                        crcef_2635: property.crcef_2635,
-                        crcef_3645: property.crcef_3645,
-                        crcef_over45: property.crcef_over45,
-                        // crcef_professionals: property.crcef_professionals,
-                        // crcef_students: property.crcef_students,
-                        // crcef_families: property.crcef_families,
-                        // crcef_travelers: property.crcef_travelers,
-                        crcef_home1lat: property.crcef_home1lat,
-                        crcef_home1lon: property.crcef_home1lon,
-                        crcef_home1ratio: property.crcef_home1ratio,
-                        crcef_home2lat: property.crcef_home2lat,
-                        crcef_home2lon: property.crcef_home2lon,
-                        crcef_home2ratio: property.crcef_home2ratio,
-                        crcef_home3lat: property.crcef_home3lat,
-                        crcef_home3lon: property.crcef_home3lon,
-                        crcef_home3ratio: property.crcef_home3ratio,
-                        crcef_work1lat: property.crcef_work1lat,
-                        crcef_work1lon: property.crcef_work1lon,
-                        crcef_work1ratio: property.crcef_work1ratio,
-                        crcef_work2lat: property.crcef_work2lat,
-                        crcef_work2lon: property.crcef_work2lon,
-                        crcef_work2ratio: property.crcef_work2ratio,
-                        crcef_work3lat: property.crcef_work3lat,
-                        crcef_work3lon: property.crcef_work3lon,
-                        crcef_work3ratio: property.crcef_work3ratio,
-                        // crcef_incomehigh: property.crcef_incomehigh,
-                        // crcef_incomemid: property.crcef_incomemid,
-                        // crcef_incomerow: property.crcef_incomerow,
-                        crcef_man0: totalMan0,
-                        crcef_man10: totalMan10,
-                        crcef_man20: totalMan20,
-                        crcef_man30: totalMan30,
-                        crcef_man40: totalMan40,
-                        crcef_man50: totalMan50,
-                        crcef_man60: totalMan60,
-                        crcef_man70: totalMan70,
-                        crcef_man80: totalMan80,
-                        crcef_man90: property.crcef_man90,
-                        crcef_man100: property.crcef_man100,
-                        crcef_woman0: totalWoman0,
-                        crcef_woman10: totalWoman10,
-                        crcef_woman20: totalWoman20,
-                        crcef_woman30: totalWoman30,
-                        crcef_woman40: totalWoman40,
-                        crcef_woman50: totalWoman50,
-                        crcef_woman60: totalWoman60,
-                        crcef_woman70: totalWoman70,
-                        crcef_woman80: totalWoman80,
-                        crcef_woman90: property.crcef_woman90,
-                        crcef_woman100: property.crcef_woman100,
-                        crcef_total: totalPopulation,
-                        crcef_7eleven: totalBStore,
-                        crcef_familymart: totalCStore,
-                        crcef_ministop: totalDStore,
-                        crcef_tescolotusexpress: totalEStore,
-                        crcef_tatal: totalTatal,
-                        crcef_0oclockweekend: property.crcef_0oclockweekend,
-                        crcef_1oclockweekend: property.crcef_1oclockweekend,
-                        crcef_2oclockweekend: property.crcef_2oclockweekend,
-                        crcef_3oclockweekend: property.crcef_3oclockweekend,
-                        crcef_4oclockweekend: property.crcef_4oclockweekend,
-                        crcef_5oclockweekend: property.crcef_5oclockweekend,
-                        crcef_6oclockweekend: property.crcef_6oclockweekend,
-                        crcef_7oclockweekend: property.crcef_7oclockweekend,
-                        crcef_8oclockweekend: property.crcef_8oclockweekend,
-                        crcef_9oclockweekend: property.crcef_9oclockweekend,
-                        crcef_10oclockweekend: property.crcef_10oclockweekend,
-                        crcef_11oclockweekend: property.crcef_11oclockweekend,
-                        crcef_12oclockweekend: property.crcef_12oclockweekend,
-                        crcef_13oclockweekend: property.crcef_13oclockweekend,
-                        crcef_14oclockweekend: property.crcef_14oclockweekend,
-                        crcef_15oclockweekend: property.crcef_15oclockweekend,
-                        crcef_16oclockweekend: property.crcef_16oclockweekend,
-                        crcef_17oclockweekend: property.crcef_17oclockweekend,
-                        crcef_18oclockweekend: property.crcef_18oclockweekend,
-                        crcef_19oclockweekend: property.crcef_19oclockweekend,
-                        crcef_20oclockweekend: property.crcef_20oclockweekend,
-                        crcef_21oclockweekend: property.crcef_21oclockweekend,
-                        crcef_22oclockweekend: property.crcef_22oclockweekend,
-                        crcef_23oclockweekend: property.crcef_23oclockweekend,
-                        crcef_02kmhomelocation: property.crcef_02kmhomelocation,
-                        crcef_24kmhomelocation: property.crcef_24kmhomelocation,
-                        crcef_46kmhomelocation: property.crcef_46kmhomelocation,
-                        crcef_68kmhomelocation: property.crcef_68kmhomelocation,
-                        crcef_810kmhomelocation: property.crcef_810kmhomelocation,
-                        crcef_10kmhomelocation: property.crcef_10kmhomelocation,
-                        crcef_02kmworklocation: property.crcef_02kmworklocation,
-                        crcef_24kmworklocation: property.crcef_24kmworklocation,
-                        crcef_46kmworklocation: property.crcef_46kmworklocation,
-                        crcef_68kmworklocation: property.crcef_68kmworklocation,
-                        crcef_810kmworklocation: property.crcef_810kmworklocation,
-                        crcef_10kmworklocation: property.crcef_10kmworklocation,
-                        crcef_mon: property.crcef_mon,
-                        crcef_tue: property.crcef_tue,
-                        crcef_wed: property.crcef_wed,
-                        crcef_thu: property.crcef_thu,
-                        crcef_fri: property.crcef_fri,
-                        crcef_sat: property.crcef_sat,
-                        crcef_sun: property.crcef_sun,
-                    }
-                };
+                let request : any;
+                
+                if (tradeAreaDemographics !== undefined) {
+                    request = {
+                        entityName: "crcef_lawsonstore",
+                        entity: {
+                            crcef_randomnumber: randomNumber,
+                            crcef_id: property.crcef_id,
+                            crcef_storename: property.crcef_storename,
+                            crcef_addresspluscode: property.crcef_addresspluscode,
+                            crcef_lat: property.crcef_lat,
+                            crcef_lon: property.crcef_lon,
+                            crcef_tell: property.crcef_tell,
+                            crcef_lastmonthssales: property.crcef_lastmonthssales,
+                            crcef_thismonthssales: property.crcef_thismonthssales,
+                            crcef_transactioncount: property.crcef_transactioncount,
+                            crcef_custmeravg: property.crcef_custmeravg,
+                            crcef_abca: property.crcef_abca,
+                            crcef_abcb: property.crcef_abcb,
+                            crcef_abcc: property.crcef_abcc,
+                            crcef_lankingtop1: property.crcef_lankingtop1,
+                            crcef_lankingtop2: property.crcef_lankingtop2,
+                            crcef_lankingtop3: property.crcef_lankingtop3,
+                            crcef_0oclock: property.crcef_0oclock,
+                            crcef_1oclock: property.crcef_1oclock,
+                            crcef_2oclock: property.crcef_2oclock,
+                            crcef_3oclock: property.crcef_3oclock,
+                            crcef_4oclock: property.crcef_4oclock,
+                            crcef_5oclock: property.crcef_5oclock,
+                            crcef_6oclock: property.crcef_6oclock,
+                            crcef_7oclock: property.crcef_7oclock,
+                            crcef_8oclock: property.crcef_8oclock,
+                            crcef_9oclock: property.crcef_9oclock,
+                            crcef_10oclock: property.crcef_10oclock,
+                            crcef_11oclock: property.crcef_11oclock,
+                            crcef_12oclock: property.crcef_12oclock,
+                            crcef_13oclock: property.crcef_13oclock,
+                            crcef_14oclock: property.crcef_14oclock,
+                            crcef_15oclock: property.crcef_15oclock,
+                            crcef_16oclock: property.crcef_16oclock,
+                            crcef_17oclock: property.crcef_17oclock,
+                            crcef_18oclock: property.crcef_18oclock,
+                            crcef_19oclock: property.crcef_19oclock,
+                            crcef_20oclock: property.crcef_20oclock,
+                            crcef_21oclock: property.crcef_21oclock,
+                            crcef_22oclock: property.crcef_22oclock,
+                            crcef_23oclock: property.crcef_23oclock,
+                            crcef_totalff: totalff,
+                            // demographic
+                            crcef_males: tradeAreaDemographics.crcef_male,
+                            crcef_females: tradeAreaDemographics.crcef_female,
+                            crcef_1825: tradeAreaDemographics.crcef_age1824,
+                            crcef_2635: tradeAreaDemographics.crcef_age2534,
+                            crcef_3645: tradeAreaDemographics.crcef_age3544,
+                            crcef_over45: tradeAreaDemographics.crcef_age4554,
+                            crcef_over55: tradeAreaDemographics.crcef_ageover55,
+                            crcef_professionals: tradeAreaDemographics.crcef_professionals,
+                            crcef_students: tradeAreaDemographics.crcef_students,
+                            crcef_families: tradeAreaDemographics.crcef_parents,
+                            crcef_travelers: tradeAreaDemographics.crcef_travellers,
+                            crcef_shoppers: tradeAreaDemographics.crcef_shoppers,
+                            crcef_affluents: tradeAreaDemographics.crcef_affluents,
+                            // demographic - end
+                            crcef_home1lat: property.crcef_home1lat,
+                            crcef_home1lon: property.crcef_home1lon,
+                            crcef_home1ratio: property.crcef_home1ratio,
+                            crcef_home2lat: property.crcef_home2lat,
+                            crcef_home2lon: property.crcef_home2lon,
+                            crcef_home2ratio: property.crcef_home2ratio,
+                            crcef_home3lat: property.crcef_home3lat,
+                            crcef_home3lon: property.crcef_home3lon,
+                            crcef_home3ratio: property.crcef_home3ratio,
+                            crcef_work1lat: property.crcef_work1lat,
+                            crcef_work1lon: property.crcef_work1lon,
+                            crcef_work1ratio: property.crcef_work1ratio,
+                            crcef_work2lat: property.crcef_work2lat,
+                            crcef_work2lon: property.crcef_work2lon,
+                            crcef_work2ratio: property.crcef_work2ratio,
+                            crcef_work3lat: property.crcef_work3lat,
+                            crcef_work3lon: property.crcef_work3lon,
+                            crcef_work3ratio: property.crcef_work3ratio,
+                            crcef_man0: totalMan0,
+                            crcef_man10: totalMan10,
+                            crcef_man20: totalMan20,
+                            crcef_man30: totalMan30,
+                            crcef_man40: totalMan40,
+                            crcef_man50: totalMan50,
+                            crcef_man60: totalMan60,
+                            crcef_man70: totalMan70,
+                            crcef_man80: totalMan80,
+                            crcef_man90: property.crcef_man90,
+                            crcef_man100: property.crcef_man100,
+                            crcef_woman0: totalWoman0,
+                            crcef_woman10: totalWoman10,
+                            crcef_woman20: totalWoman20,
+                            crcef_woman30: totalWoman30,
+                            crcef_woman40: totalWoman40,
+                            crcef_woman50: totalWoman50,
+                            crcef_woman60: totalWoman60,
+                            crcef_woman70: totalWoman70,
+                            crcef_woman80: totalWoman80,
+                            crcef_woman90: property.crcef_woman90,
+                            crcef_woman100: property.crcef_woman100,
+                            crcef_total: totalPopulation,
+                            crcef_7eleven: totalBStore,
+                            crcef_familymart: totalCStore,
+                            crcef_ministop: totalDStore,
+                            crcef_tescolotusexpress: totalEStore,
+                            crcef_tatal: totalTatal,
+                            crcef_0oclockweekend: property.crcef_0oclockweekend,
+                            crcef_1oclockweekend: property.crcef_1oclockweekend,
+                            crcef_2oclockweekend: property.crcef_2oclockweekend,
+                            crcef_3oclockweekend: property.crcef_3oclockweekend,
+                            crcef_4oclockweekend: property.crcef_4oclockweekend,
+                            crcef_5oclockweekend: property.crcef_5oclockweekend,
+                            crcef_6oclockweekend: property.crcef_6oclockweekend,
+                            crcef_7oclockweekend: property.crcef_7oclockweekend,
+                            crcef_8oclockweekend: property.crcef_8oclockweekend,
+                            crcef_9oclockweekend: property.crcef_9oclockweekend,
+                            crcef_10oclockweekend: property.crcef_10oclockweekend,
+                            crcef_11oclockweekend: property.crcef_11oclockweekend,
+                            crcef_12oclockweekend: property.crcef_12oclockweekend,
+                            crcef_13oclockweekend: property.crcef_13oclockweekend,
+                            crcef_14oclockweekend: property.crcef_14oclockweekend,
+                            crcef_15oclockweekend: property.crcef_15oclockweekend,
+                            crcef_16oclockweekend: property.crcef_16oclockweekend,
+                            crcef_17oclockweekend: property.crcef_17oclockweekend,
+                            crcef_18oclockweekend: property.crcef_18oclockweekend,
+                            crcef_19oclockweekend: property.crcef_19oclockweekend,
+                            crcef_20oclockweekend: property.crcef_20oclockweekend,
+                            crcef_21oclockweekend: property.crcef_21oclockweekend,
+                            crcef_22oclockweekend: property.crcef_22oclockweekend,
+                            crcef_23oclockweekend: property.crcef_23oclockweekend,
+                            crcef_02kmhomelocation: property.crcef_02kmhomelocation,
+                            crcef_24kmhomelocation: property.crcef_24kmhomelocation,
+                            crcef_46kmhomelocation: property.crcef_46kmhomelocation,
+                            crcef_68kmhomelocation: property.crcef_68kmhomelocation,
+                            crcef_810kmhomelocation: property.crcef_810kmhomelocation,
+                            crcef_10kmhomelocation: property.crcef_10kmhomelocation,
+                            crcef_02kmworklocation: property.crcef_02kmworklocation,
+                            crcef_24kmworklocation: property.crcef_24kmworklocation,
+                            crcef_46kmworklocation: property.crcef_46kmworklocation,
+                            crcef_68kmworklocation: property.crcef_68kmworklocation,
+                            crcef_810kmworklocation: property.crcef_810kmworklocation,
+                            crcef_10kmworklocation: property.crcef_10kmworklocation,
+                            crcef_mon: property.crcef_mon,
+                            crcef_tue: property.crcef_tue,
+                            crcef_wed: property.crcef_wed,
+                            crcef_thu: property.crcef_thu,
+                            crcef_fri: property.crcef_fri,
+                            crcef_sat: property.crcef_sat,
+                            crcef_sun: property.crcef_sun,
+                        }
+                    };
+                } else {
+                    request = {
+                        entityName: "crcef_lawsonstore",
+                        entity: {
+                            crcef_randomnumber: randomNumber,
+                            crcef_id: property.crcef_id,
+                            crcef_storename: property.crcef_storename,
+                            crcef_addresspluscode: property.crcef_addresspluscode,
+                            crcef_lat: property.crcef_lat,
+                            crcef_lon: property.crcef_lon,
+                            crcef_tell: property.crcef_tell,
+                            crcef_lastmonthssales: property.crcef_lastmonthssales,
+                            crcef_thismonthssales: property.crcef_thismonthssales,
+                            crcef_transactioncount: property.crcef_transactioncount,
+                            crcef_custmeravg: property.crcef_custmeravg,
+                            crcef_abca: property.crcef_abca,
+                            crcef_abcb: property.crcef_abcb,
+                            crcef_abcc: property.crcef_abcc,
+                            crcef_lankingtop1: property.crcef_lankingtop1,
+                            crcef_lankingtop2: property.crcef_lankingtop2,
+                            crcef_lankingtop3: property.crcef_lankingtop3,
+                            crcef_0oclock: property.crcef_0oclock,
+                            crcef_1oclock: property.crcef_1oclock,
+                            crcef_2oclock: property.crcef_2oclock,
+                            crcef_3oclock: property.crcef_3oclock,
+                            crcef_4oclock: property.crcef_4oclock,
+                            crcef_5oclock: property.crcef_5oclock,
+                            crcef_6oclock: property.crcef_6oclock,
+                            crcef_7oclock: property.crcef_7oclock,
+                            crcef_8oclock: property.crcef_8oclock,
+                            crcef_9oclock: property.crcef_9oclock,
+                            crcef_10oclock: property.crcef_10oclock,
+                            crcef_11oclock: property.crcef_11oclock,
+                            crcef_12oclock: property.crcef_12oclock,
+                            crcef_13oclock: property.crcef_13oclock,
+                            crcef_14oclock: property.crcef_14oclock,
+                            crcef_15oclock: property.crcef_15oclock,
+                            crcef_16oclock: property.crcef_16oclock,
+                            crcef_17oclock: property.crcef_17oclock,
+                            crcef_18oclock: property.crcef_18oclock,
+                            crcef_19oclock: property.crcef_19oclock,
+                            crcef_20oclock: property.crcef_20oclock,
+                            crcef_21oclock: property.crcef_21oclock,
+                            crcef_22oclock: property.crcef_22oclock,
+                            crcef_23oclock: property.crcef_23oclock,
+                            crcef_totalff: totalff,
+                            crcef_home1lat: property.crcef_home1lat,
+                            crcef_home1lon: property.crcef_home1lon,
+                            crcef_home1ratio: property.crcef_home1ratio,
+                            crcef_home2lat: property.crcef_home2lat,
+                            crcef_home2lon: property.crcef_home2lon,
+                            crcef_home2ratio: property.crcef_home2ratio,
+                            crcef_home3lat: property.crcef_home3lat,
+                            crcef_home3lon: property.crcef_home3lon,
+                            crcef_home3ratio: property.crcef_home3ratio,
+                            crcef_work1lat: property.crcef_work1lat,
+                            crcef_work1lon: property.crcef_work1lon,
+                            crcef_work1ratio: property.crcef_work1ratio,
+                            crcef_work2lat: property.crcef_work2lat,
+                            crcef_work2lon: property.crcef_work2lon,
+                            crcef_work2ratio: property.crcef_work2ratio,
+                            crcef_work3lat: property.crcef_work3lat,
+                            crcef_work3lon: property.crcef_work3lon,
+                            crcef_work3ratio: property.crcef_work3ratio,
+                            crcef_man0: totalMan0,
+                            crcef_man10: totalMan10,
+                            crcef_man20: totalMan20,
+                            crcef_man30: totalMan30,
+                            crcef_man40: totalMan40,
+                            crcef_man50: totalMan50,
+                            crcef_man60: totalMan60,
+                            crcef_man70: totalMan70,
+                            crcef_man80: totalMan80,
+                            crcef_man90: property.crcef_man90,
+                            crcef_man100: property.crcef_man100,
+                            crcef_woman0: totalWoman0,
+                            crcef_woman10: totalWoman10,
+                            crcef_woman20: totalWoman20,
+                            crcef_woman30: totalWoman30,
+                            crcef_woman40: totalWoman40,
+                            crcef_woman50: totalWoman50,
+                            crcef_woman60: totalWoman60,
+                            crcef_woman70: totalWoman70,
+                            crcef_woman80: totalWoman80,
+                            crcef_woman90: property.crcef_woman90,
+                            crcef_woman100: property.crcef_woman100,
+                            crcef_total: totalPopulation,
+                            crcef_7eleven: totalBStore,
+                            crcef_familymart: totalCStore,
+                            crcef_ministop: totalDStore,
+                            crcef_tescolotusexpress: totalEStore,
+                            crcef_tatal: totalTatal,
+                            crcef_0oclockweekend: property.crcef_0oclockweekend,
+                            crcef_1oclockweekend: property.crcef_1oclockweekend,
+                            crcef_2oclockweekend: property.crcef_2oclockweekend,
+                            crcef_3oclockweekend: property.crcef_3oclockweekend,
+                            crcef_4oclockweekend: property.crcef_4oclockweekend,
+                            crcef_5oclockweekend: property.crcef_5oclockweekend,
+                            crcef_6oclockweekend: property.crcef_6oclockweekend,
+                            crcef_7oclockweekend: property.crcef_7oclockweekend,
+                            crcef_8oclockweekend: property.crcef_8oclockweekend,
+                            crcef_9oclockweekend: property.crcef_9oclockweekend,
+                            crcef_10oclockweekend: property.crcef_10oclockweekend,
+                            crcef_11oclockweekend: property.crcef_11oclockweekend,
+                            crcef_12oclockweekend: property.crcef_12oclockweekend,
+                            crcef_13oclockweekend: property.crcef_13oclockweekend,
+                            crcef_14oclockweekend: property.crcef_14oclockweekend,
+                            crcef_15oclockweekend: property.crcef_15oclockweekend,
+                            crcef_16oclockweekend: property.crcef_16oclockweekend,
+                            crcef_17oclockweekend: property.crcef_17oclockweekend,
+                            crcef_18oclockweekend: property.crcef_18oclockweekend,
+                            crcef_19oclockweekend: property.crcef_19oclockweekend,
+                            crcef_20oclockweekend: property.crcef_20oclockweekend,
+                            crcef_21oclockweekend: property.crcef_21oclockweekend,
+                            crcef_22oclockweekend: property.crcef_22oclockweekend,
+                            crcef_23oclockweekend: property.crcef_23oclockweekend,
+                            crcef_02kmhomelocation: property.crcef_02kmhomelocation,
+                            crcef_24kmhomelocation: property.crcef_24kmhomelocation,
+                            crcef_46kmhomelocation: property.crcef_46kmhomelocation,
+                            crcef_68kmhomelocation: property.crcef_68kmhomelocation,
+                            crcef_810kmhomelocation: property.crcef_810kmhomelocation,
+                            crcef_10kmhomelocation: property.crcef_10kmhomelocation,
+                            crcef_02kmworklocation: property.crcef_02kmworklocation,
+                            crcef_24kmworklocation: property.crcef_24kmworklocation,
+                            crcef_46kmworklocation: property.crcef_46kmworklocation,
+                            crcef_68kmworklocation: property.crcef_68kmworklocation,
+                            crcef_810kmworklocation: property.crcef_810kmworklocation,
+                            crcef_10kmworklocation: property.crcef_10kmworklocation,
+                            crcef_mon: property.crcef_mon,
+                            crcef_tue: property.crcef_tue,
+                            crcef_wed: property.crcef_wed,
+                            crcef_thu: property.crcef_thu,
+                            crcef_fri: property.crcef_fri,
+                            crcef_sat: property.crcef_sat,
+                            crcef_sun: property.crcef_sun,
+                        }
+                    };
+                }
 
                 let promise = new Promise<void>((resolve, reject) => {
                     WebApiClient.Create(request)
@@ -2657,7 +2856,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     promisesArray.push(promise);
                 }
                 Promise.all(promisesArray).then(() => {
-                    createFilteredAStoreFeaturesApiCall();
+                    fetchTradeAreaDemographics();
+                    // createFilteredAStoreFeaturesApiCall();
                 });
             });
     }
@@ -2896,6 +3096,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         competitorReportModalToggle();
     }
 
+    function onBrandAffinityReportClick(e: React.MouseEvent, btnId: string) {
+        setActiveBtnId(btnId);
+        brandAffinityReportModalToggle();
+    }
+
     /**
      * This function is used to refresh
      * all custom layers
@@ -2968,6 +3173,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 break;
             case ButtonId.COMPETITOR_CHART:
                 onCompetitorChartClick(e, btnId);
+                break;
+            case ButtonId.BRAND_AFFINITY:
+                onBrandAffinityReportClick(e, btnId);
                 break;
             case ButtonId.REFRESH:
                 onRefreshClick(e,btnId);
@@ -3620,13 +3828,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                                     .then(function (response: any) {
                                         showPowerBiCompetitorReport();
                                         setActiveBtnId('');
-                                        setSelectedReportType(undefined);
                                     })    
                                     .catch(function (error: any) {
                                         // Handle error
                                         setIsLoadingBiReport(false);
                                         setActiveBtnId('');
-                                        setSelectedReportType(undefined);
 
                                         let errorMessage: string = error.message;
                                         let errorContent = errorMessage.split(": ");
@@ -3640,7 +3846,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                             // Handle error
                             setIsLoadingBiReport(false);
                             setActiveBtnId('');
-                            setSelectedReportType(undefined);
 
                             let errorMessage: string = error.message;
                             let errorContent = errorMessage.split(": ");
@@ -3722,7 +3927,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 type: "Feature",
                 id: tradeArea.tradeAreaId,
                 properties: {
-                    name: tradeArea.tradeAreaName 
+                    name: tradeArea.tradeAreaName
                 },
                 geometry: {
                     type: "Polygon",
@@ -3738,60 +3943,115 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
 
         let randomNumber = Math.round(Math.random() * 1000000000).toString();
-        let competitorFeaturesListSplit = constructCompetitorFeatureSplit(new Date(periodStartDate), new Date(periodEndDate), competitorFeaturesList);
+        constructCompetitorFeatureSplit(periodStartDate, periodEndDate, competitorFeaturesList, function (competitorFeaturesListSplit) {
+            if (competitorFeaturesListSplit.length === 0) {
+                setIsLoadingBiReport(false);
+                return;
+            }
+            deleteCompetitorAnalysisEntity();
+            Xrm.WebApi.createRecord("crcef_competitoranalysishistoryheader", { "crcef_recordname": recordName })
+                .then(function success(result) {
+                    let additionalDetails = {
+                        competitorHistoryGuid: result.id,
+                        startDate: periodStartDate,
+                        endDate: periodEndDate,
+                        randomNumber: randomNumber
+                    };
 
-        if (competitorFeaturesListSplit.length === 0) {
-            setIsLoadingBiReport(false);
-            return;
-        }
-        deleteCompetitorAnalysisEntity();
-        Xrm.WebApi.createRecord("crcef_competitoranalysishistoryheader", { "crcef_recordname": recordName })
-            .then(function success(result) {
-                let additionalDetails = {
-                    competitorHistoryGuid: result.id,
-                    startDate: periodStartDate,
-                    endDate: periodEndDate,
-                    randomNumber: randomNumber
-                };
+                    createCompetitorSelectedTradeArea(JSON.stringify(additionalDetails), competitorFeaturesListSplit);
+                });
 
-                createCompetitorSelectedTradeArea(JSON.stringify(additionalDetails), competitorFeaturesListSplit);
-            });
-
-        setComparisonTradeAreaList([]);
+            setComparisonTradeAreaList([]);
+        });
     }
 
-    function constructCompetitorFeatureSplit(periodStartDate: Date, periodEndDate: Date, competitorFeaturesList: any) {
+    function constructCompetitorFeatureSplit(periodStartDate: string, periodEndDate: string, competitorFeaturesList: any, callbackfunction : (competitorFeaturesListSplit: number[][]) => void) {
         let maxArea = 0;
 
-        competitorFeaturesList.forEach((feature : any) => {
-            let polygonArea = turf.area(feature.geometry);
-            feature.properties.area = polygonArea;
+        let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
+        let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
+
+        let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
+        let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
+
+        let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
+            Xrm.WebApi
+                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")
+                .then(function (response: any) {
+                    // Process response
+                    resolve(response);
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                    reject();
+                });
         });
+        fetchDemographicsHeaderPromise.then(function (result: any) {
+            let entities = result.entities;
+            let demographicHeaderId = entities[0].crcef_demographicdataheaderid
+            console.log("Header ID >>>>>>>", entities[0].crcef_demographicdataheaderid);
 
-        let weekdifference = Math.ceil((new Date(periodEndDate).getTime() - new Date(periodStartDate).getTime()) / (7 * 24 * 60 * 60 * 1000));
+            //demo line
+            let demographicLinePromise = new Promise<void>((resolve, reject) => {
+                Xrm.WebApi
+                    .retrieveMultipleRecords("crcef_demographicdata","?$select=_crcef_headerid_value,_crcef_tradearea_value,crcef_demographicdataid,crcef_tradeareasname&$filter=_crcef_headerid_value eq '"+ demographicHeaderId + "'")
+                    .then((lineResponse: any) => {
+                        resolve(lineResponse);
+                    });
+            });
 
-        switch (weekdifference) {
-            case 1:
-                maxArea = 450000; 
-                break;
-            case 2:
-                maxArea = 350000;
-                break;
-            case 3:
-                maxArea = 180000;
-                break;
-            case 4:
-                maxArea = 125000;
-                break;
-            case 5:
-                maxArea = 75000;
-                break;
-            case 6:
-                maxArea = 50000;
-                break;
-        }
+            demographicLinePromise.then(function (result: any) {
+                let lineEntities = result.entities;
+                let lineDetails : DemographicLineDetails;
+                let lineDetailsList : DemographicLineDetails [] = [];
 
-        return splitCompetitorFeatureList(competitorFeaturesList,maxArea);
+                for (let line = 0; line < lineEntities.length; line++)
+                {
+                    lineDetails = {
+                        tradeAreaId: lineEntities[line]._crcef_tradearea_value,
+                        tradeAreaName: lineEntities[line].crcef_tradeareasname,
+                        lineGuid: lineEntities[line].crcef_demographicdataid
+                    }
+                    lineDetailsList.push(lineDetails);
+                }
+
+                competitorFeaturesList.forEach((feature : any) => {
+                    let polygonArea = turf.area(feature.geometry);
+                    feature.properties.area = polygonArea;
+
+                    let currentLineDetails = lineDetailsList.find(line => line.tradeAreaId === feature.id);
+                    feature.properties.demographicLineGuid = currentLineDetails?.lineGuid;
+                });
+
+                let weekdifference = Math.ceil((new Date(periodEndDate).getTime() - new Date(periodStartDate).getTime()) / (7 * 24 * 60 * 60 * 1000));
+
+                switch (weekdifference) {
+                    case 1:
+                        maxArea = 450000; 
+                        break;
+                    case 2:
+                        maxArea = 350000;
+                        break;
+                    case 3:
+                        maxArea = 180000;
+                        break;
+                    case 4:
+                        maxArea = 125000;
+                        break;
+                    case 5:
+                        maxArea = 75000;
+                        break;
+                    case 6:
+                        maxArea = 50000;
+                        break;
+                }
+                let competitorFeatureList : number[][] = splitCompetitorFeatureList(competitorFeaturesList,maxArea);
+                callbackfunction(competitorFeatureList);
+            })
+            .catch(function(result) {
+                callbackfunction([]);
+            })
+        })
     }
 
     function splitCompetitorFeatureList(competitorFeaturesList: any, maxArea: number) {
@@ -3878,6 +4138,120 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         setHistoryRecordGuid('');
         deleteCompetitorModalToggle();
         competitorReportModalToggle();
+    }
+
+    function onGenerateBrandAffinityData(fromDate: Date, toDate: Date) {
+        let today = new Date();
+        validateReportDates(fromDate, toDate, today);
+        setIsLoadingBiReport(true);
+
+        let ISOStartDate = fromDate.toISOString();//2022-01-18T00:00:00.000Z
+        let ISOEndDate = toDate.toISOString();//
+        let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")//2022-01-16 00:00:00
+        let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");//2022-01-16 23:59:59
+
+        let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
+        let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
+
+        let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
+        let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
+
+        let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
+            Xrm.WebApi
+                .retrieveMultipleRecords("crcef_brandaffinityheader", "?$select=crcef_brandaffinityheaderid,crcef_fromdate,crcef_todate&$filter=crcef_fromdate ge '"+ startDate0hr + "'" + " and crcef_fromdate le '" + startDate23hr + "'" + " and crcef_todate ge '" + endDate0hr + "'" + " and crcef_todate le '" + endDate23hr + "'")
+                .then(function (response: any) {
+                    // Process response
+                    resolve(response);
+                })
+                .catch(function (error: any) {
+                    // Handle error
+                    reject();
+                });
+        });
+        fetchDemographicsHeaderPromise.then(function (result: any) {
+            let entities = result.entities;
+
+            if (entities.length === 0) {
+                setIsLoadingBiReport(false);
+                alert("Please select a valid date range for which brand affinity details is available");
+            }
+            else {
+                let brandAffinityHeaderId = entities[0].crcef_brandaffinityheaderid;
+
+                let additionalDetails = {
+                    startDate: periodStartDate,
+                    endDate: periodEndDate,
+                    brandAffinityHeaderGuid: brandAffinityHeaderId
+                };
+
+                createBrandAffinitySelectedTradeArea(JSON.stringify(additionalDetails));
+            }
+        });
+
+        setActiveBtnId('');
+        brandAffinityReportModalToggle()
+    }
+
+    function onBrandAffinityReportCancel() {
+        brandAffinityReportModalToggle();
+        setActiveBtnId('');
+    }
+
+    function createBrandAffinitySelectedTradeArea(additionalDetails: any) {
+        let ownerIdValue = getUserIdValue();
+        let request = {
+            entityName: "crcef_selectedtradearea",
+            entity: {
+                crcef_storeid : additionalDetails,
+                crcef_reporttype: ReportTypeValue.BRAND_AFFINITY
+            }
+        };
+
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+                let promisesArray = [];
+
+                for (var i = 0; i < entities.length; i++) {
+                    let tradeareaId = entities[i].crcef_selectedtradeareaid;
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
+                                resolve();
+                            });
+                    });
+                    promisesArray.push(promise);
+                }
+
+                Promise.all(promisesArray).then(() => {
+                    WebApiClient.Create(request)
+                        .then(function (response: any) {
+                            // Process response
+                            showPowerBiBrandAffinityReport();
+                        })
+                        .catch(function (error: any) {
+                            // Handle error
+                            let errorMessage: string = error.message;
+                            let errorContent = errorMessage.split(": ");
+                            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
+                            nearApiErrorModalToggle();
+                            setIsLoadingBiReport(false);
+                            console.log(error);
+                        });
+                });
+            });
+    }
+
+    function showPowerBiBrandAffinityReport() {
+        let globalContext = Xrm.Utility.getGlobalContext();
+        let orgurl = globalContext.getClientUrl();
+
+        let dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=235078f9-198f-ec11-b400-000d3a36e92f&dashboardType=1030&pagemode=iframe`;
+
+        setTimeout(() => {
+            setIsLoadingBiReport(false);
+            window.open(dashboardUrl);
+        }, 6000);
     }
 
     /**
@@ -3984,11 +4358,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                             <ToolbarButtonFC tooltipName={TooltipName.TRADE_AREA_CHART} btnId={ButtonId.TRADE_AREA_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
                                 <image href={tradeAreaReportImg} />
                             </ToolbarButtonFC>
-                            <ToolbarButtonFC tooltipName={TooltipName.A_STORE_CHART} btnId={ButtonId.A_STORE_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
-                                <image href={storeReportImg} />
-                            </ToolbarButtonFC>
                             <ToolbarButtonFC tooltipName={TooltipName.COMPETITOR_CHART} btnId={ButtonId.COMPETITOR_CHART} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
                                 <image href={competitorAnalysisReportImg} />
+                            </ToolbarButtonFC>
+                            <ToolbarButtonFC tooltipName={TooltipName.BRAND_AFFINITY} btnId={ButtonId.BRAND_AFFINITY} activeBtnId={activeBtnId} onClickHandler={onToolbarBtnClick}>
+                                <image href={storeReportImg} />
                             </ToolbarButtonFC>
                         </div>
                         <div className="button-group-content">
@@ -4132,6 +4506,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         onConfirm={onDeleteCompetitorDataConfirm}
                         onCancel={onDeleteCompetitorDataCancel}
                         message="Do you want to delete the selected data?"
+                    />
+                } />
+                <ModalFC isShown={isBrandAffinityReportModalShown} hide={onBrandAffinityReportCancel} headerText={'Brand affinity report'} modalContent={
+                    <BrandAffinityReportModalFC
+                        onGenerateNewReport={onGenerateBrandAffinityData}
                     />
                 } />
             </React.Fragment>

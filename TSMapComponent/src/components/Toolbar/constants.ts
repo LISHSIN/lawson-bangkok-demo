@@ -172,6 +172,8 @@ export enum ButtonId {
 
     COMPETITOR_CHART = "CompetitorAnalysis",
 
+    BRAND_AFFINITY = "BrandAffinityReport",
+
     REFRESH = "refresh",
 }
 
@@ -208,6 +210,8 @@ export enum TooltipName {
 
     COMPETITOR_CHART = "Competitor analysis",
 
+    BRAND_AFFINITY = "Brand affinity report",
+
     REFRESH = "Refresh",
 }
 
@@ -236,5 +240,7 @@ export enum PowerBIReportType {
 export enum ReportTypeValue {
     STATISTICS = 657950000,
 
-    COMPETITOR = 657950001
+    COMPETITOR = 657950001,
+
+    BRAND_AFFINITY = 657950002
 }

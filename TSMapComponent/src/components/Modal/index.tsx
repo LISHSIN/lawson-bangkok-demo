@@ -6,6 +6,7 @@ import CircleModalFC from './CircleModal';
 import ConfirmationModalFC from './ConfirmationModal';
 import CreateTradeAreaModalFC from './TradeAreaModal';
 import { ListOfHistoricalModalFC, SaveFootfallModalFC } from './HistoricalModal';
+import { BrandAffinityReportModalFC } from './BrandAffinityModal';
 import { CompetitorReportModalFC } from './CompetitorReportModal';
 import { AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC, StatisticsReportErrorModalFC, NearApiErrorModalFC } from './ErrorModel';
 
@@ -26,6 +27,7 @@ export {
     UnSavedShapeErrorModalFC,
     StatisticsReportErrorModalFC,
     NearApiErrorModalFC,
+    BrandAffinityReportModalFC
 }
 
 export interface ModalProps {

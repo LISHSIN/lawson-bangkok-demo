@@ -38,3 +38,9 @@ export interface CompetitorReportHistoryInfo{
     recordName: string,
     historicalRecordGuid: string 
 }
+
+export interface DemographicLineDetails {
+    tradeAreaId: string,
+    tradeAreaName: string
+    lineGuid: string
+}
