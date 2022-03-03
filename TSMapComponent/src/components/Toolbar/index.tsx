@@ -55,6 +55,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [unSaveModifyTradeAreaFeatureId, setUnSaveModifyTradeAreaFeatureId] = useState<string | undefined>(undefined);
     const [storeStatisticsCircleFeatureId, setStoreStatisticsCircleFeatureId] = useState<string | undefined>(undefined);
     const [selectedStatisticsFeature, setSelectedStatisticsFeature] = useState<GeoJSON.Feature | undefined>(undefined);
+    const [tradeAreaStatisticsDashboardURL, setTradeAreaStatisticsDashboardURL] = useState<string>('');
 
     const [aStoreApiActionType, setAStoreApiActionType] = useState<AStoreActionType | undefined>(undefined);
     const [aStoreFeature, setAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
@@ -492,6 +493,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }, [selectedHistoricalDataGuid]);
 
     useEffect(() => {
+        getTradeAreaStatisticsDashboardURL();
         getCompetitorAnalysisDashboardURL();
     }, []);
 
@@ -818,6 +820,24 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             return f;
         });
         setTradeAreaFeatureList(featureList);
+    }
+
+    /**
+     * This function is used to get
+     * Trade Area Statistics Dashboard URL
+     */
+     function getTradeAreaStatisticsDashboardURL() {
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'store'")
+            .then(function (response) {
+                // Process response
+                let url = response.entities[0].crcef_tradeareastatisticsappurl;
+                setTradeAreaStatisticsDashboardURL(url);
+            })
+            .catch(function (error) {
+                // Handle error
+                console.log(error)
+            });
     }
 
     /**
@@ -2358,15 +2378,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     function fetchTradeAreaDemographics () {
-        let startDate0hr = "2022-01-09T00:00:00"; //periodStartDate.replace(' ', 'T');
-        let startDate23hr = "2022-01-09T23:59:59"; //startDate0hr.replace('00:00:00', '23:59:59');
-
-        let endDate0hr = "2022-01-22T00:00:00"; //endDate23hr.replace('23:59:59', '00:00:00');
-        let endDate23hr = "2022-01-22T23:59:59";//periodEndDate.replace(' ', 'T');
+        let startDate0hr = "2022-01-10";
+        let endDate0hr = "2022-01-23";
 
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
             Xrm.WebApi
-                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")
+                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate eq "+ startDate0hr + " and crcef_enddate eq " + endDate0hr)
                 .then(function (response: any) {
                     // Process response
                     resolve(response);
@@ -3967,16 +3984,12 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     function constructCompetitorFeatureSplit(periodStartDate: string, periodEndDate: string, competitorFeaturesList: any, callbackfunction : (competitorFeaturesListSplit: number[][]) => void) {
         let maxArea = 0;
-
-        let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
-        let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
-
-        let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
-        let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
-
+        let startDate = periodStartDate.substring(0, 10);
+        let endDate = periodEndDate.substring(0, 10);
+        
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
             Xrm.WebApi
-                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")
+                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate eq "+ startDate + " and crcef_enddate eq " + endDate)
                 .then(function (response: any) {
                     // Process response
                     resolve(response);
@@ -4145,20 +4158,17 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         validateReportDates(fromDate, toDate, today);
         setIsLoadingBiReport(true);
 
-        let ISOStartDate = fromDate.toISOString();//2022-01-18T00:00:00.000Z
-        let ISOEndDate = toDate.toISOString();//
-        let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")//2022-01-16 00:00:00
-        let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");//2022-01-16 23:59:59
+        let ISOStartDate = fromDate.toISOString();
+        let ISOEndDate = toDate.toISOString();
+        let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ");
+        let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
 
-        let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
-        let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
-
-        let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
-        let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
+        let startDate = periodStartDate.substring(0, 10);
+        let endDate = periodEndDate.substring(0, 10);
 
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
             Xrm.WebApi
-                .retrieveMultipleRecords("crcef_brandaffinityheader", "?$select=crcef_brandaffinityheaderid,crcef_fromdate,crcef_todate&$filter=crcef_fromdate ge '"+ startDate0hr + "'" + " and crcef_fromdate le '" + startDate23hr + "'" + " and crcef_todate ge '" + endDate0hr + "'" + " and crcef_todate le '" + endDate23hr + "'")
+                .retrieveMultipleRecords("crcef_brandaffinityheader", "?$select=crcef_brandaffinityheaderid,crcef_fromdate,crcef_todate&$filter=crcef_fromdate eq "+ startDate + " and crcef_todate eq " + endDate)
                 .then(function (response: any) {
                     // Process response
                     resolve(response);
@@ -4277,7 +4287,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             setMockAStoreFeature(undefined);
             dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=b1262a4d-7743-eb11-a813-000d3a1a2401&dashboardType=1030&pagemode=iframe`;
         } else {
-            dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=9DD79E5B-07F8-EA11-A815-000D3A8FAAA7&dashboardType=1030&pagemode=iframe`;
+            dashboardUrl = tradeAreaStatisticsDashboardURL;
         }
 
         setTimeout(() => {
