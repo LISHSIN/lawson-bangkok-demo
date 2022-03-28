@@ -1,5 +1,5 @@
 export enum UserStatusValue {
-    ENABLED = 100000000,
+    ENABLED = 657950000,
 
-    DISABLED = 100000001,
+    DISABLED = 657950001,
 }
