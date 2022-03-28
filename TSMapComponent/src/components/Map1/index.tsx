@@ -457,6 +457,7 @@ export const Map1FC: React.FC<Map1Props> = (props => {
                     let individualResults = JSON.parse(result.entities[i].crcef_tradeareajson);
                     let feature = individualResults;
                     feature.properties.risk = true;
+                    feature.properties.tradeAreaGuid = result.entities[i].crcef_lawsontradeareaid;
 
                     mapDraw?.add(feature);
                     tradeAreaFeatureList.push(feature);

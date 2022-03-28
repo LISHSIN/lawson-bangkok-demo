@@ -7,6 +7,7 @@ import ConfirmationModalFC from './ConfirmationModal';
 import CreateTradeAreaModalFC from './TradeAreaModal';
 import { ListOfHistoricalModalFC, SaveFootfallModalFC } from './HistoricalModal';
 import { CompetitorReportModalFC } from './CompetitorReportModal';
+import { BrandAffinityReportModalFC } from './BrandAffinityModal';
 import { AttributeErrorModalFC, CrmLicenseErrorModalFC, VerticesRestrictionErrorModalFC, SelfIntersectionErrorModalFC, SelectOnStoreErrorModalFC, RadiusRestrictionErrorModalFC, UnSavedShapeErrorModalFC, StatisticsReportErrorModalFC, NearApiErrorModalFC } from './ErrorModel';
 
 export {
@@ -26,6 +27,7 @@ export {
     UnSavedShapeErrorModalFC,
     StatisticsReportErrorModalFC,
     NearApiErrorModalFC,
+    BrandAffinityReportModalFC
 }
 
 export interface ModalProps {

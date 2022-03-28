@@ -120,7 +120,6 @@ export const CompetitorReportModalFC: React.FC<CompetitorReportModalProps> = (pr
      */
     function onCheckboxChange(e: React.ChangeEvent) {
         let value = (e.target as HTMLInputElement).value;
-        //console.log(value);
         props.onCheckboxChanged(value);
     }
 
@@ -224,7 +223,7 @@ export const CompetitorReportModalFC: React.FC<CompetitorReportModalProps> = (pr
                                 onChange={onFromDateInputChange}
                             />
                         </div>
-                        <div>To</div>
+                        <div>to</div>
                         <div className="end-date">
                             <input 
                                 type="date"
@@ -244,7 +243,7 @@ export const CompetitorReportModalFC: React.FC<CompetitorReportModalProps> = (pr
                             <input type="text" onChange={onTextInputChange}/>
                         </div>
                         <div className="button-column">
-                            <button className="generate-new-report-btn" onClick={onGenerateNewReportClick}>Generete New Report</button>
+                            <button className="generate-new-report-btn" onClick={onGenerateNewReportClick} disabled>Generete New Report</button>
                         </div>
                     </div>
                 </div>
