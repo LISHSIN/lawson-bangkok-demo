@@ -3556,6 +3556,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function createCompetitorSelectedTradeArea(additionalDetails: any, competitorFeatures: any) {
         let ownerIdValue = getUserIdValue();
         let requests: any[] = [];
+        let pendingRequests : any[] = [];
 
         var Sdk = (window as any).Sdk || {};
 
@@ -3593,6 +3594,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             requests.push(createRequest);
         }
 
+        pendingRequests = requests.slice();
+
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
                 let entities = result.entities;
@@ -3611,43 +3614,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
 
                 Promise.all(deletePromisesArray).then(() => {
-                    Xrm.WebApi.online.executeMultiple(requests)
-                        .then(function (response: any) {
-                            // Process response
-                            let selectedTradeAreaGuid = response[0].headers._headers.Location.slice(-37,-1);
-                            if (selectedTradeAreaGuid !== undefined) {
-                                Xrm.WebApi.updateRecord("crcef_selectedtradearea", selectedTradeAreaGuid, {"crcef_pushdatatoazure":true})
-                                    .then(function (response: any) {
-                                        showPowerBiCompetitorReport();
-                                        setActiveBtnId('');
-                                        setSelectedReportType(undefined);
-                                    })    
-                                    .catch(function (error: any) {
-                                        // Handle error
-                                        setIsLoadingBiReport(false);
-                                        setActiveBtnId('');
-                                        setSelectedReportType(undefined);
-
-                                        let errorMessage: string = error.message;
-                                        let errorContent = errorMessage.split(": ");
-                                        setNearApiErrorMessage("Azure Plugin has return the following error" + errorMessage.toUpperCase());
-                                        nearApiErrorModalToggle();
-                                        console.log(error);
-                                    });
-                            }
-                        })
-                        .catch(function (error: any) {
-                            // Handle error
-                            setIsLoadingBiReport(false);
-                            setActiveBtnId('');
-                            setSelectedReportType(undefined);
-
-                            let errorMessage: string = error.message;
-                            let errorContent = errorMessage.split(": ");
-                            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
-                            nearApiErrorModalToggle();
-                            console.log(error);
-                        });
+                    let currentRequest = pendingRequests.splice(0, 2);
+                    executeNearApiRequest(currentRequest, pendingRequests);
                 });
             })
             .catch(function (error: any) {
@@ -3655,6 +3623,51 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             });
         //set loader to true
         competitorReportModalToggle();
+    }
+
+    function executeNearApiRequest(currentRequest: any, pendingRequests: any) {
+        Xrm.WebApi.online.executeMultiple(currentRequest)
+        .then(function (response: any) {
+            if (pendingRequests.length === 0) {
+                let selectedTradeAreaGuid = response[0].headers._headers.Location.slice(-37,-1);
+                if (selectedTradeAreaGuid !== undefined) {
+                    Xrm.WebApi.updateRecord("crcef_selectedtradearea", selectedTradeAreaGuid, {"crcef_pushdatatoazure":true})
+                        .then(function (response: any) {
+                            showPowerBiCompetitorReport();
+                            setActiveBtnId('');
+                            setSelectedReportType(undefined);
+                        })  
+                        .catch(function (error: any) {
+                            // Handle error
+                            setIsLoadingBiReport(false);
+                            setActiveBtnId('');
+                            setSelectedReportType(undefined);
+    
+                            let errorMessage: string = error.message;
+                            let errorContent = errorMessage.split(": ");
+                            setNearApiErrorMessage("Azure Plugin has return the following error" + errorMessage.toUpperCase());
+                            nearApiErrorModalToggle();
+                            console.log(error);
+                        });
+                }
+            } else {
+                let currentRequest = pendingRequests.splice(0, 2);
+                executeNearApiRequest(currentRequest, pendingRequests);
+            }
+        })
+        .catch(function (error: any) {
+            // Handle error
+            console.log(">>>Near api method - catch")
+            setIsLoadingBiReport(false);
+            setActiveBtnId('');
+            setSelectedReportType(undefined);
+
+            let errorMessage: string = error.message;
+            let errorContent = errorMessage.split(": ");
+            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
+            nearApiErrorModalToggle();
+            console.log(error);
+        });
     }
 
     function deleteCompetitorAnalysisEntity() {
