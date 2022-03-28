@@ -244,3 +244,11 @@ export enum ReportTypeValue {
 
     BRAND_AFFINITY = 657950002
 }
+
+export enum ProcessingStatusValue {
+    NEW = 657950000,
+
+    REPROCESS = 657950001,
+
+    COMPLETED = 657950002
+}

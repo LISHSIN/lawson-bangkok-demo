@@ -25,8 +25,8 @@ import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'co
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 
 import { mockHistoryList, mockTradeAreaList, mockCompetitorHistoryData } from './mock';
-import { CircleInfo, ProcessedAStoreData, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails } from './module';
-import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName, PowerBIReportType, ReportTypeValue } from './constants';
+import { CircleInfo, ProcessedAStoreData, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails, CompetitorAnalysisInfo } from './module';
+import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName, PowerBIReportType, ReportTypeValue, ProcessingStatusValue } from './constants';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
 type AStoreActionType = AStoreActionId.CREATE | AStoreActionId.UPDATE | AStoreActionId.DELETE;
@@ -72,16 +72,34 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     //Competitor Modal
     const [tradeAreaList, setTradeAreaList] = useState<TradeAreaInfo[]>([]);
+    const [competitorRecordName, setCompetitorRecordName] = useState<string>('');
+    const [competitorPeriodStartDate, setCompetitorPeriodStartDate] = useState<string>('');
+    const [competitorPeriodEndDate, setCompetitorPeriodEndDate] = useState<string>('');
     const [competitorHistoryList, setCompetitorHistoryList] = useState<CompetitorReportHistoryInfo[]>([]);
+    const [competitorMaxArea, setCompetitorMaxArea] = useState<number>(0);
+    const [competitorNearApiFeatureList, setCompetitorNearApiFeatureList] = useState<GeoJSON.Feature[]>([]);
+    const [competitorNearApiFeatureWithDemographicList, setCompetitorNearApiFeatureWithDemographicList] = useState<GeoJSON.Feature[]>([]);
+    const [competitorSplitNearApiFeatureList, setCompetitorSplitNearApiFeatureList] = useState<GeoJSON.Feature[][]>([]);
 
-    //Competitor analysis
-    const [comparisonTradeAreaList, setComparisonTradeAreaList] = useState<TradeAreaInfo[]>([]);
+    // Competitor analysis
+    const [selectedTradeAreaList, setSelectedTradeAreaList] = useState<TradeAreaInfo[]>([]);
     const [competitorHistoryGuid, setCompetitorHistoryGuid] = useState<string | undefined>(undefined);
-    const [historyRecordGuid, setHistoryRecordGuid] = useState<string>('');
+    const [competitorAnalysisDetailList, setCompetitorAnalysisDetailList] = useState<CompetitorAnalysisInfo[]>([]);
     const [competitorAnalysisDashboardURL, setCompetitorAnalysisDashboardURL] = useState<string>('');
+    const [deleteStatisticsHistoryRecordGuid, setDeleteStatisticsHistoryRecordGuid] = useState<string>('');
+    const [deleteCompetitorAnalysisHistoryHeaderGuid, setDeleteCompetitorAnalysisHistoryHeaderGuid] = useState<string>('');
     const [errorTradeAreaName, setErrorTradeAreaName] = useState<string>('');
 
+    // Selected Trade Area List for Competitor Analysis - Near Api
+    const [initialCompetitorSelectedTradeAreaGuids, setInitialCompetitorSelectedTradeAreaGuids] = useState<any[]>([]);
+    const [completedCompetitorSelectedTradeAreaGuid, setCompletedCompetitorSelectedTradeAreaGuid] = useState<string>('');
+
     // Ref Variables
+    let { current: pluginStartTimeRef } = useRef({
+        statistics: undefined as Date | undefined,
+        competitorAnalysis: undefined as Date | undefined,
+        completedCompetitorSelectedTradeAreaGuidList: [] as string[],
+    });
     const navigationRef = useRef<HTMLDivElement>(null);
     const { current: toggleBtnRef } = useRef({
         el: null as HTMLAnchorElement | null,
@@ -484,9 +502,58 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }, [aStoreFeature]);
 
     useEffect(() => {
+        if (competitorNearApiFeatureList.length > 0) {
+            updateDemographicLineToCompetitorSelectedTradeAreaFeatureList();
+        }
+    }, [competitorNearApiFeatureList]);
+
+    useEffect(() => {
+        if (competitorNearApiFeatureWithDemographicList.length > 0) {
+            updateComptitorSplitSelectedTradeAreaFeatureList()
+        }
+    }, [competitorNearApiFeatureWithDemographicList]);
+
+    useEffect(() => {
+        if (competitorSplitNearApiFeatureList.length > 0) {
+            deleteAndCreateCompetitorAnalysisApiCall();
+        }
+    }, [competitorSplitNearApiFeatureList]);
+
+    useEffect(() => {
+        if (competitorAnalysisDetailList.length > 0) {
+            deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall();
+        }
+    }, [competitorAnalysisDetailList]);
+
+    useEffect(() => {
+        if (initialCompetitorSelectedTradeAreaGuids.length > 0) {
+            for (let i = 0; i < initialCompetitorSelectedTradeAreaGuids.length; i++) {
+                let guid = initialCompetitorSelectedTradeAreaGuids[i]
+                checkCurrentSelectedTradeAreaPluginStatusById(guid);
+            }
+        }
+    }, [initialCompetitorSelectedTradeAreaGuids]);
+
+    useEffect(() => {
+        let completedList = pluginStartTimeRef.completedCompetitorSelectedTradeAreaGuidList;
+        if (completedCompetitorSelectedTradeAreaGuid !== '') {
+            completedList.push(completedCompetitorSelectedTradeAreaGuid);
+        }
+        if (initialCompetitorSelectedTradeAreaGuids.length > 0 && completedList.length === initialCompetitorSelectedTradeAreaGuids.length) {
+            createCompetitorAnalysisHistoryHeaderApiCall();
+        }
+    }, [completedCompetitorSelectedTradeAreaGuid]);
+
+    useEffect(() => {
+        if (competitorHistoryGuid !== undefined) {
+            deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall();
+        }
+    }, [competitorHistoryGuid]);
+
+    useEffect(() => {
         if ((selectedStatisticsFeature !== undefined) && (selectedHistoricalDataGuid !== undefined)) {
-            let processedStoreDetails: ProcessedAStoreData = processFilteredAStores(); 
-            selectedTradeAreaApiCall(JSON.stringify(processedStoreDetails.nearAPIFeature)
+            let processedStoreDetails: ProcessedAStoreData = processFilteredAStores();
+            deleteAndCreateSelectedTradeAreaForStatisticsApiCall(JSON.stringify(processedStoreDetails.nearAPIFeature)
                                     , JSON.stringify(processedStoreDetails.additionalReportDetails));
             setSelectedHistoricalDataGuid(undefined);
         }
@@ -638,7 +705,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @return Boolean value
      */
     function isValidCompetitorReport(recordName: string, fromDate: Date, toDate: Date) {
-        if (comparisonTradeAreaList.length < 2) {
+        if (selectedTradeAreaList.length < 2) {
             alert("Please select minimum 2 trade areas");
             return false;
         }
@@ -688,6 +755,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function getUserIdValue() {
         return Xrm.Page.context.getUserId().replace("{", "").replace("}", "");
+    }
+
+    /**
+     * This function is used to get
+     * the guid from response data
+     * @param res web api response
+     * @return guid
+     */
+    function getGUIDFromResponse(res: any) {
+        return res.headers._headers.Location.slice(-37, -1);
     }
 
     /**
@@ -823,6 +900,23 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
+     * This function is used to get the Near Api Request
+     * Details along with Guid information like TradeArea,
+     * Demographic, Competitor Analysis entity...
+     * @param splitNearApiFeatureList List Near Api Features per request
+     * @return CompetitorAnalysisInfo - competitor analysis information details
+     */
+    function getCompetitorAnalysisNearApiRequestDetailList(splitNearApiFeatureList: GeoJSON.Feature[]): CompetitorAnalysisInfo[] {
+        let nearApiRequestDetails: CompetitorAnalysisInfo[] = [];
+        for (let i = 0; i < splitNearApiFeatureList.length; i++) {
+            let nearApiFeature = splitNearApiFeatureList[i];
+            let competitorAnalysisObj = competitorAnalysisDetailList.find(ca => ca.crcef_tradeareareference === nearApiFeature.id) as CompetitorAnalysisInfo;
+            nearApiRequestDetails.push(competitorAnalysisObj);
+        }
+        return nearApiRequestDetails;
+    }
+
+    /**
      * This function is used to get
      * Competitor Analysis Dashboard URL
      */
@@ -844,7 +938,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to get
      * Trade Area Statistics Dashboard URL
      */
-     function getTradeAreaStatisticsDashboardURL() {
+    function getTradeAreaStatisticsDashboardURL() {
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'store'")
             .then(function (response) {
@@ -968,6 +1062,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let { storeReport } = createStatistics;
         storeReport.center = [0, 0];
         modifyPolygonArea.featureId = "";
+    }
+
+    /**
+     * This function is used to reset the
+     * Competetior Selected TradeArea Guid List values
+     */
+    function resetCompletedCompetetiorSelectedTradeAreaGuidRefValue() {
+        pluginStartTimeRef.completedCompetitorSelectedTradeAreaGuidList = [];
     }
 
     /**
@@ -1291,6 +1393,19 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             dStore: totalDStore,
             eStore: totalEStore,
             tatal: totalCompetitiores,
+        };
+    }
+
+    function constructCompetitorAnalysisObj(guid: string, nearApiFeature: GeoJSON.Feature): CompetitorAnalysisInfo {
+        let tradeAreaGuid = nearApiFeature.id as string;
+        let property: any = nearApiFeature.properties;
+        // let demographicLineGuid = (property.demographicLineGuid === undefined) ? '' : property.demographicLineGuid;
+
+        return {
+            crcef_competitoranalysisid: guid,
+            crcef_tradearea: property.name,
+            crcef_tradeareareference: tradeAreaGuid,
+            // crcef_demographiclinereference: demographicLineGuid,
         };
     }
 
@@ -2381,7 +2496,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to fetch
      * the demographic details for the report.
      */
-    function fetchTradeAreaDemographics () {
+    function fetchTradeAreaDemographics() {
         let startDate0hr = "2022-01-10";
         //let startDate23hr = "2022-01-10T23:59:59";
 
@@ -2435,306 +2550,171 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * duplicate "A" store into D635
      */
     function createFilteredAStoreFeaturesApiCall(tradeAreaDemographics : any) {
-        let randomNumber = Math.floor(Math.random() * 100) + 1;
-        let promisesArray = [];
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
         const { bStore: totalBStore, cStore: totalCStore, dStore: totalDStore, eStore: totalEStore, tatal: totalTatal } = aggregatedCompetitorStoreObj;
+
+        let promisesArray = [];
+        let randomNumber = Math.floor(Math.random() * 100) + 1;
 
         for (let i = 0; i < filteredAStoreFeatures.length; i++) {
             let feature = filteredAStoreFeatures[i];
             if (feature !== null) {
                 let property: any = feature.properties;
                 let totalff = getTotalFootFall(property);
-                let request : any;
+                let request: any = {
+                    entityName: "crcef_lawsonstore",
+                    entity: {
+                        crcef_randomnumber: randomNumber,
+                        crcef_id: property.crcef_id,
+                        crcef_storename: property.crcef_storename,
+                        crcef_addresspluscode: property.crcef_addresspluscode,
+                        crcef_lat: property.crcef_lat,
+                        crcef_lon: property.crcef_lon,
+                        crcef_tell: property.crcef_tell,
+                        crcef_lastmonthssales: property.crcef_lastmonthssales,
+                        crcef_thismonthssales: property.crcef_thismonthssales,
+                        crcef_transactioncount: property.crcef_transactioncount,
+                        crcef_custmeravg: property.crcef_custmeravg,
+                        crcef_abca: property.crcef_abca,
+                        crcef_abcb: property.crcef_abcb,
+                        crcef_abcc: property.crcef_abcc,
+                        crcef_lankingtop1: property.crcef_lankingtop1,
+                        crcef_lankingtop2: property.crcef_lankingtop2,
+                        crcef_lankingtop3: property.crcef_lankingtop3,
+                        crcef_0oclock: property.crcef_0oclock,
+                        crcef_1oclock: property.crcef_1oclock,
+                        crcef_2oclock: property.crcef_2oclock,
+                        crcef_3oclock: property.crcef_3oclock,
+                        crcef_4oclock: property.crcef_4oclock,
+                        crcef_5oclock: property.crcef_5oclock,
+                        crcef_6oclock: property.crcef_6oclock,
+                        crcef_7oclock: property.crcef_7oclock,
+                        crcef_8oclock: property.crcef_8oclock,
+                        crcef_9oclock: property.crcef_9oclock,
+                        crcef_10oclock: property.crcef_10oclock,
+                        crcef_11oclock: property.crcef_11oclock,
+                        crcef_12oclock: property.crcef_12oclock,
+                        crcef_13oclock: property.crcef_13oclock,
+                        crcef_14oclock: property.crcef_14oclock,
+                        crcef_15oclock: property.crcef_15oclock,
+                        crcef_16oclock: property.crcef_16oclock,
+                        crcef_17oclock: property.crcef_17oclock,
+                        crcef_18oclock: property.crcef_18oclock,
+                        crcef_19oclock: property.crcef_19oclock,
+                        crcef_20oclock: property.crcef_20oclock,
+                        crcef_21oclock: property.crcef_21oclock,
+                        crcef_22oclock: property.crcef_22oclock,
+                        crcef_23oclock: property.crcef_23oclock,
+                        crcef_totalff: totalff,
+                        crcef_home1lat: property.crcef_home1lat,
+                        crcef_home1lon: property.crcef_home1lon,
+                        crcef_home1ratio: property.crcef_home1ratio,
+                        crcef_home2lat: property.crcef_home2lat,
+                        crcef_home2lon: property.crcef_home2lon,
+                        crcef_home2ratio: property.crcef_home2ratio,
+                        crcef_home3lat: property.crcef_home3lat,
+                        crcef_home3lon: property.crcef_home3lon,
+                        crcef_home3ratio: property.crcef_home3ratio,
+                        crcef_work1lat: property.crcef_work1lat,
+                        crcef_work1lon: property.crcef_work1lon,
+                        crcef_work1ratio: property.crcef_work1ratio,
+                        crcef_work2lat: property.crcef_work2lat,
+                        crcef_work2lon: property.crcef_work2lon,
+                        crcef_work2ratio: property.crcef_work2ratio,
+                        crcef_work3lat: property.crcef_work3lat,
+                        crcef_work3lon: property.crcef_work3lon,
+                        crcef_work3ratio: property.crcef_work3ratio,
+                        crcef_man0: totalMan0,
+                        crcef_man10: totalMan10,
+                        crcef_man20: totalMan20,
+                        crcef_man30: totalMan30,
+                        crcef_man40: totalMan40,
+                        crcef_man50: totalMan50,
+                        crcef_man60: totalMan60,
+                        crcef_man70: totalMan70,
+                        crcef_man80: totalMan80,
+                        crcef_man90: property.crcef_man90,
+                        crcef_man100: property.crcef_man100,
+                        crcef_woman0: totalWoman0,
+                        crcef_woman10: totalWoman10,
+                        crcef_woman20: totalWoman20,
+                        crcef_woman30: totalWoman30,
+                        crcef_woman40: totalWoman40,
+                        crcef_woman50: totalWoman50,
+                        crcef_woman60: totalWoman60,
+                        crcef_woman70: totalWoman70,
+                        crcef_woman80: totalWoman80,
+                        crcef_woman90: property.crcef_woman90,
+                        crcef_woman100: property.crcef_woman100,
+                        crcef_total: totalPopulation,
+                        crcef_7eleven: totalBStore,
+                        crcef_familymart: totalCStore,
+                        crcef_ministop: totalDStore,
+                        crcef_tescolotusexpress: totalEStore,
+                        crcef_tatal: totalTatal,
+                        crcef_0oclockweekend: property.crcef_0oclockweekend,
+                        crcef_1oclockweekend: property.crcef_1oclockweekend,
+                        crcef_2oclockweekend: property.crcef_2oclockweekend,
+                        crcef_3oclockweekend: property.crcef_3oclockweekend,
+                        crcef_4oclockweekend: property.crcef_4oclockweekend,
+                        crcef_5oclockweekend: property.crcef_5oclockweekend,
+                        crcef_6oclockweekend: property.crcef_6oclockweekend,
+                        crcef_7oclockweekend: property.crcef_7oclockweekend,
+                        crcef_8oclockweekend: property.crcef_8oclockweekend,
+                        crcef_9oclockweekend: property.crcef_9oclockweekend,
+                        crcef_10oclockweekend: property.crcef_10oclockweekend,
+                        crcef_11oclockweekend: property.crcef_11oclockweekend,
+                        crcef_12oclockweekend: property.crcef_12oclockweekend,
+                        crcef_13oclockweekend: property.crcef_13oclockweekend,
+                        crcef_14oclockweekend: property.crcef_14oclockweekend,
+                        crcef_15oclockweekend: property.crcef_15oclockweekend,
+                        crcef_16oclockweekend: property.crcef_16oclockweekend,
+                        crcef_17oclockweekend: property.crcef_17oclockweekend,
+                        crcef_18oclockweekend: property.crcef_18oclockweekend,
+                        crcef_19oclockweekend: property.crcef_19oclockweekend,
+                        crcef_20oclockweekend: property.crcef_20oclockweekend,
+                        crcef_21oclockweekend: property.crcef_21oclockweekend,
+                        crcef_22oclockweekend: property.crcef_22oclockweekend,
+                        crcef_23oclockweekend: property.crcef_23oclockweekend,
+                        crcef_02kmhomelocation: property.crcef_02kmhomelocation,
+                        crcef_24kmhomelocation: property.crcef_24kmhomelocation,
+                        crcef_46kmhomelocation: property.crcef_46kmhomelocation,
+                        crcef_68kmhomelocation: property.crcef_68kmhomelocation,
+                        crcef_810kmhomelocation: property.crcef_810kmhomelocation,
+                        crcef_10kmhomelocation: property.crcef_10kmhomelocation,
+                        crcef_02kmworklocation: property.crcef_02kmworklocation,
+                        crcef_24kmworklocation: property.crcef_24kmworklocation,
+                        crcef_46kmworklocation: property.crcef_46kmworklocation,
+                        crcef_68kmworklocation: property.crcef_68kmworklocation,
+                        crcef_810kmworklocation: property.crcef_810kmworklocation,
+                        crcef_10kmworklocation: property.crcef_10kmworklocation,
+                        crcef_mon: property.crcef_mon,
+                        crcef_tue: property.crcef_tue,
+                        crcef_wed: property.crcef_wed,
+                        crcef_thu: property.crcef_thu,
+                        crcef_fri: property.crcef_fri,
+                        crcef_sat: property.crcef_sat,
+                        crcef_sun: property.crcef_sun,
+                    }
+                };
+
                 if (tradeAreaDemographics !== undefined) {
-                    request = {
-                        entityName: "crcef_lawsonstore",
-                        entity: {
-                            crcef_randomnumber: randomNumber,
-                            crcef_id: property.crcef_id,
-                            crcef_storename: property.crcef_storename,
-                            crcef_addresspluscode: property.crcef_addresspluscode,
-                            crcef_lat: property.crcef_lat,
-                            crcef_lon: property.crcef_lon,
-                            crcef_tell: property.crcef_tell,
-                            crcef_lastmonthssales: property.crcef_lastmonthssales,
-                            crcef_thismonthssales: property.crcef_thismonthssales,
-                            crcef_transactioncount: property.crcef_transactioncount,
-                            crcef_custmeravg: property.crcef_custmeravg,
-                            crcef_abca: property.crcef_abca,
-                            crcef_abcb: property.crcef_abcb,
-                            crcef_abcc: property.crcef_abcc,
-                            crcef_lankingtop1: property.crcef_lankingtop1,
-                            crcef_lankingtop2: property.crcef_lankingtop2,
-                            crcef_lankingtop3: property.crcef_lankingtop3,
-                            crcef_0oclock: property.crcef_0oclock,
-                            crcef_1oclock: property.crcef_1oclock,
-                            crcef_2oclock: property.crcef_2oclock,
-                            crcef_3oclock: property.crcef_3oclock,
-                            crcef_4oclock: property.crcef_4oclock,
-                            crcef_5oclock: property.crcef_5oclock,
-                            crcef_6oclock: property.crcef_6oclock,
-                            crcef_7oclock: property.crcef_7oclock,
-                            crcef_8oclock: property.crcef_8oclock,
-                            crcef_9oclock: property.crcef_9oclock,
-                            crcef_10oclock: property.crcef_10oclock,
-                            crcef_11oclock: property.crcef_11oclock,
-                            crcef_12oclock: property.crcef_12oclock,
-                            crcef_13oclock: property.crcef_13oclock,
-                            crcef_14oclock: property.crcef_14oclock,
-                            crcef_15oclock: property.crcef_15oclock,
-                            crcef_16oclock: property.crcef_16oclock,
-                            crcef_17oclock: property.crcef_17oclock,
-                            crcef_18oclock: property.crcef_18oclock,
-                            crcef_19oclock: property.crcef_19oclock,
-                            crcef_20oclock: property.crcef_20oclock,
-                            crcef_21oclock: property.crcef_21oclock,
-                            crcef_22oclock: property.crcef_22oclock,
-                            crcef_23oclock: property.crcef_23oclock,
-                            crcef_totalff: totalff,
-                            // demographic
-                            crcef_males: tradeAreaDemographics.crcef_male, //totalMales,
-                            crcef_females: tradeAreaDemographics.crcef_female, //totalFemales
-                            crcef_1825: tradeAreaDemographics.crcef_age1824,
-                            crcef_2635: tradeAreaDemographics.crcef_age2534,
-                            crcef_3645: tradeAreaDemographics.crcef_age3544,
-                            crcef_over45: tradeAreaDemographics.crcef_age4554,
-                            crcef_over55: tradeAreaDemographics.crcef_ageover55,
-                            crcef_professionals: tradeAreaDemographics.crcef_professionals,
-                            crcef_students: tradeAreaDemographics.crcef_students,
-                            crcef_families: tradeAreaDemographics.crcef_parents,
-                            crcef_travelers: tradeAreaDemographics.crcef_travellers,
-                            crcef_shoppers: tradeAreaDemographics.crcef_shoppers,
-                            crcef_affluents: tradeAreaDemographics.crcef_affluents,
-                            // demographic - end
-                            crcef_home1lat: property.crcef_home1lat,
-                            crcef_home1lon: property.crcef_home1lon,
-                            crcef_home1ratio: property.crcef_home1ratio,
-                            crcef_home2lat: property.crcef_home2lat,
-                            crcef_home2lon: property.crcef_home2lon,
-                            crcef_home2ratio: property.crcef_home2ratio,
-                            crcef_home3lat: property.crcef_home3lat,
-                            crcef_home3lon: property.crcef_home3lon,
-                            crcef_home3ratio: property.crcef_home3ratio,
-                            crcef_work1lat: property.crcef_work1lat,
-                            crcef_work1lon: property.crcef_work1lon,
-                            crcef_work1ratio: property.crcef_work1ratio,
-                            crcef_work2lat: property.crcef_work2lat,
-                            crcef_work2lon: property.crcef_work2lon,
-                            crcef_work2ratio: property.crcef_work2ratio,
-                            crcef_work3lat: property.crcef_work3lat,
-                            crcef_work3lon: property.crcef_work3lon,
-                            crcef_work3ratio: property.crcef_work3ratio,
-                            crcef_man0: totalMan0,
-                            crcef_man10: totalMan10,
-                            crcef_man20: totalMan20,
-                            crcef_man30: totalMan30,
-                            crcef_man40: totalMan40,
-                            crcef_man50: totalMan50,
-                            crcef_man60: totalMan60,
-                            crcef_man70: totalMan70,
-                            crcef_man80: totalMan80,
-                            crcef_man90: property.crcef_man90,
-                            crcef_man100: property.crcef_man100,
-                            crcef_woman0: totalWoman0,
-                            crcef_woman10: totalWoman10,
-                            crcef_woman20: totalWoman20,
-                            crcef_woman30: totalWoman30,
-                            crcef_woman40: totalWoman40,
-                            crcef_woman50: totalWoman50,
-                            crcef_woman60: totalWoman60,
-                            crcef_woman70: totalWoman70,
-                            crcef_woman80: totalWoman80,
-                            crcef_woman90: property.crcef_woman90,
-                            crcef_woman100: property.crcef_woman100,
-                            crcef_total: totalPopulation,
-                            crcef_7eleven: totalBStore,
-                            crcef_familymart: totalCStore,
-                            crcef_ministop: totalDStore,
-                            crcef_tescolotusexpress: totalEStore,
-                            crcef_tatal: totalTatal,
-                            crcef_0oclockweekend: property.crcef_0oclockweekend,
-                            crcef_1oclockweekend: property.crcef_1oclockweekend,
-                            crcef_2oclockweekend: property.crcef_2oclockweekend,
-                            crcef_3oclockweekend: property.crcef_3oclockweekend,
-                            crcef_4oclockweekend: property.crcef_4oclockweekend,
-                            crcef_5oclockweekend: property.crcef_5oclockweekend,
-                            crcef_6oclockweekend: property.crcef_6oclockweekend,
-                            crcef_7oclockweekend: property.crcef_7oclockweekend,
-                            crcef_8oclockweekend: property.crcef_8oclockweekend,
-                            crcef_9oclockweekend: property.crcef_9oclockweekend,
-                            crcef_10oclockweekend: property.crcef_10oclockweekend,
-                            crcef_11oclockweekend: property.crcef_11oclockweekend,
-                            crcef_12oclockweekend: property.crcef_12oclockweekend,
-                            crcef_13oclockweekend: property.crcef_13oclockweekend,
-                            crcef_14oclockweekend: property.crcef_14oclockweekend,
-                            crcef_15oclockweekend: property.crcef_15oclockweekend,
-                            crcef_16oclockweekend: property.crcef_16oclockweekend,
-                            crcef_17oclockweekend: property.crcef_17oclockweekend,
-                            crcef_18oclockweekend: property.crcef_18oclockweekend,
-                            crcef_19oclockweekend: property.crcef_19oclockweekend,
-                            crcef_20oclockweekend: property.crcef_20oclockweekend,
-                            crcef_21oclockweekend: property.crcef_21oclockweekend,
-                            crcef_22oclockweekend: property.crcef_22oclockweekend,
-                            crcef_23oclockweekend: property.crcef_23oclockweekend,
-                            crcef_02kmhomelocation: property.crcef_02kmhomelocation,
-                            crcef_24kmhomelocation: property.crcef_24kmhomelocation,
-                            crcef_46kmhomelocation: property.crcef_46kmhomelocation,
-                            crcef_68kmhomelocation: property.crcef_68kmhomelocation,
-                            crcef_810kmhomelocation: property.crcef_810kmhomelocation,
-                            crcef_10kmhomelocation: property.crcef_10kmhomelocation,
-                            crcef_02kmworklocation: property.crcef_02kmworklocation,
-                            crcef_24kmworklocation: property.crcef_24kmworklocation,
-                            crcef_46kmworklocation: property.crcef_46kmworklocation,
-                            crcef_68kmworklocation: property.crcef_68kmworklocation,
-                            crcef_810kmworklocation: property.crcef_810kmworklocation,
-                            crcef_10kmworklocation: property.crcef_10kmworklocation,
-                            crcef_mon: property.crcef_mon,
-                            crcef_tue: property.crcef_tue,
-                            crcef_wed: property.crcef_wed,
-                            crcef_thu: property.crcef_thu,
-                            crcef_fri: property.crcef_fri,
-                            crcef_sat: property.crcef_sat,
-                            crcef_sun: property.crcef_sun,
-                        }
-                    };
-                } else {
-                    request = {
-                        entityName: "crcef_lawsonstore",
-                        entity: {
-                            crcef_randomnumber: randomNumber,
-                            crcef_id: property.crcef_id,
-                            crcef_storename: property.crcef_storename,
-                            crcef_addresspluscode: property.crcef_addresspluscode,
-                            crcef_lat: property.crcef_lat,
-                            crcef_lon: property.crcef_lon,
-                            crcef_tell: property.crcef_tell,
-                            crcef_lastmonthssales: property.crcef_lastmonthssales,
-                            crcef_thismonthssales: property.crcef_thismonthssales,
-                            crcef_transactioncount: property.crcef_transactioncount,
-                            crcef_custmeravg: property.crcef_custmeravg,
-                            crcef_abca: property.crcef_abca,
-                            crcef_abcb: property.crcef_abcb,
-                            crcef_abcc: property.crcef_abcc,
-                            crcef_lankingtop1: property.crcef_lankingtop1,
-                            crcef_lankingtop2: property.crcef_lankingtop2,
-                            crcef_lankingtop3: property.crcef_lankingtop3,
-                            crcef_0oclock: property.crcef_0oclock,
-                            crcef_1oclock: property.crcef_1oclock,
-                            crcef_2oclock: property.crcef_2oclock,
-                            crcef_3oclock: property.crcef_3oclock,
-                            crcef_4oclock: property.crcef_4oclock,
-                            crcef_5oclock: property.crcef_5oclock,
-                            crcef_6oclock: property.crcef_6oclock,
-                            crcef_7oclock: property.crcef_7oclock,
-                            crcef_8oclock: property.crcef_8oclock,
-                            crcef_9oclock: property.crcef_9oclock,
-                            crcef_10oclock: property.crcef_10oclock,
-                            crcef_11oclock: property.crcef_11oclock,
-                            crcef_12oclock: property.crcef_12oclock,
-                            crcef_13oclock: property.crcef_13oclock,
-                            crcef_14oclock: property.crcef_14oclock,
-                            crcef_15oclock: property.crcef_15oclock,
-                            crcef_16oclock: property.crcef_16oclock,
-                            crcef_17oclock: property.crcef_17oclock,
-                            crcef_18oclock: property.crcef_18oclock,
-                            crcef_19oclock: property.crcef_19oclock,
-                            crcef_20oclock: property.crcef_20oclock,
-                            crcef_21oclock: property.crcef_21oclock,
-                            crcef_22oclock: property.crcef_22oclock,
-                            crcef_23oclock: property.crcef_23oclock,
-                            crcef_totalff: totalff,
-                            crcef_home1lat: property.crcef_home1lat,
-                            crcef_home1lon: property.crcef_home1lon,
-                            crcef_home1ratio: property.crcef_home1ratio,
-                            crcef_home2lat: property.crcef_home2lat,
-                            crcef_home2lon: property.crcef_home2lon,
-                            crcef_home2ratio: property.crcef_home2ratio,
-                            crcef_home3lat: property.crcef_home3lat,
-                            crcef_home3lon: property.crcef_home3lon,
-                            crcef_home3ratio: property.crcef_home3ratio,
-                            crcef_work1lat: property.crcef_work1lat,
-                            crcef_work1lon: property.crcef_work1lon,
-                            crcef_work1ratio: property.crcef_work1ratio,
-                            crcef_work2lat: property.crcef_work2lat,
-                            crcef_work2lon: property.crcef_work2lon,
-                            crcef_work2ratio: property.crcef_work2ratio,
-                            crcef_work3lat: property.crcef_work3lat,
-                            crcef_work3lon: property.crcef_work3lon,
-                            crcef_work3ratio: property.crcef_work3ratio,
-                            crcef_man0: totalMan0,
-                            crcef_man10: totalMan10,
-                            crcef_man20: totalMan20,
-                            crcef_man30: totalMan30,
-                            crcef_man40: totalMan40,
-                            crcef_man50: totalMan50,
-                            crcef_man60: totalMan60,
-                            crcef_man70: totalMan70,
-                            crcef_man80: totalMan80,
-                            crcef_man90: property.crcef_man90,
-                            crcef_man100: property.crcef_man100,
-                            crcef_woman0: totalWoman0,
-                            crcef_woman10: totalWoman10,
-                            crcef_woman20: totalWoman20,
-                            crcef_woman30: totalWoman30,
-                            crcef_woman40: totalWoman40,
-                            crcef_woman50: totalWoman50,
-                            crcef_woman60: totalWoman60,
-                            crcef_woman70: totalWoman70,
-                            crcef_woman80: totalWoman80,
-                            crcef_woman90: property.crcef_woman90,
-                            crcef_woman100: property.crcef_woman100,
-                            crcef_total: totalPopulation,
-                            crcef_7eleven: totalBStore,
-                            crcef_familymart: totalCStore,
-                            crcef_ministop: totalDStore,
-                            crcef_tescolotusexpress: totalEStore,
-                            crcef_tatal: totalTatal,
-                            crcef_0oclockweekend: property.crcef_0oclockweekend,
-                            crcef_1oclockweekend: property.crcef_1oclockweekend,
-                            crcef_2oclockweekend: property.crcef_2oclockweekend,
-                            crcef_3oclockweekend: property.crcef_3oclockweekend,
-                            crcef_4oclockweekend: property.crcef_4oclockweekend,
-                            crcef_5oclockweekend: property.crcef_5oclockweekend,
-                            crcef_6oclockweekend: property.crcef_6oclockweekend,
-                            crcef_7oclockweekend: property.crcef_7oclockweekend,
-                            crcef_8oclockweekend: property.crcef_8oclockweekend,
-                            crcef_9oclockweekend: property.crcef_9oclockweekend,
-                            crcef_10oclockweekend: property.crcef_10oclockweekend,
-                            crcef_11oclockweekend: property.crcef_11oclockweekend,
-                            crcef_12oclockweekend: property.crcef_12oclockweekend,
-                            crcef_13oclockweekend: property.crcef_13oclockweekend,
-                            crcef_14oclockweekend: property.crcef_14oclockweekend,
-                            crcef_15oclockweekend: property.crcef_15oclockweekend,
-                            crcef_16oclockweekend: property.crcef_16oclockweekend,
-                            crcef_17oclockweekend: property.crcef_17oclockweekend,
-                            crcef_18oclockweekend: property.crcef_18oclockweekend,
-                            crcef_19oclockweekend: property.crcef_19oclockweekend,
-                            crcef_20oclockweekend: property.crcef_20oclockweekend,
-                            crcef_21oclockweekend: property.crcef_21oclockweekend,
-                            crcef_22oclockweekend: property.crcef_22oclockweekend,
-                            crcef_23oclockweekend: property.crcef_23oclockweekend,
-                            crcef_02kmhomelocation: property.crcef_02kmhomelocation,
-                            crcef_24kmhomelocation: property.crcef_24kmhomelocation,
-                            crcef_46kmhomelocation: property.crcef_46kmhomelocation,
-                            crcef_68kmhomelocation: property.crcef_68kmhomelocation,
-                            crcef_810kmhomelocation: property.crcef_810kmhomelocation,
-                            crcef_10kmhomelocation: property.crcef_10kmhomelocation,
-                            crcef_02kmworklocation: property.crcef_02kmworklocation,
-                            crcef_24kmworklocation: property.crcef_24kmworklocation,
-                            crcef_46kmworklocation: property.crcef_46kmworklocation,
-                            crcef_68kmworklocation: property.crcef_68kmworklocation,
-                            crcef_810kmworklocation: property.crcef_810kmworklocation,
-                            crcef_10kmworklocation: property.crcef_10kmworklocation,
-                            crcef_mon: property.crcef_mon,
-                            crcef_tue: property.crcef_tue,
-                            crcef_wed: property.crcef_wed,
-                            crcef_thu: property.crcef_thu,
-                            crcef_fri: property.crcef_fri,
-                            crcef_sat: property.crcef_sat,
-                            crcef_sun: property.crcef_sun,
-                        }
-                    };
+                    // demographic fields are add
+                    request.entity = Object.assign({}, request.entity, {
+                        crcef_males: tradeAreaDemographics.crcef_male, //totalMales,
+                        crcef_females: tradeAreaDemographics.crcef_female, //totalFemales
+                        crcef_1825: tradeAreaDemographics.crcef_age1824,
+                        crcef_2635: tradeAreaDemographics.crcef_age2534,
+                        crcef_3645: tradeAreaDemographics.crcef_age3544,
+                        crcef_over45: tradeAreaDemographics.crcef_age4554,
+                        crcef_over55: tradeAreaDemographics.crcef_ageover55,
+                        crcef_professionals: tradeAreaDemographics.crcef_professionals,
+                        crcef_students: tradeAreaDemographics.crcef_students,
+                        crcef_families: tradeAreaDemographics.crcef_parents,
+                        crcef_travelers: tradeAreaDemographics.crcef_travellers,
+                        crcef_shoppers: tradeAreaDemographics.crcef_shoppers,
+                        crcef_affluents: tradeAreaDemographics.crcef_affluents,
+                    });
                 }
 
                 let promise = new Promise<void>((resolve, reject) => {
@@ -2755,6 +2735,442 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             setAStoreRecordCreationResponse(responses);
             fetchHistoricalFootfallData();
         });
+    }
+
+    /**
+     * This function is used to the new selected trade area
+     * record and then show the power bi report
+     */
+    function createSelectedTradeAreaApiCallForStatistics(polygonFeatureCoordinates: any, storeId: any) {
+        let data = {
+            crcef_storeid : storeId,
+            crcef_tradeareajson: polygonFeatureCoordinates,
+            crcef_reporttype: ReportTypeValue.STATISTICS,
+            crcef_processingstatus: ProcessingStatusValue.NEW
+        };
+        pluginStartTimeRef.statistics = new Date();
+
+        Xrm.WebApi
+            .createRecord("crcef_selectedtradearea", data)
+            .then(function (result: any) {
+                // perform operations on record creation
+                if (selectedHistoricalDataGuid === undefined || selectedHistoricalDataGuid === '') {
+                    checkCurrentSelectedTradeAreaPluginStatusById(result.id);
+                } else {
+                    updateSelectedTradeAreaToCompletedForStatistics(result.id);
+                }
+            })
+            .catch(function (error: any) {
+                // handle error conditions
+                let errorMessage: string = error.message;
+                let errorContent = errorMessage.split(": ");
+                setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
+                nearApiErrorModalToggle();
+                setIsLoadingBiReport(false);
+                console.log(error);
+            });
+    }
+
+    function updateSelectedTradeAreaProcessingStatusToReprocessing(recordId: string) {
+        var data = {
+            crcef_processingstatus: ProcessingStatusValue.REPROCESS
+        };
+        Xrm.WebApi
+            .updateRecord("crcef_selectedtradearea", recordId, data)
+            .then(function success(result) {
+                checkCurrentSelectedTradeAreaPluginStatusById(recordId);
+            })
+            .catch(function (error) {
+                console.log("unable to update record", error.message);
+            });
+    }
+
+    function updateSelectedTradeAreaToCompletedForStatistics(recordId: string) {
+        var data = {
+            crcef_processingstatus: ProcessingStatusValue.COMPLETED,
+            crcef_pushdatatoazure: true
+        };
+        Xrm.WebApi
+            .updateRecord("crcef_selectedtradearea", recordId, data)
+            .then(function success(result) {
+                showPowerBiStatisticsReport();
+                setSelectedReportType(undefined);
+            })
+            .catch(function (error) {
+                console.log("unable to update record", error.message);
+            });
+    }
+
+    function updateSelectedTradeAreaToCompletedForCompetitor(recordId: string) {
+        var data = {
+            crcef_processingstatus: ProcessingStatusValue.COMPLETED,
+        };
+        Xrm.WebApi
+            .updateRecord("crcef_selectedtradearea", recordId, data)
+            .then(function success(result) {
+                setCompletedCompetitorSelectedTradeAreaGuid(recordId);
+            })
+            .catch(function (error) {
+                console.log("unable to update record", error.message);
+            });
+    }
+
+    function checkNearApiPluginStatus(recordId: string, zeropointReportStatus: boolean, celcdlReportStatus: boolean, reportType: any) {
+        if (zeropointReportStatus === true && celcdlReportStatus === true) {
+            if (reportType === ReportTypeValue.STATISTICS) {
+                updateSelectedTradeAreaToCompletedForStatistics(recordId);
+            } else if (reportType === ReportTypeValue.COMPETITOR) {
+                updateSelectedTradeAreaToCompletedForCompetitor(recordId);
+            }
+        } else {
+            updateSelectedTradeAreaProcessingStatusToReprocessing(recordId);
+        }
+    }
+
+    /**
+     * This function is used to fetch the selected trade area record
+     * @param recordId unique id of crcef_selectedtradearea entity record
+     */
+    function checkCurrentSelectedTradeAreaPluginStatusById(recordId: string) {
+        Xrm.WebApi
+            .retrieveRecord("crcef_selectedtradearea", recordId)
+            .then(function success(result) {
+                let pluginStartTime: any = undefined;
+                let reportType = result.crcef_reporttype;
+
+                if (reportType === ReportTypeValue.STATISTICS) {
+                    pluginStartTime = pluginStartTimeRef.statistics;
+                } else if (reportType === ReportTypeValue.COMPETITOR) {
+                    pluginStartTime = pluginStartTimeRef.competitorAnalysis;
+                }
+                console.log("pluginStartTime >>>> ", pluginStartTime);
+
+                let currentTime: any = new Date();
+                let timeDifference = Math.abs(currentTime - pluginStartTime);
+                let executionTimeInMinutes = Math.floor((timeDifference/1000)/60);
+
+                if (executionTimeInMinutes >= 10) {
+                    setNearApiErrorMessage("Near API is currently down please try later.");
+                    nearApiErrorModalToggle();
+                    setIsLoadingBiReport(false);
+                } else {
+                    let zeropointReportStatus = result.crcef_zeropointreport;
+                    let celcdlReportStatus = result.crcef_celcdlreport;
+
+                    checkNearApiPluginStatus(recordId, zeropointReportStatus, celcdlReportStatus, reportType);
+                }
+            })
+            .catch(function (error) {
+                console.log("unable to retrieve record", error.message);
+            });
+    }
+
+    /**
+     * This function is used to create
+     * competitor analysis into D635
+     */
+    function createCompetitorAnalysisApiCall() {
+        let promisesArray = [];
+        let nearApiFeatureList = competitorNearApiFeatureWithDemographicList;
+
+        for (let i = 0; i < nearApiFeatureList.length; i++) {
+            let nearApiFeature = nearApiFeatureList[i];
+            let tradeAreaGuid = nearApiFeature.id as string;
+            let property: any = nearApiFeature.properties;
+            let demographicLineGuid = (property.demographicLineGuid === undefined) ? '' : property.demographicLineGuid;
+
+            let data = {
+                crcef_tradearea: property.name,
+                crcef_tradeareareference: tradeAreaGuid,
+                // crcef_demographic_line_guid: demographicLineGuid,
+            }
+
+            let promise = new Promise<CompetitorAnalysisInfo>((resolve, reject) => {
+                Xrm.WebApi
+                    .createRecord("crcef_competitoranalysis", data)
+                    .then(function (result: any) {
+                        let guid = result.id;
+                        let competitorAnalysisObj: CompetitorAnalysisInfo = constructCompetitorAnalysisObj(guid, nearApiFeature);
+                        resolve(competitorAnalysisObj);
+                    })
+                    .catch(function (error: any) {
+                        // Handle error
+                        reject();
+                    });
+            });
+            promisesArray.push(promise);
+        }
+
+        Promise.all(promisesArray).then((responses: CompetitorAnalysisInfo[]) => {
+            setCompetitorAnalysisDetailList(responses);
+        });
+    }
+
+    /**
+     * This function is used to create Competitor history header record
+     * records for crcef_competitoranalysishistoryheader entity in D365
+     */
+    function createCompetitorAnalysisHistoryHeaderApiCall() {
+        Xrm.WebApi
+            .createRecord("crcef_competitoranalysishistoryheader", { "crcef_recordname": competitorRecordName })
+            .then((result) => {
+                let guid = result.id;
+                createCompetitorAnalysisHistoryLineApiCall(guid);
+            });
+    }
+
+    /**
+     * This function is used to create Competitor history line records
+     * records for crcef_competitoranalysishistoryline entity in D365
+     * @param guid crcef_competitoranalysishistoryheader unique id
+     */
+    function createCompetitorAnalysisHistoryLineApiCall(guid: any) {
+        let ownerIdValue = getUserIdValue();
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_competitoranalysis", "?$filter=_ownerid_value eq " + ownerIdValue + "")
+            .then((result) => {
+                let entities = result.entities;
+                let createPromisesArray = [];
+
+                for (var i = 0; i < entities.length; i++) {
+                    let entity = entities[i];
+                    let data = {
+                        "crcef_headerrecordid@odata.bind" : `/crcef_competitoranalysishistoryheaders(${guid})`,
+                        crcef_tradeareaname : entity.crcef_tradearea,
+                        crcef_tradeareareference : entity.crcef_tradeareareference,
+                        crcef_visitorlocations1 : entity.crcef_visitorlocations1,
+                        crcef_visitorlocations2 : entity.crcef_visitorlocations2,
+                        crcef_visitorlocations3 : entity.crcef_visitorlocations3,
+                        crcef_visitorcdllocations1 : entity.crcef_visitorcdllocations1,
+                        crcef_visitorcdllocations2 : entity.crcef_visitorcdllocations2,
+                        crcef_visitorcdllocations3 : entity.crcef_visitorcdllocations3,
+                        crcef_0oclock : entity.crcef_0oclock,
+                        crcef_1oclock : entity.crcef_1oclock,
+                        crcef_2oclock : entity.crcef_2oclock,
+                        crcef_3oclock : entity.crcef_3oclock,
+                        crcef_4oclock : entity.crcef_4oclock,
+                        crcef_5oclock : entity.crcef_5oclock,
+                        crcef_6oclock : entity.crcef_6oclock,
+                        crcef_7oclock : entity.crcef_7oclock,
+                        crcef_8oclock : entity.crcef_8oclock,
+                        crcef_9oclock : entity.crcef_9oclock,
+                        crcef_10oclock : entity.crcef_10oclock,
+                        crcef_11oclock : entity.crcef_11oclock,
+                        crcef_12oclock : entity.crcef_12oclock,
+                        crcef_13oclock : entity.crcef_13oclock,
+                        crcef_14oclock : entity.crcef_14oclock,
+                        crcef_15oclock : entity.crcef_15oclock,
+                        crcef_16oclock : entity.crcef_16oclock,
+                        crcef_17oclock : entity.crcef_17oclock,
+                        crcef_18oclock : entity.crcef_18oclock,
+                        crcef_19oclock : entity.crcef_19oclock,
+                        crcef_20oclock : entity.crcef_20oclock,
+                        crcef_21oclock : entity.crcef_21oclock,
+                        crcef_22oclock : entity.crcef_22oclock,
+                        crcef_23oclock : entity.crcef_23oclock,
+                        crcef_totalfootfall : entity.crcef_totalfootfall,
+                        crcef_monday : entity.crcef_monday,
+                        crcef_tuesday : entity.crcef_tuesday,
+                        crcef_wednesday : entity.crcef_wednesday,
+                        crcef_thursday : entity.crcef_thursday,
+                        crcef_friday : entity.crcef_friday,
+                        crcef_saturday : entity.crcef_saturday,
+                        crcef_sunday : entity.crcef_sunday,
+                        crcef_male : entity.crcef_male,
+                        crcef_female : entity.crcef_female,
+                        crcef_age18to25 : entity.crcef_age18to25,
+                        crcef_age26to35 : entity.crcef_age26to35,
+                        crcef_age36to45 : entity.crcef_age36to45,
+                        crcef_ageover45 : entity.crcef_ageover45,
+                        crcef_ageover55 : entity.crcef_ageover55,
+                        crcef_families : entity.crcef_families,
+                        crcef_professionals : entity.crcef_professionals,
+                        crcef_students : entity.crcef_students,
+                        crcef_travelers : entity.crcef_travelers,
+                        crcef_shoppers : entity.crcef_shoppers,
+                        crcef_affluents : entity.crcef_affluents,
+                    }
+
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .createRecord("crcef_competitoranalysishistoryline", data)
+                            .then((res) => {
+                                resolve();
+                            });
+                    });
+                    createPromisesArray.push(promise);
+                }
+
+                Promise.all(createPromisesArray).then(() => {
+                    showCompetitorAnalysisPowerBiReport(completedCompetitorSelectedTradeAreaGuid);
+                });
+            });
+    }
+
+    /**
+     * This function is used to open Competitor Power Bi report
+     */
+    function showCompetitorAnalysisPowerBiReport(recordId: any) {
+        if (recordId !== undefined) {
+            Xrm.WebApi
+                .updateRecord("crcef_selectedtradearea", recordId, {"crcef_pushdatatoazure": true})
+                .then(function (response: any) {
+                    showPowerBiCompetitorReport();
+                    setActiveBtnId('');
+                    resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
+                    //setSelectedReportType(undefined);
+                })    
+                .catch(function (error: any) {
+                    // Handle error
+                    setIsLoadingBiReport(false);
+                    setActiveBtnId('');
+                    resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
+                    //setSelectedReportType(undefined);
+
+                    let errorMessage: string = error.message;
+                    let errorContent = errorMessage.split(": ");
+                    setNearApiErrorMessage("Azure Plugin has return the following error" + errorMessage.toUpperCase());
+                    nearApiErrorModalToggle();
+                    console.log(error);
+                });
+        }
+    }
+
+    /**
+     * This function is used to create selected trade area
+     * Api Call for competitor analysis into D635
+     */
+    function createSelectedTradeAreaApiCallForCompetitorAnalysis() {
+        if (competitorHistoryGuid !== undefined) {
+            let fetchHistoryDetails = {
+                competitorHistoryGuid : competitorHistoryGuid,
+            };
+            createSelectedTradeAreaApiRequestForCompetitorAnalysis(fetchHistoryDetails, true);
+        } else {
+            let randomNumber = Math.round(Math.random() * 1000000000).toString();
+            let additionalCompetitorAnalysisDetails = {
+                nearApiRequestDetails: [],
+                startDate: competitorPeriodStartDate,
+                endDate: competitorPeriodEndDate,
+                randomNumber: randomNumber
+            };
+
+            createSelectedTradeAreaApiRequestForCompetitorAnalysis(additionalCompetitorAnalysisDetails, false);
+        }
+    }
+
+    /**
+     * This function is used to create selected trade area
+     * Api Request for competitor analysis into D635
+     * @param additionalCompetitorAnalysisDetails additional competitor report details with near request info
+     * @param isFetchFromHistory boolean
+     */
+    function createSelectedTradeAreaApiRequestForCompetitorAnalysis(additionalCompetitorAnalysisDetails: any, isFetchFromHistory: boolean) {
+        let requests: any[] = [];
+        let pendingRequests : any[] = [];
+
+        var Sdk = (window as any).Sdk || {};
+
+        Sdk.CreateRequest = function(entityName: string, payload: object) {
+            this.etn = entityName;
+            this.payload = payload;
+        };
+
+        Sdk.CreateRequest.prototype.getMetadata = function () {
+            return {
+                boundParameter: null,
+                parameterTypes: {},
+                operationType: 2, // This is a CRUD operation. Use '0' for actions and '1' for functions
+                operationName: "Create",
+            };
+        };
+
+        if (isFetchFromHistory === false) {
+            for (let i = 0; i < competitorSplitNearApiFeatureList.length; i++) {
+                let splitNearApiFeatureList = competitorSplitNearApiFeatureList[i];
+                let nearApiRequestDetails = getCompetitorAnalysisNearApiRequestDetailList(splitNearApiFeatureList);
+
+                additionalCompetitorAnalysisDetails.nearApiRequestDetails = nearApiRequestDetails;
+
+                let payload = {
+                    crcef_storeid : JSON.stringify(additionalCompetitorAnalysisDetails),
+                    crcef_tradeareajson: JSON.stringify(splitNearApiFeatureList),
+                    crcef_reporttype: ReportTypeValue.COMPETITOR,
+                    crcef_processingstatus: ProcessingStatusValue.NEW,
+                };
+                let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
+                requests.push(createRequest);
+            }
+        } else {
+            let payload = {
+                crcef_storeid : JSON.stringify(additionalCompetitorAnalysisDetails),
+                crcef_tradeareajson: '',
+                crcef_reporttype: ReportTypeValue.COMPETITOR,
+                crcef_processingstatus: ProcessingStatusValue.NEW,
+            };
+            let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
+            requests.push(createRequest);
+        }
+
+        pendingRequests = requests.slice();
+
+        // track the date and time for very first near api plugin hit
+        pluginStartTimeRef.competitorAnalysis = new Date();
+
+        let currentRequest = pendingRequests.splice(0, 2);
+        executeCompetitorAnalysisNearApiRequest(currentRequest, pendingRequests);
+    }
+
+    /**
+     * This function is used to execute Near Api Request
+     *  for competitor analysis into D635
+     * @param currentRequest collection of current Near Api request
+     * @param pendingRequests collection of pending Near Api request
+     */
+    function executeCompetitorAnalysisNearApiRequest(currentRequest: any, pendingRequests: any) {
+        Xrm.WebApi.online
+            .executeMultiple(currentRequest)
+            .then(function (response: any) {
+                if (pendingRequests.length === 0) {
+                    if (competitorHistoryGuid === undefined) {
+                        let ownerIdValue = getUserIdValue();
+                        Xrm.WebApi
+                            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                                let entities = result.entities;
+                                let selectedTradeAreaguids = [];
+
+                                for (let i = 0; i < entities.length; i++) {
+                                    let recordId = entities[i].crcef_selectedtradeareaid;
+                                    selectedTradeAreaguids.push(recordId);
+                                }
+                                setInitialCompetitorSelectedTradeAreaGuids(selectedTradeAreaguids);
+                            })
+                            .catch(function (error: any) {
+                                console.log(error);
+                            });
+                    } else {
+                        let selectedTradeAreaGuid = getGUIDFromResponse(response[0]);
+                        showCompetitorAnalysisPowerBiReport(selectedTradeAreaGuid);
+                    }
+                } else {
+                    let currentRequest = pendingRequests.splice(0, 2);
+                    executeCompetitorAnalysisNearApiRequest(currentRequest, pendingRequests);
+                }
+            })
+            .catch(function (error: any) {
+                // Handle error
+                console.log(">>>Near api method - catch")
+                setIsLoadingBiReport(false);
+                setActiveBtnId('');
+                //setSelectedReportType(undefined);
+
+                let errorMessage: string = error.message;
+                let errorContent = errorMessage.split(": ");
+                setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
+                nearApiErrorModalToggle();
+                console.log(error);
+            });
+        setSelectedTradeAreaList([]);
     }
 
     /**
@@ -2883,6 +3299,98 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     fetchTradeAreaDemographics();
                     // createFilteredAStoreFeaturesApiCall();
                 });
+            });
+    }
+
+    /**
+     * This function is used to delete the existing trade area record and 
+     * create the new selected trade area record
+     */
+    function deleteAndCreateSelectedTradeAreaForStatisticsApiCall(polygonFeatureCoordinates: any, storeId: any) {
+        let ownerIdValue = getUserIdValue();
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+                let promisesArray = [];
+
+                for (var i = 0; i < entities.length; i++) {
+                    let entity = entities[i];
+                    let tradeareaId = entity.crcef_selectedtradeareaid;
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
+                                resolve();
+                            });
+                    });
+                    promisesArray.push(promise);
+                }
+
+                Promise.all(promisesArray).then(() => {
+                    createSelectedTradeAreaApiCallForStatistics(polygonFeatureCoordinates, storeId);
+                });
+            });
+    }
+
+    /**
+     * This function is used to delete existing
+     * competitor analysis and create new into D365
+     */
+    function deleteAndCreateCompetitorAnalysisApiCall() {
+        let ownerIdValue = getUserIdValue();
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_competitoranalysis", "?$select=crcef_competitoranalysisid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+                let deletePromisesArray = [];
+
+                for (var i = 0; i < entities.length; i++) {
+                    let entity = entities[i];
+                    let competitorAnalysisId = entity.crcef_competitoranalysisid;
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .deleteRecord("crcef_competitoranalysis", competitorAnalysisId).then((res) => {
+                                resolve();
+                            });
+                    });
+                    deletePromisesArray.push(promise);
+                }
+
+                Promise.all(deletePromisesArray).then(() => {
+                    createCompetitorAnalysisApiCall();
+                });
+            });
+    }
+
+    /**
+     * This function is used to delete existing selected trade area
+     * and create new for competitor analysis into D365
+     */
+    function deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall() {
+        let ownerIdValue = getUserIdValue();
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
+                let entities = result.entities;
+                let deletePromisesArray = [];
+
+                for (let i = 0; i < entities.length; i++) {
+                    let tradeareaId = entities[i].crcef_selectedtradeareaid;
+                    let promise = new Promise<void>((resolve, reject) => {
+                        Xrm.WebApi
+                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
+                                resolve();
+                            });
+                    });
+                    deletePromisesArray.push(promise);
+                }
+
+                Promise.all(deletePromisesArray).then(() => {
+                    createSelectedTradeAreaApiCallForCompetitorAnalysis();
+
+                    // close the competitor report modal
+                    competitorReportModalToggle();
+                });
+            })
+            .catch(function (error: any) {
+                console.log(error);
             });
     }
 
@@ -3054,7 +3562,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param React.MouseEvent
      * @param selected button id
      */
-     function onCompetitorChartClick(e: React.MouseEvent, btnId: string) {
+    function onCompetitorChartClick(e: React.MouseEvent, btnId: string) {
         setActiveBtnId(btnId);
         
         let fetchTradeAreaListPromise = new Promise<void>((resolve, reject) => {
@@ -3661,57 +4169,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
-     * This function is used to delete the existing trade area record and 
-     * create the new selected trade area record and then show the power bi report
-     */
-    function selectedTradeAreaApiCall(polygonFeatureCoordinates: any, storeId: any) {
-        let ownerIdValue = getUserIdValue();
-        let request = {
-            entityName: "crcef_selectedtradearea",
-            entity: {
-                crcef_storeid : storeId,
-                crcef_tradeareajson: polygonFeatureCoordinates,
-                crcef_reporttype: ReportTypeValue.STATISTICS
-            }
-        };
-
-        Xrm.WebApi
-            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
-                let entities = result.entities;
-                let promisesArray = [];
-
-                for (var i = 0; i < entities.length; i++) {
-                    let tradeareaId = entities[i].crcef_selectedtradeareaid;
-                    let promise = new Promise<void>((resolve, reject) => {
-                        Xrm.WebApi
-                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
-                                resolve();
-                            });
-                    });
-                    promisesArray.push(promise);
-                }
-
-                Promise.all(promisesArray).then(() => {
-                    WebApiClient.Create(request)
-                        .then(function (response: any) {
-                            // Process response
-                            showPowerBiStatisticsReport();
-                            setSelectedReportType(undefined);
-                        })
-                        .catch(function (error: any) {
-                            // Handle error
-                            let errorMessage: string = error.message;
-                            let errorContent = errorMessage.split(": ");
-                            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
-                            nearApiErrorModalToggle();
-                            setIsLoadingBiReport(false);
-                            console.log(error);
-                        });
-                });
-            });
-    }
-
-    /**
      * This function is used to cancel the
      * trade area statistics report generation
      */
@@ -3740,7 +4197,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * @param historyId
      */
     function onListOfHistoricalDelete(historyId: string) {
-        setHistoryRecordGuid(historyId);
+        setDeleteStatisticsHistoryRecordGuid(historyId);
         listOfHistoricalModalToggle();
 
         deleteStatisticsModalToggle();
@@ -3778,146 +4235,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         setIsLoadingBiReport(true);
         setCompetitorHistoryGuid(historyId);
 
-        let fetchHistoryDetails = {
-            competitorHistoryGuid : historyId,
-        };
-        
-        createCompetitorSelectedTradeArea(JSON.stringify(fetchHistoryDetails), '');
-    }
-
-    function createCompetitorSelectedTradeArea(additionalDetails: any, competitorFeatures: any) {
-        let ownerIdValue = getUserIdValue();
-        let requests: any[] = [];
-        let pendingRequests : any[] = [];
-
-        var Sdk = (window as any).Sdk || {};
-
-        Sdk.CreateRequest = function(entityName: string, payload: object) {
-            this.etn = entityName;
-            this.payload = payload;
-        };
-
-        Sdk.CreateRequest.prototype.getMetadata = function () {
-            return {
-                boundParameter: null,
-                parameterTypes: {},
-                operationType: 2, // This is a CRUD operation. Use '0' for actions and '1' for functions
-                operationName: "Create",
-            };
-        };
-
-        if (competitorFeatures.length !== 0) {
-            for (let i = 0; i< competitorFeatures.length; i++) {
-                let payload = {
-                    crcef_storeid : additionalDetails,
-                    crcef_tradeareajson: JSON.stringify(competitorFeatures[i]),
-                    crcef_reporttype: ReportTypeValue.COMPETITOR,
-                };
-                let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
-                requests.push(createRequest);
-            }
-        } else {
-            let payload = {
-                crcef_storeid : additionalDetails,
-                crcef_tradeareajson: competitorFeatures,
-                crcef_reporttype: ReportTypeValue.COMPETITOR,
-            };
-            let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
-            requests.push(createRequest);
-        }
-
-        pendingRequests = requests.slice();
-
-        Xrm.WebApi
-            .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
-                let entities = result.entities;
-                let deletePromisesArray = [];
-                let createPromisesArray: Promise<void>[] = [];
-
-                for (let i = 0; i < entities.length; i++) {
-                    let tradeareaId = entities[i].crcef_selectedtradeareaid;
-                    let promise = new Promise<void>((resolve, reject) => {
-                        Xrm.WebApi
-                            .deleteRecord("crcef_selectedtradearea", tradeareaId).then((res) => {
-                                resolve();
-                            });
-                    });
-                    deletePromisesArray.push(promise);
-                }
-
-                Promise.all(deletePromisesArray).then(() => {
-                    let currentRequest = pendingRequests.splice(0, 2);
-                    executeNearApiRequest(currentRequest, pendingRequests);
-                });
-            })
-            .catch(function (error: any) {
-                console.log(error);
-            });
-        //set loader to true
+        // close the competitor report modal
         competitorReportModalToggle();
-    }
-
-    function executeNearApiRequest(currentRequest: any, pendingRequests: any) {
-        Xrm.WebApi.online.executeMultiple(currentRequest)
-        .then(function (response: any) {
-            if (pendingRequests.length === 0) {
-                let selectedTradeAreaGuid = response[0].headers._headers.Location.slice(-37,-1);
-                if (selectedTradeAreaGuid !== undefined) {
-                    Xrm.WebApi.updateRecord("crcef_selectedtradearea", selectedTradeAreaGuid, {"crcef_pushdatatoazure":true})
-                        .then(function (response: any) {
-                            showPowerBiCompetitorReport();
-                            setActiveBtnId('');
-                            //setSelectedReportType(undefined);
-                        })  
-                        .catch(function (error: any) {
-                            // Handle error
-                            setIsLoadingBiReport(false);
-                            setActiveBtnId('');
-                            //setSelectedReportType(undefined);
-    
-                            let errorMessage: string = error.message;
-                            let errorContent = errorMessage.split(": ");
-                            setNearApiErrorMessage("Azure Plugin has return the following error" + errorMessage.toUpperCase());
-                            nearApiErrorModalToggle();
-                            console.log(error);
-                        });
-                }
-            } else {
-                let currentRequest = pendingRequests.splice(0, 2);
-                executeNearApiRequest(currentRequest, pendingRequests);
-            }
-        })
-        .catch(function (error: any) {
-            // Handle error
-            console.log(">>>Near api method - catch")
-            setIsLoadingBiReport(false);
-            setActiveBtnId('');
-            //setSelectedReportType(undefined);
-
-            let errorMessage: string = error.message;
-            let errorContent = errorMessage.split(": ");
-            setNearApiErrorMessage("Near API has return the following error" + errorMessage.toUpperCase());
-            nearApiErrorModalToggle();
-            console.log(error);
-        });
-    }
-
-    function deleteCompetitorAnalysisEntity() {
-        let ownerIdValue = getUserIdValue();
-        Xrm.WebApi
-            .retrieveMultipleRecords("crcef_competitoranalysis", "?$select=crcef_competitoranalysisid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
-                let entities = result.entities;
-
-                for (var i = 0; i < entities.length; i++) {
-                    let tradeareaId = entities[i].crcef_competitoranalysisid;
-                    Xrm.WebApi
-                        .deleteRecord("crcef_competitoranalysis", tradeareaId).then((res) => {
-                        })
-                        .catch(function (error: any) {
-                            console.log(error);
-                        });
-                }
-            });
     }
 
     function onDeleteStatisticsDataConfirm() {
@@ -3925,7 +4244,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             return;
         }
         Xrm.WebApi
-            .deleteRecord("crcef_historicallawsondata", historyRecordGuid).then(function (response: any) {
+            .deleteRecord("crcef_historicallawsondata", deleteStatisticsHistoryRecordGuid).then(function (response: any) {
                 // Process response
                 console.log("deleted successfully")
             })
@@ -3935,17 +4254,17 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         
         deleteStatisticsModalToggle();
         setSelectedReportType(undefined);
-        setHistoryRecordGuid('');
+        setDeleteStatisticsHistoryRecordGuid('');
     }
 
     function onDeleteStatisticsDataCancel() {
-        setHistoryRecordGuid('');
+        setDeleteStatisticsHistoryRecordGuid('');
         deleteStatisticsModalToggle();
         listOfHistoricalModalToggle();
     }
 
     function onCompetitorHistoryDelete(historyId: string) {
-        setHistoryRecordGuid(historyId);
+        setDeleteCompetitorAnalysisHistoryHeaderGuid(historyId);
         competitorReportModalToggle();
 
         deleteCompetitorModalToggle();
@@ -3961,7 +4280,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         setIsLoadingBiReport(true);
 
-        let competitorFeaturesList = comparisonTradeAreaList.map(tradeArea => {
+        // Competitor Period start and end date
+        let ISOStartDate = fromDate.toISOString();
+        let ISOEndDate = toDate.toISOString();
+        let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")
+        let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
+
+        // Prepare competitor feature list for selected mall
+        let competitorFeaturesList = selectedTradeAreaList.map(tradeArea => {
             let competitorFeature: GeoJSON.Feature;
             competitorFeature = {
                 type: "Feature",
@@ -3975,50 +4301,39 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
             }
             return competitorFeature;
-        })
-        
-        let ISOStartDate = fromDate.toISOString();
-        let ISOEndDate = toDate.toISOString();
-        let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")
-        let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
-
-        let randomNumber = Math.round(Math.random() * 1000000000).toString();
-
-        constructCompetitorFeatureSplit(periodStartDate, periodEndDate, competitorFeaturesList, function (competitorFeaturesListSplit) {
-            if (competitorFeaturesListSplit.length === 0) {
-                setIsLoadingBiReport(false);
-                return;
-            }
-
-            deleteCompetitorAnalysisEntity();
-            Xrm.WebApi.createRecord("crcef_competitoranalysishistoryheader", { "crcef_recordname": recordName })
-                .then(function success(result) {
-                    let additionalDetails = {
-                        competitorHistoryGuid: result.id,
-                        startDate: periodStartDate,
-                        endDate: periodEndDate,
-                        randomNumber: randomNumber
-                    };
-
-                    createCompetitorSelectedTradeArea(JSON.stringify(additionalDetails), competitorFeaturesListSplit);
-                });
-
-            setComparisonTradeAreaList([]);
         });
+
+        // add area to competitor feature list
+        competitorFeaturesList.forEach((feature : any) => {
+            let polygonArea = turf.area(feature.geometry);
+            feature.properties.area = polygonArea;
+        });
+
+        // sorting of competitor feature list
+        competitorFeaturesList.sort(function(a: any, b: any) { return b.properties.area - a.properties.area; });
+
+        setCompetitorRecordName(recordName);
+        setCompetitorPeriodEndDate(periodEndDate);
+        setCompetitorPeriodStartDate(periodStartDate);
+        setCompetitorNearApiFeatureList(competitorFeaturesList);
     }
 
-    function constructCompetitorFeatureSplit(periodStartDate: string, periodEndDate: string, competitorFeaturesList: any, callbackfunction : (competitorFeaturesListSplit: number[][]) => void) {
-        let maxArea = 0;
-
-        let startDate = periodStartDate.substring(0, 10);
-        //let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
+    /**
+     * This function is used to update the
+     * demographic line information into existing
+     * competitor selected trade area feature list
+     */
+    function updateDemographicLineToCompetitorSelectedTradeAreaFeatureList() {
+        //let startDate0hr = competitorPeriodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
         //let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
 
-        let endDate = periodEndDate.substring(0, 10);
-        //let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
+        //let endDate23hr = competitorPeriodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
         //let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
 
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
+            let startDate = competitorPeriodStartDate.substring(0, 10);
+            let endDate = competitorPeriodEndDate.substring(0, 10);
+
             Xrm.WebApi
                 .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate eq "+ startDate + " and crcef_enddate eq " + endDate)
                 /*.retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")*/
@@ -4031,13 +4346,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     reject();
                 });
         });
-        fetchDemographicsHeaderPromise.then(function (result: any) {
-            let entities = result.entities;
-            let demographicHeaderId = entities[0].crcef_demographicdataheaderid
-            console.log("Header ID >>>>>>>", entities[0].crcef_demographicdataheaderid);
 
-            //demo line
+        fetchDemographicsHeaderPromise.then(function (result: any) {
+            let headerEntities = result.entities;
+
+            // demo line
             let demographicLinePromise = new Promise<void>((resolve, reject) => {
+                let headerEntity = headerEntities[0];
+                let demographicHeaderId = headerEntity.crcef_demographicdataheaderid;
+
+                console.log("Header ID >>>>>>>", demographicHeaderId);
                 Xrm.WebApi
                     .retrieveMultipleRecords("crcef_demographicdata","?$select=_crcef_headerid_value,_crcef_tradearea_value,crcef_demographicdataid,crcef_tradeareasname&$filter=_crcef_headerid_value eq '"+ demographicHeaderId + "'")
                     .then((lineResponse: any) => {
@@ -4047,29 +4365,31 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             demographicLinePromise.then(function (result: any) {
                 let lineEntities = result.entities;
-                let lineDetails : DemographicLineDetails;
-                let lineDetailsList : DemographicLineDetails [] = [];
+                let lineDetailsList: DemographicLineDetails[] = [];
 
-                for (let line = 0; line < lineEntities.length; line++)
-                {
-                    lineDetails = {
-                        tradeAreaId: lineEntities[line]._crcef_tradearea_value,
-                        tradeAreaName: lineEntities[line].crcef_tradeareasname,
-                        lineGuid: lineEntities[line].crcef_demographicdataid
+                for (let i = 0; i < lineEntities.length; i++) {
+                    let lineEntity = lineEntities[i];
+                    let lineDetails: DemographicLineDetails = {
+                        tradeAreaId: lineEntity._crcef_tradearea_value,
+                        tradeAreaName: lineEntity.crcef_tradeareasname,
+                        lineGuid: lineEntity.crcef_demographicdataid
                     }
                     lineDetailsList.push(lineDetails);
                 }
 
-                competitorFeaturesList.forEach((feature : any) => {
-                    let polygonArea = turf.area(feature.geometry);
-                    feature.properties.area = polygonArea;
-
+                let competitorFeatureWithDemographicList = competitorNearApiFeatureList.slice();
+                competitorFeatureWithDemographicList.forEach((feature: GeoJSON.Feature) => {
+                    let properties = feature.properties;
                     let currentLineDetails = lineDetailsList.find(line => line.tradeAreaId === feature.id);
-                    feature.properties.demographicLineGuid = currentLineDetails?.lineGuid;
+
+                    if (properties !== null) {
+                        properties.demographicLineGuid = currentLineDetails?.lineGuid;
+                    }
                 });
 
-                let weekdifference = Math.ceil((new Date(periodEndDate).getTime() - new Date(periodStartDate).getTime()) / (7 * 24 * 60 * 60 * 1000));
+                let weekdifference = Math.ceil((new Date(competitorPeriodEndDate).getTime() - new Date(competitorPeriodStartDate).getTime()) / (7 * 24 * 60 * 60 * 1000));
 
+                let maxArea = 0;
                 switch (weekdifference) {
                     case 1:
                         maxArea = 450000; 
@@ -4090,65 +4410,80 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                         maxArea = 50000;
                         break;
                 }
-                let competitorFeatureList : number[][] = splitCompetitorFeatureList(competitorFeaturesList,maxArea);
-                callbackfunction(competitorFeatureList);
+
+                setCompetitorMaxArea(maxArea);
+                setCompetitorNearApiFeatureWithDemographicList(competitorFeatureWithDemographicList);
             })
             .catch(function(result) {
-                callbackfunction([]);
             })
         })
     }
 
-    function splitCompetitorFeatureList(competitorFeaturesList: any, maxArea: number) {
-        let competitorFeaturesListSplit = [];
-        competitorFeaturesList.sort(function(a: any, b: any) { return b.properties.area - a.properties.area; });
+    /**
+     * This function is used to update the
+     * competitor split selected trade area feature list
+     */
+    function updateComptitorSplitSelectedTradeAreaFeatureList() {
+        let competitorSplitFeaturesList: GeoJSON.Feature[][] = [];
+        let competitorFeatureWithDemographicLineList = competitorNearApiFeatureWithDemographicList.slice();
 
-        while (competitorFeaturesList.length !== 0) {
-            let maxAreaLimit = maxArea;
-            let splittedarray: number[] = [];
+        while (competitorFeatureWithDemographicLineList.length !== 0) {
+            let maxAreaLimit = competitorMaxArea;
+            let splittedarray: GeoJSON.Feature[] = [];
 
-            for (let i = 0; i < competitorFeaturesList.length; i++) {
-                if (competitorFeaturesList[i].properties.area > maxArea) {
-                    setErrorTradeAreaName(competitorFeaturesList[i].properties.name);
-                    return [];
-                }
+            for (let i = 0; i < competitorFeatureWithDemographicLineList.length; i++) {
+                let competitorFeature = competitorFeatureWithDemographicLineList[i];
+                let competitorFeatureProp = competitorFeature.properties;
 
-                let conditionValue = maxAreaLimit - competitorFeaturesList[i].properties.area;
-                if (conditionValue === 0) {
-                    splittedarray.push(competitorFeaturesList[i]);
-                    break;
-                } else if (conditionValue > 0) {
-                    splittedarray.push(competitorFeaturesList[i]);
-                    maxAreaLimit = maxAreaLimit - competitorFeaturesList[i].properties.area;
+                if (competitorFeatureProp !== null) {
+                    let competitorFeatureArea = competitorFeatureProp.area
+                    if (competitorFeatureArea > competitorMaxArea) {
+                        setErrorTradeAreaName(competitorFeatureProp.name);
+                        return [];
+                    }
+
+                    let conditionValue = maxAreaLimit - competitorFeatureArea;
+                    if (conditionValue === 0) {
+                        splittedarray.push(competitorFeature);
+                        break;
+                    } else if (conditionValue > 0) {
+                        splittedarray.push(competitorFeature);
+                        maxAreaLimit = maxAreaLimit - competitorFeatureArea;
+                    }
                 }
             }
 
-            competitorFeaturesListSplit.push(splittedarray);
-            competitorFeaturesList = competitorFeaturesList.filter((item:any) => !splittedarray.includes(item))
+            competitorSplitFeaturesList.push(splittedarray);
+            competitorFeatureWithDemographicLineList = competitorFeatureWithDemographicLineList.filter((item:any) => !splittedarray.includes(item))
         }
-        return competitorFeaturesListSplit;
+
+        if (competitorSplitFeaturesList.length === 0) {
+            setIsLoadingBiReport(false);
+        }
+
+        setCompetitorSplitNearApiFeatureList(competitorSplitFeaturesList);
     }
 
     function onCompetitorReportCancel() {
         competitorReportModalToggle();
         setActiveBtnId('');
-        setComparisonTradeAreaList([]);
+        setSelectedTradeAreaList([]);
     }
 
     function onTradeAreaCheckboxChanged(tradeAreaId: string) {
-        let selectedTradeAreaIndex = comparisonTradeAreaList.findIndex(tradeArea => tradeArea.tradeAreaId === tradeAreaId);
+        let selectedTradeAreaIndex = selectedTradeAreaList.findIndex(tradeArea => tradeArea.tradeAreaId === tradeAreaId);
 
         if (selectedTradeAreaIndex >= 0) {
-            let refComparisonTradeAreaList = comparisonTradeAreaList;
-            refComparisonTradeAreaList.splice(selectedTradeAreaIndex, 1);
-            setComparisonTradeAreaList(refComparisonTradeAreaList);
+            let refSelectedTradeAreaList = selectedTradeAreaList;
+            refSelectedTradeAreaList.splice(selectedTradeAreaIndex, 1);
+            setSelectedTradeAreaList(refSelectedTradeAreaList);
 
             mapDraw.changeMode(GlDrawMode.SIMPLE_SELECT);
         } else {
             let selectedTradeArea = tradeAreaList.find(tradeArea => tradeArea.tradeAreaId === tradeAreaId);
             if (selectedTradeArea !== undefined) {
-                comparisonTradeAreaList.push(selectedTradeArea);
-                setComparisonTradeAreaList(comparisonTradeAreaList);
+                selectedTradeAreaList.push(selectedTradeArea);
+                setSelectedTradeAreaList(selectedTradeAreaList);
 
                 mapDraw.changeMode(GlDrawMode.DIRECT_SELECT, {featureId: selectedTradeArea.featureId});
 
@@ -4166,7 +4501,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
         //Check if cascading delete happens in line records
         Xrm.WebApi
-            .deleteRecord("crcef_competitoranalysishistoryheader", historyRecordGuid).then(function (response: any) {
+            .deleteRecord("crcef_competitoranalysishistoryheader", deleteCompetitorAnalysisHistoryHeaderGuid).then(function (response: any) {
                     // Process response
                     console.log("deleted successfully")
                 })
@@ -4176,11 +4511,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
         deleteCompetitorModalToggle();
         setActiveBtnId('');
-        setHistoryRecordGuid('');
+        setDeleteCompetitorAnalysisHistoryHeaderGuid('');
     }
 
     function onDeleteCompetitorDataCancel() {
-        setHistoryRecordGuid('');
+        setDeleteCompetitorAnalysisHistoryHeaderGuid('');
         deleteCompetitorModalToggle();
         competitorReportModalToggle();
     }

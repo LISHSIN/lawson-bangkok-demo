@@ -1,0 +1,8 @@
+.App .license-error-container {
+    height: 100%;
+    color: black;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}

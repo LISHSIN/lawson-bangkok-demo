@@ -8,6 +8,13 @@ export interface CircleInfo {
     storeFeatureId: string
 }
 
+export interface CompetitorAnalysisInfo {
+    crcef_competitoranalysisid: string;
+    crcef_tradearea: string;
+    crcef_tradeareareference: string;
+    crcef_demographiclinereference?: string;
+}
+
 export interface ProcessedAStoreData {
     nearAPIFeature : GeoJSON.Feature | undefined
     additionalReportDetails : AdditionalReportDetails
