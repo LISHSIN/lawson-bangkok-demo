@@ -55,6 +55,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [unSaveModifyTradeAreaFeatureId, setUnSaveModifyTradeAreaFeatureId] = useState<string | undefined>(undefined);
     const [storeStatisticsCircleFeatureId, setStoreStatisticsCircleFeatureId] = useState<string | undefined>(undefined);
     const [selectedStatisticsFeature, setSelectedStatisticsFeature] = useState<GeoJSON.Feature | undefined>(undefined);
+    const [tradeAreaStatisticsDashboardURL, setTradeAreaStatisticsDashboardURL] = useState<string>('');
 
     const [aStoreApiActionType, setAStoreApiActionType] = useState<AStoreActionType | undefined>(undefined);
     const [aStoreFeature, setAStoreFeature] = useState<GeoJSON.Feature | undefined>(undefined);
@@ -492,6 +493,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }, [selectedHistoricalDataGuid]);
 
     useEffect(() => {
+        getTradeAreaStatisticsDashboardURL();
         getCompetitorAnalysisDashboardURL();
     }, []);
 
@@ -831,6 +833,24 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 // Process response
                 let url = response.entities[0].crcef_tradeareacoverageappid;
                 setCompetitorAnalysisDashboardURL(url);
+            })
+            .catch(function (error) {
+                // Handle error
+                console.log(error)
+            });
+    }
+
+    /**
+     * This function is used to get
+     * Trade Area Statistics Dashboard URL
+     */
+     function getTradeAreaStatisticsDashboardURL() {
+        Xrm.WebApi
+            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'store'")
+            .then(function (response) {
+                // Process response
+                let url = response.entities[0].crcef_tradeareastatisticsappurl;
+                setTradeAreaStatisticsDashboardURL(url);
             })
             .catch(function (error) {
                 // Handle error
@@ -2357,17 +2377,21 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             });
     }
 
-    //Prithvika
+    /**
+     * This function is used to fetch
+     * the demographic details for the report.
+     */
     function fetchTradeAreaDemographics () {
-        let startDate0hr = "2022-01-09T00:00:00"; //periodStartDate.replace(' ', 'T');
-        let startDate23hr = "2022-01-09T23:59:59"; //startDate0hr.replace('00:00:00', '23:59:59');
+        let startDate0hr = "2022-01-10";
+        //let startDate23hr = "2022-01-10T23:59:59";
 
-        let endDate0hr = "2022-01-22T00:00:00"; //endDate23hr.replace('23:59:59', '00:00:00');
-        let endDate23hr = "2022-01-22T23:59:59";//periodEndDate.replace(' ', 'T');
+        let endDate0hr = "2022-01-23";
+        //let endDate23hr = "2022-01-23T23:59:59";
 
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
             Xrm.WebApi
-                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")
+                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate eq "+ startDate0hr + " and crcef_enddate eq " + endDate0hr)
+                /*.retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")*/
                 .then(function (response: any) {
                     // Process response
                     resolve(response);
@@ -2402,17 +2426,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     }
                 }
                 createFilteredAStoreFeaturesApiCall(tradeAreaDemographicLine);
-                // competitorFeaturesList.forEach((feature : any) => {
-                //     let polygonArea = turf.area(feature.geometry);
-                //     feature.properties.area = polygonArea;
-
-                //     let currentLineDetails = lineDetailsList.find(line => line.tradeAreaId === feature.id);
-                //     feature.properties.demographicLineGuid = currentLineDetails?.lineGuid;
-                // });
             });
         });
     }
-    //end
 
     /**
      * This function is used to create
@@ -2424,14 +2440,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         const { man0: totalMan0, man10: totalMan10, man20: totalMan20, man30: totalMan30, man40: totalMan40, man50: totalMan50, man60: totalMan60, man70: totalMan70, man80: totalMan80, woman0: totalWoman0, woman10: totalWoman10, woman20: totalWoman20, woman30: totalWoman30, woman40: totalWoman40, woman50: totalWoman50, woman60: totalWoman60, woman70: totalWoman70, woman80: totalWoman80, males: totalMales, females: totalFemales, total: totalPopulation } = aggregatedPopulationObj;
         const { bStore: totalBStore, cStore: totalCStore, dStore: totalDStore, eStore: totalEStore, tatal: totalTatal } = aggregatedCompetitorStoreObj;
 
-        //prithvika
-        //fetch demographics for trade area statistics
-        //let tradeAreaDemographicLine = fetchTradeAreaDemographics();
-
-        // if (tradeAreaDemographicLine !== undefined) {
-        //     console.log(" ",tradeAreaDemographicLine.crcef_02kmhomelocation)
-        // }
-        //end
         for (let i = 0; i < filteredAStoreFeatures.length; i++) {
             let feature = filteredAStoreFeatures[i];
             if (feature !== null) {
@@ -3975,7 +3983,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
 
         let randomNumber = Math.round(Math.random() * 1000000000).toString();
-        //let competitorFeaturesListSplit = constructCompetitorFeatureSplit(new Date(periodStartDate), new Date(periodEndDate), competitorFeaturesList);
+
         constructCompetitorFeatureSplit(periodStartDate, periodEndDate, competitorFeaturesList, function (competitorFeaturesListSplit) {
             if (competitorFeaturesListSplit.length === 0) {
                 setIsLoadingBiReport(false);
@@ -3999,19 +4007,21 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         });
     }
 
-    //function constructCompetitorFeatureSplit(periodStartDate: Date, periodEndDate: Date, competitorFeaturesList: any) {
     function constructCompetitorFeatureSplit(periodStartDate: string, periodEndDate: string, competitorFeaturesList: any, callbackfunction : (competitorFeaturesListSplit: number[][]) => void) {
         let maxArea = 0;
 
-        let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
-        let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
+        let startDate = periodStartDate.substring(0, 10);
+        //let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
+        //let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
 
-        let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
-        let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
+        let endDate = periodEndDate.substring(0, 10);
+        //let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
+        //let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
 
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
             Xrm.WebApi
-                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")
+                .retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate eq "+ startDate + " and crcef_enddate eq " + endDate)
+                /*.retrieveMultipleRecords("crcef_demographicdataheader", "?$select=crcef_name,crcef_startdate,crcef_enddate,crcef_demographicdataheaderid&$filter=crcef_startdate ge '"+ startDate0hr + "'" + " and crcef_startdate le '" + startDate23hr + "'" + " and crcef_enddate ge '" + endDate0hr + "'" + " and crcef_enddate le '" + endDate23hr + "'")*/
                 .then(function (response: any) {
                     // Process response
                     resolve(response);
@@ -4185,15 +4195,18 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")//2022-01-16 00:00:00
         let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");//2022-01-16 23:59:59
 
-        let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
-        let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
+        let startDate = periodStartDate.substring(0, 10);
+        let endDate = periodEndDate.substring(0, 10);
+        //let startDate0hr = periodStartDate.replace(' ', 'T');//2022-01-18T00:00:00
+        //let startDate23hr = startDate0hr.replace('00:00:00', '23:59:59');//2022-01-18T23:59:59
 
-        let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
-        let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
+        //let endDate23hr = periodEndDate.replace(' ', 'T');//2022-01-19T23:59:59
+        //let endDate0hr = endDate23hr.replace('23:59:59', '00:00:00');//2022-01-19T00:00:00
 
         let fetchDemographicsHeaderPromise = new Promise<void>((resolve, reject) => {
             Xrm.WebApi
-                .retrieveMultipleRecords("crcef_brandaffinityheader", "?$select=crcef_brandaffinityheaderid,crcef_fromdate,crcef_todate&$filter=crcef_fromdate ge '"+ startDate0hr + "'" + " and crcef_fromdate le '" + startDate23hr + "'" + " and crcef_todate ge '" + endDate0hr + "'" + " and crcef_todate le '" + endDate23hr + "'")
+                .retrieveMultipleRecords("crcef_brandaffinityheader", "?$select=crcef_brandaffinityheaderid,crcef_fromdate,crcef_todate&$filter=crcef_fromdate eq "+ startDate + " and crcef_todate eq " + endDate)
+                // .retrieveMultipleRecords("crcef_brandaffinityheader", "?$select=crcef_brandaffinityheaderid,crcef_fromdate,crcef_todate&$filter=crcef_fromdate ge '"+ startDate0hr + "'" + " and crcef_fromdate le '" + startDate23hr + "'" + " and crcef_todate ge '" + endDate0hr + "'" + " and crcef_todate le '" + endDate23hr + "'")
                 .then(function (response: any) {
                     // Process response
                     resolve(response);
@@ -4300,7 +4313,8 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             setMockAStoreFeature(undefined);
             dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=b1262a4d-7743-eb11-a813-000d3a1a2401&dashboardType=1030&pagemode=iframe`;
         } else {
-            dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=9DD79E5B-07F8-EA11-A815-000D3A8FAAA7&dashboardType=1030&pagemode=iframe`;
+            //dashboardUrl = `${orgurl}/dashboards/dashboard.aspx?dashboardId=9DD79E5B-07F8-EA11-A815-000D3A8FAAA7&dashboardType=1030&pagemode=iframe`;
+            dashboardUrl = tradeAreaStatisticsDashboardURL;
         }
 
         setTimeout(() => {

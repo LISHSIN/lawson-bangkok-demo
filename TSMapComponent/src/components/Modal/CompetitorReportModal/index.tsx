@@ -243,7 +243,7 @@ export const CompetitorReportModalFC: React.FC<CompetitorReportModalProps> = (pr
                             <input type="text" onChange={onTextInputChange}/>
                         </div>
                         <div className="button-column">
-                            <button className="generate-new-report-btn" onClick={onGenerateNewReportClick} disabled>Generete New Report</button>
+                            <button className="generate-new-report-btn" onClick={onGenerateNewReportClick}>Generete New Report</button>
                         </div>
                     </div>
                 </div>
