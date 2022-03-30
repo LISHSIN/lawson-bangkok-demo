@@ -4415,8 +4415,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 setCompetitorNearApiFeatureWithDemographicList(competitorFeatureWithDemographicList);
             })
             .catch(function(result) {
+                // loader is hide if demographic line promise throws error.
+                setIsLoadingBiReport(false);
             })
         })
+        .catch(function (error: any) {
+            // loader is hide if demographic header promise throws error.
+            setIsLoadingBiReport(false);
+        });
     }
 
     /**
@@ -4455,10 +4461,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
             competitorSplitFeaturesList.push(splittedarray);
             competitorFeatureWithDemographicLineList = competitorFeatureWithDemographicLineList.filter((item:any) => !splittedarray.includes(item))
-        }
-
-        if (competitorSplitFeaturesList.length === 0) {
-            setIsLoadingBiReport(false);
         }
 
         setCompetitorSplitNearApiFeatureList(competitorSplitFeaturesList);
