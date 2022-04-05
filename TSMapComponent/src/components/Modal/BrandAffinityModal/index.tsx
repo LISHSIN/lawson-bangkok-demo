@@ -58,7 +58,6 @@ export const BrandAffinityReportModalFC: React.FC<GenerateBrandAffinityModalProp
                     <div className="start-date">
                         <input 
                             type="date"
-                            value={fromDateString}
                             onChange={onFromDateInputChange}
                         />
                     </div>
@@ -66,7 +65,6 @@ export const BrandAffinityReportModalFC: React.FC<GenerateBrandAffinityModalProp
                     <div className="end-date">
                         <input 
                             type="date"
-                            value={toDateString}
                             onChange={onToDateInputChange}
                         />
                     </div>
