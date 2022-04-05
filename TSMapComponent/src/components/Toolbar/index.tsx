@@ -922,10 +922,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function getCompetitorAnalysisDashboardURL() {
         Xrm.WebApi
-            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'competitor'")
+            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'Store Locator Configuration'")
             .then(function (response) {
                 // Process response
-                let url = response.entities[0].crcef_tradeareacoverageappid;
+                let url = response.entities[0].crcef_competitortradeareacoverageappid;
                 setCompetitorAnalysisDashboardURL(url);
             })
             .catch(function (error) {
@@ -940,7 +940,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function getTradeAreaStatisticsDashboardURL() {
         Xrm.WebApi
-            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'store'")
+            .retrieveMultipleRecords("crcef_configuration","?$filter=crcef_entityschemaname eq 'Store Locator Configuration'")
             .then(function (response) {
                 // Process response
                 let url = response.entities[0].crcef_tradeareastatisticsappurl;
