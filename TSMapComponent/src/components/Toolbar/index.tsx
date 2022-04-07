@@ -3017,6 +3017,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 .then(function (response: any) {
                     showPowerBiCompetitorReport();
                     setActiveBtnId('');
+                    setCompetitorHistoryGuid(undefined);
                     resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
                     //setSelectedReportType(undefined);
                 })    
@@ -3024,6 +3025,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     // Handle error
                     setIsLoadingBiReport(false);
                     setActiveBtnId('');
+                    setCompetitorHistoryGuid(undefined);
                     resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
                     //setSelectedReportType(undefined);
 
