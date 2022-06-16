@@ -83,7 +83,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     // Competitor analysis
     const [selectedTradeAreaList, setSelectedTradeAreaList] = useState<TradeAreaInfo[]>([]);
-    const [competitorHistoryGuid, setCompetitorHistoryGuid] = useState<string | undefined>(undefined);
+    const [selectedCompetitorHistoryGuid, setSelectedCompetitorHistoryGuid] = useState<string | undefined>(undefined);
     const [competitorAnalysisDetailList, setCompetitorAnalysisDetailList] = useState<CompetitorAnalysisInfo[]>([]);
     const [competitorAnalysisDashboardURL, setCompetitorAnalysisDashboardURL] = useState<string>('');
     const [deleteStatisticsHistoryRecordGuid, setDeleteStatisticsHistoryRecordGuid] = useState<string>('');
@@ -545,10 +545,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }, [completedCompetitorSelectedTradeAreaGuid]);
 
     useEffect(() => {
-        if (competitorHistoryGuid !== undefined) {
+        if (selectedCompetitorHistoryGuid !== undefined) {
             deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall();
         }
-    }, [competitorHistoryGuid]);
+    }, [selectedCompetitorHistoryGuid]);
 
     useEffect(() => {
         if ((selectedStatisticsFeature !== undefined) && (selectedHistoricalDataGuid !== undefined)) {
@@ -3017,7 +3017,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 .then(function (response: any) {
                     showPowerBiCompetitorReport();
                     setActiveBtnId('');
-                    setCompetitorHistoryGuid(undefined);
+                    setSelectedCompetitorHistoryGuid(undefined);
                     resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
                     //setSelectedReportType(undefined);
                 })    
@@ -3025,7 +3025,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     // Handle error
                     setIsLoadingBiReport(false);
                     setActiveBtnId('');
-                    setCompetitorHistoryGuid(undefined);
+                    setSelectedCompetitorHistoryGuid(undefined);
                     resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
                     //setSelectedReportType(undefined);
 
@@ -3043,9 +3043,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * Api Call for competitor analysis into D635
      */
     function createSelectedTradeAreaApiCallForCompetitorAnalysis() {
-        if (competitorHistoryGuid !== undefined) {
+        if (selectedCompetitorHistoryGuid !== undefined) {
             let fetchHistoryDetails = {
-                competitorHistoryGuid : competitorHistoryGuid,
+                competitorHistoryGuid : selectedCompetitorHistoryGuid,
             };
             createSelectedTradeAreaApiRequestForCompetitorAnalysis(fetchHistoryDetails, true);
         } else {
@@ -3134,7 +3134,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             .executeMultiple(currentRequest)
             .then(function (response: any) {
                 if (pendingRequests.length === 0) {
-                    if (competitorHistoryGuid === undefined) {
+                    if (selectedCompetitorHistoryGuid === undefined) {
                         let ownerIdValue = getUserIdValue();
                         Xrm.WebApi
                             .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
@@ -4235,7 +4235,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
         
         setIsLoadingBiReport(true);
-        setCompetitorHistoryGuid(historyId);
+        setSelectedCompetitorHistoryGuid(historyId);
 
         // close the competitor report modal
         competitorReportModalToggle();
