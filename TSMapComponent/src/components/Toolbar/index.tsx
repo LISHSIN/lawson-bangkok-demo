@@ -25,7 +25,7 @@ import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'co
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 
 import { mockHistoryList, mockTradeAreaList, mockCompetitorHistoryData } from './mock';
-import { CircleInfo, ProcessedAStoreData, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails, CompetitorAnalysisInfo } from './module';
+import { CircleInfo, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails, CompetitorAnalysisInfo, StatisticsNearApiRequestInfo, initialStatisticsNearApiRequestInfo } from './module';
 import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName, PowerBIReportType, ReportTypeValue, ProcessingStatusValue } from './constants';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
@@ -93,6 +93,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     // Selected Trade Area List for Competitor Analysis - Near Api
     const [initialCompetitorSelectedTradeAreaGuids, setInitialCompetitorSelectedTradeAreaGuids] = useState<any[]>([]);
     const [completedCompetitorSelectedTradeAreaGuid, setCompletedCompetitorSelectedTradeAreaGuid] = useState<string>('');
+
+    // Near API Reduest State
+    const [isTriggerStatisticsNearApi, setIsTriggerStatisticsNearApi] = useState(false);
+    const [statisticsNearApiRequestData, setStatisticsNearApiRequestData] = useState<StatisticsNearApiRequestInfo>(initialStatisticsNearApiRequestInfo);
 
     // Ref Variables
     let { current: pluginStartTimeRef } = useRef({
@@ -552,12 +556,18 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
 
     useEffect(() => {
         if ((selectedStatisticsFeature !== undefined) && (selectedHistoricalDataGuid !== undefined)) {
-            let processedStoreDetails: ProcessedAStoreData = processFilteredAStores();
-            deleteAndCreateSelectedTradeAreaForStatisticsApiCall(JSON.stringify(processedStoreDetails.nearAPIFeature)
-                                    , JSON.stringify(processedStoreDetails.additionalReportDetails));
-            setSelectedHistoricalDataGuid(undefined);
+            // Trigger TAS Near Api
+            let nearApiRequestData = constructStatisticsNearApiRequestData();
+            triggerTradeAreaStatisticsNearApiAction(nearApiRequestData);
         }
     }, [selectedHistoricalDataGuid]);
+
+    useEffect(() => {
+        if (isTriggerStatisticsNearApi === true) {
+            deleteAndCreateSelectedTradeAreaForStatisticsApiCall();
+            setIsTriggerStatisticsNearApi(false);
+        }
+    }, [statisticsNearApiRequestData]);
 
     useEffect(() => {
         getTradeAreaStatisticsDashboardURL();
@@ -1410,6 +1420,62 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }
 
     /**
+     * This function is used to create store features and "A" store entity
+     * records GUID list required for creating selected trade area entity
+     * details.
+     */
+    //NEAR API - get data for multiple stores in trade area
+    function constructStatisticsNearApiRequestData(): StatisticsNearApiRequestInfo {
+        let nearAPIFeature: GeoJSON.Feature | undefined = undefined;
+        if (selectedHistoricalDataGuid === '') {
+            if (selectedStatisticsFeature !== undefined) {
+                let selectedFeatureGeometry = selectedStatisticsFeature.geometry;
+                if (selectedFeatureGeometry.type == 'Polygon') {
+                    nearAPIFeature = {
+                        type: "Feature",
+                        id: "Statistics report area",
+                        geometry: {
+                            type: "Polygon",
+                            coordinates: selectedFeatureGeometry.coordinates
+                        },
+                        properties: {
+                            name: "Statistics report area"
+                        }
+                    }
+                }
+            }
+        }
+
+        let aStoreGuidList: string[] = [];
+        for (var i = 0; i < aStoreRecordCreationResponse.length; i++) {
+            let aStoreGuid: string = aStoreRecordCreationResponse[i].slice(-37, -1);
+            aStoreGuidList.push(aStoreGuid);
+        }
+
+        let statisticsHistoryGuid = (selectedHistoricalDataGuid === undefined) ? '' : selectedHistoricalDataGuid;
+
+        let selectedTradeAreaId = '';
+        if (selectedStatisticsFeature !== undefined) {
+            let selectedStatisticsFeatureId = selectedStatisticsFeature.id;
+            if (selectedStatisticsFeatureId === undefined || selectedReportType === PowerBIReportType.STORE) {
+                selectedTradeAreaId = '';
+            } else {
+                selectedTradeAreaId = selectedStatisticsFeatureId as string;
+            }
+        }
+
+        return {
+            nearAPIFeature: nearAPIFeature,
+            additionalReportDetails: {
+                storeGuids: aStoreGuidList,
+                statisticsHistoryGuid: statisticsHistoryGuid,
+                recordName: historyRecordName,
+                selectedTradeAreaId: selectedTradeAreaId
+            }
+        };
+    }
+
+    /**
      * This function is used to find the
      * equal coords between existing and updated one
      * @param existing coords (Position array)
@@ -1577,6 +1643,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         setAggregatedPopulationObj(populationObj);
         setAggregatedCompetitorStoreObj(competitorObj);
         setFilteredAStoreFeatures(featureList);
+    }
+
+    /**
+     * This function is used to set the state value of
+     * statistics near api request data
+     * @param nearApiRequestData request data for trade area statistics
+     */
+    function triggerTradeAreaStatisticsNearApiAction(nearApiRequestData: StatisticsNearApiRequestInfo) {
+        setIsTriggerStatisticsNearApi(true);
+        setStatisticsNearApiRequestData(nearApiRequestData);
     }
 
     /**
@@ -2741,10 +2817,10 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to the new selected trade area
      * record and then show the power bi report
      */
-    function createSelectedTradeAreaApiCallForStatistics(polygonFeatureCoordinates: any, storeId: any) {
+    function createSelectedTradeAreaApiCallForStatistics() {
         let data = {
-            crcef_storeid : storeId,
-            crcef_tradeareajson: polygonFeatureCoordinates,
+            crcef_storeid : JSON.stringify(statisticsNearApiRequestData.additionalReportDetails),
+            crcef_tradeareajson: JSON.stringify(statisticsNearApiRequestData.nearAPIFeature),
             crcef_reporttype: ReportTypeValue.STATISTICS,
             crcef_processingstatus: ProcessingStatusValue.NEW
         };
@@ -2795,6 +2871,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             .then(function success(result) {
                 showPowerBiStatisticsReport();
                 setSelectedReportType(undefined);
+                setSelectedHistoricalDataGuid(undefined);
             })
             .catch(function (error) {
                 console.log("unable to update record", error.message);
@@ -3194,12 +3271,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         });
         fetchHistoricalDataPromise.then(function (result: any) { 
             let entities = result.entities;
-            let historicalInfo : HistoryInfo;
             let historicalInfoList : HistoryInfo[] = [];
             
             if (entities.length > 0) {
                 for (let i = 0; i < entities.length; i++) {
-                    historicalInfo = {
+                    let historicalInfo : HistoryInfo = {
                         crcef_historicalastoredataid: entities[i].crcef_historicallawsondataid,
                         crcef_recordname: entities[i].crcef_recordname,
                         crcef_tradeareaid: entities[i].crcef_tradeareaid,
@@ -3217,63 +3293,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 setSelectedHistoricalDataGuid('');
             }
         });
-    }
-
-    /**
-     * This function is used to create store features and "A" store entity
-     * records GUID list required for creating selected trade area entity
-     * details.
-     */
-    //NEAR API - get data for multiple stores in trade area
-    function processFilteredAStores() {
-        let processedAStore: ProcessedAStoreData;
-        let nearAPIFeature: GeoJSON.Feature | undefined;
-        let aStoreGuid: string;
-        let aStoreGuidList: string[] = [];
-
-        processedAStore = {
-            nearAPIFeature: undefined,
-            additionalReportDetails: {
-                storeGuids: [],
-                statisticsHistoryGuid: "",
-                recordName: "",
-                selectedTradeAreaId: ""
-            }
-        }
-        
-        if (selectedHistoricalDataGuid === '') {
-            if (selectedStatisticsFeature) {
-                if (selectedStatisticsFeature.geometry.type == 'Polygon') {
-                    nearAPIFeature = {
-                        type: "Feature",
-                        id: "Statistics report area",
-                        geometry: {
-                            type: "Polygon",
-                            coordinates: selectedStatisticsFeature.geometry.coordinates
-                        },
-                        properties: {
-                            name: "Statistics report area"
-                        }
-                    }
-                }
-            }
-        }
-        
-        for (var i = 0; i < aStoreRecordCreationResponse.length; i++) {
-            aStoreGuid = aStoreRecordCreationResponse[i].slice(-37, -1);
-            aStoreGuidList.push(aStoreGuid);
-        }
-
-        processedAStore = {
-            nearAPIFeature: nearAPIFeature,
-            additionalReportDetails: {
-                storeGuids: aStoreGuidList,
-                statisticsHistoryGuid: (selectedHistoricalDataGuid === undefined) ? '' : selectedHistoricalDataGuid,
-                recordName: historyRecordName,
-                selectedTradeAreaId: (selectedStatisticsFeature?.id === undefined || selectedReportType === PowerBIReportType.STORE) ? '' : selectedStatisticsFeature?.id
-            }
-        }
-        return processedAStore;
     }
 
     /**
@@ -3308,7 +3327,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * This function is used to delete the existing trade area record and 
      * create the new selected trade area record
      */
-    function deleteAndCreateSelectedTradeAreaForStatisticsApiCall(polygonFeatureCoordinates: any, storeId: any) {
+    function deleteAndCreateSelectedTradeAreaForStatisticsApiCall() {
         let ownerIdValue = getUserIdValue();
         Xrm.WebApi
             .retrieveMultipleRecords("crcef_selectedtradearea", "?$select=crcef_selectedtradeareaid,_ownerid_value&$filter=_ownerid_value eq " + ownerIdValue + "").then((result) => {
@@ -3328,7 +3347,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
 
                 Promise.all(promisesArray).then(() => {
-                    createSelectedTradeAreaApiCallForStatistics(polygonFeatureCoordinates, storeId);
+                    createSelectedTradeAreaApiCallForStatistics();
                 });
             });
     }

@@ -15,18 +15,6 @@ export interface CompetitorAnalysisInfo {
     crcef_demographiclinereference?: string;
 }
 
-export interface ProcessedAStoreData {
-    nearAPIFeature : GeoJSON.Feature | undefined
-    additionalReportDetails : AdditionalReportDetails
-}
-
-export interface AdditionalReportDetails {
-    storeGuids : string[],
-    statisticsHistoryGuid : string,
-    recordName : string,
-    selectedTradeAreaId : string | number
-}
-
 export interface HistoryInfo {
     crcef_historicalastoredataid: string,
     crcef_recordname: string,
@@ -50,4 +38,26 @@ export interface DemographicLineDetails {
     tradeAreaId: string,
     tradeAreaName: string
     lineGuid: string
+}
+
+export interface AdditionalStatisticsReportDetails {
+    storeGuids : string[],
+    statisticsHistoryGuid : string,
+    recordName : string,
+    selectedTradeAreaId : string | number
+}
+
+export interface StatisticsNearApiRequestInfo {
+    nearAPIFeature : GeoJSON.Feature | undefined
+    additionalReportDetails : AdditionalStatisticsReportDetails
+}
+
+export const initialStatisticsNearApiRequestInfo: StatisticsNearApiRequestInfo = {
+    nearAPIFeature : undefined,
+    additionalReportDetails : {
+        storeGuids : [],
+        statisticsHistoryGuid : '',
+        recordName : '',
+        selectedTradeAreaId : ''
+    }
 }
