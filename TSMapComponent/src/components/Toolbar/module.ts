@@ -26,7 +26,9 @@ export interface TradeAreaInfo {
     tradeAreaName: string,
     tradeAreaId: string,
     featureId: string,
-    coordinates: Position[][]
+    coordinates: Position[][],
+    area: number,
+    demographicLineGuid: string,
 }
 
 export interface CompetitorReportHistoryInfo{
@@ -52,6 +54,19 @@ export interface StatisticsNearApiRequestInfo {
     additionalReportDetails : AdditionalStatisticsReportDetails
 }
 
+export interface AdditionalCompetitorReportDetails {
+    endDate: string,
+    startDate: string,
+    randomNumber: string,
+    competitorHistoryGuid: string,
+    nearApiRequestDetails: CompetitorAnalysisInfo[],
+}
+
+export interface CompetitorNearApiRequestInfo {
+    nearAPIFeatureList : GeoJSON.Feature[]
+    additionalReportDetails : AdditionalCompetitorReportDetails
+}
+
 export const initialStatisticsNearApiRequestInfo: StatisticsNearApiRequestInfo = {
     nearAPIFeature : undefined,
     additionalReportDetails : {
@@ -59,5 +74,16 @@ export const initialStatisticsNearApiRequestInfo: StatisticsNearApiRequestInfo =
         statisticsHistoryGuid : '',
         recordName : '',
         selectedTradeAreaId : ''
+    }
+}
+
+export const initialCompetitorNearApiRequestInfo: CompetitorNearApiRequestInfo = {
+    nearAPIFeatureList : [],
+    additionalReportDetails : {
+        endDate: '',
+        startDate: '',
+        randomNumber: '',
+        competitorHistoryGuid: '',
+        nearApiRequestDetails: [],
     }
 }

@@ -25,7 +25,7 @@ import { GlDrawLayerId, GlDrawMode, GlDrawSourceId, LayerId, SourceId } from 'co
 import { CompetitorStoreInfo, initialCompetitorStoreInfo, initialAStoreGeojsonInfo, initialPopulationInfo, PopulationInfo } from 'components/Map1/module';
 
 import { mockHistoryList, mockTradeAreaList, mockCompetitorHistoryData } from './mock';
-import { CircleInfo, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails, CompetitorAnalysisInfo, StatisticsNearApiRequestInfo, initialStatisticsNearApiRequestInfo } from './module';
+import { CircleInfo, HistoryInfo, TradeAreaInfo, CompetitorReportHistoryInfo, DemographicLineDetails, CompetitorAnalysisInfo, StatisticsNearApiRequestInfo, initialStatisticsNearApiRequestInfo, CompetitorNearApiRequestInfo, initialCompetitorNearApiRequestInfo } from './module';
 import { ButtonId, TradeAreaActionId, AStoreActionId, TooltipName, PowerBIReportType, ReportTypeValue, ProcessingStatusValue } from './constants';
 
 type TradeAreaActionType = TradeAreaActionId.CREATE | TradeAreaActionId.UPDATE | TradeAreaActionId.DELETE;
@@ -77,14 +77,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     const [competitorPeriodEndDate, setCompetitorPeriodEndDate] = useState<string>('');
     const [competitorHistoryList, setCompetitorHistoryList] = useState<CompetitorReportHistoryInfo[]>([]);
     const [competitorMaxArea, setCompetitorMaxArea] = useState<number>(0);
-    const [competitorNearApiFeatureList, setCompetitorNearApiFeatureList] = useState<GeoJSON.Feature[]>([]);
-    const [competitorNearApiFeatureWithDemographicList, setCompetitorNearApiFeatureWithDemographicList] = useState<GeoJSON.Feature[]>([]);
-    const [competitorSplitNearApiFeatureList, setCompetitorSplitNearApiFeatureList] = useState<GeoJSON.Feature[][]>([]);
+    const [competitorSelectedTradeAreaList, setCompetitorSelectedTradeAreaList] = useState<TradeAreaInfo[]>([]);
+    const [competitorSelectedTradeAreaWithDemographicList, setCompetitorSelectedTradeAreaWithDemographicList] = useState<TradeAreaInfo[]>([]);
+    const [competitorSplitSelectedTradeAreaList, setCompetitorSplitSelectedTradeAreaList] = useState<TradeAreaInfo[][]>([]);
 
     // Competitor analysis
     const [selectedTradeAreaList, setSelectedTradeAreaList] = useState<TradeAreaInfo[]>([]);
     const [selectedCompetitorHistoryGuid, setSelectedCompetitorHistoryGuid] = useState<string | undefined>(undefined);
-    const [competitorAnalysisDetailList, setCompetitorAnalysisDetailList] = useState<CompetitorAnalysisInfo[]>([]);
+    const [competitorAnalysisList, setCompetitorAnalysisList] = useState<CompetitorAnalysisInfo[]>([]);
     const [competitorAnalysisDashboardURL, setCompetitorAnalysisDashboardURL] = useState<string>('');
     const [deleteStatisticsHistoryRecordGuid, setDeleteStatisticsHistoryRecordGuid] = useState<string>('');
     const [deleteCompetitorAnalysisHistoryHeaderGuid, setDeleteCompetitorAnalysisHistoryHeaderGuid] = useState<string>('');
@@ -97,6 +97,9 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     // Near API Reduest State
     const [isTriggerStatisticsNearApi, setIsTriggerStatisticsNearApi] = useState(false);
     const [statisticsNearApiRequestData, setStatisticsNearApiRequestData] = useState<StatisticsNearApiRequestInfo>(initialStatisticsNearApiRequestInfo);
+
+    const [isTriggerCompetitorNearApi, setIsTriggerCompetitorNearApi] = useState(false);
+    const [competitorNearApiRequestDataList, setCompetitorNearApiRequestDataList] = useState<CompetitorNearApiRequestInfo[]>([initialCompetitorNearApiRequestInfo]);
 
     // Ref Variables
     let { current: pluginStartTimeRef } = useRef({
@@ -506,28 +509,41 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     }, [aStoreFeature]);
 
     useEffect(() => {
-        if (competitorNearApiFeatureList.length > 0) {
+        if (competitorSelectedTradeAreaList.length > 0) {
             updateDemographicLineToCompetitorSelectedTradeAreaFeatureList();
         }
-    }, [competitorNearApiFeatureList]);
+    }, [competitorSelectedTradeAreaList]);
 
     useEffect(() => {
-        if (competitorNearApiFeatureWithDemographicList.length > 0) {
-            updateComptitorSplitSelectedTradeAreaFeatureList()
+        if (competitorSelectedTradeAreaWithDemographicList.length > 0) {
+            updateCompetitorSplitSelectedTradeAreaFeatureList();
         }
-    }, [competitorNearApiFeatureWithDemographicList]);
+    }, [competitorSelectedTradeAreaWithDemographicList]);
 
     useEffect(() => {
-        if (competitorSplitNearApiFeatureList.length > 0) {
+        if (competitorSplitSelectedTradeAreaList.length > 0) {
             deleteAndCreateCompetitorAnalysisApiCall();
         }
-    }, [competitorSplitNearApiFeatureList]);
+    }, [competitorSplitSelectedTradeAreaList]);
 
     useEffect(() => {
-        if (competitorAnalysisDetailList.length > 0) {
-            deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall();
+        if (competitorAnalysisList.length > 0) {
+            updateCompetitorNearApiRequestDataList();
         }
-    }, [competitorAnalysisDetailList]);
+    }, [competitorAnalysisList]);
+
+    useEffect(() => {
+        if (selectedCompetitorHistoryGuid !== undefined) {
+            updateCompetitorNearApiRequestDataList();
+        }
+    }, [selectedCompetitorHistoryGuid]);
+
+    useEffect(() => {
+        if (isTriggerCompetitorNearApi === true) {
+            deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall();
+            setIsTriggerCompetitorNearApi(false);
+        }
+    }, [competitorNearApiRequestDataList]);
 
     useEffect(() => {
         if (initialCompetitorSelectedTradeAreaGuids.length > 0) {
@@ -547,12 +563,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             createCompetitorAnalysisHistoryHeaderApiCall();
         }
     }, [completedCompetitorSelectedTradeAreaGuid]);
-
-    useEffect(() => {
-        if (selectedCompetitorHistoryGuid !== undefined) {
-            deleteAndCreateSelectedTradeAreaForCompetitorAnalysisApiCall();
-        }
-    }, [selectedCompetitorHistoryGuid]);
 
     useEffect(() => {
         if ((selectedStatisticsFeature !== undefined) && (selectedHistoricalDataGuid !== undefined)) {
@@ -907,23 +917,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             return f;
         });
         setTradeAreaFeatureList(featureList);
-    }
-
-    /**
-     * This function is used to get the Near Api Request
-     * Details along with Guid information like TradeArea,
-     * Demographic, Competitor Analysis entity...
-     * @param splitNearApiFeatureList List Near Api Features per request
-     * @return CompetitorAnalysisInfo - competitor analysis information details
-     */
-    function getCompetitorAnalysisNearApiRequestDetailList(splitNearApiFeatureList: GeoJSON.Feature[]): CompetitorAnalysisInfo[] {
-        let nearApiRequestDetails: CompetitorAnalysisInfo[] = [];
-        for (let i = 0; i < splitNearApiFeatureList.length; i++) {
-            let nearApiFeature = splitNearApiFeatureList[i];
-            let competitorAnalysisObj = competitorAnalysisDetailList.find(ca => ca.crcef_tradeareareference === nearApiFeature.id) as CompetitorAnalysisInfo;
-            nearApiRequestDetails.push(competitorAnalysisObj);
-        }
-        return nearApiRequestDetails;
     }
 
     /**
@@ -1406,14 +1399,23 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         };
     }
 
-    function constructCompetitorAnalysisObj(guid: string, nearApiFeature: GeoJSON.Feature): CompetitorAnalysisInfo {
-        let tradeAreaGuid = nearApiFeature.id as string;
-        let property: any = nearApiFeature.properties;
-        // let demographicLineGuid = (property.demographicLineGuid === undefined) ? '' : property.demographicLineGuid;
+    /**
+     * This function is used to construct the
+     * competitor analysis object
+     * @param guid Competitor Analysis GUID
+     * @param tradeArea Trade Area Information
+     * @return competitor analysis info object
+     */
+    function constructCompetitorAnalysisObj(guid: string, tradeArea: TradeAreaInfo): CompetitorAnalysisInfo {
+        let {
+            tradeAreaId: tradeAreaGuid,
+            tradeAreaName,
+            // demographicLineGuid
+        } = tradeArea;
 
         return {
             crcef_competitoranalysisid: guid,
-            crcef_tradearea: property.name,
+            crcef_tradearea: tradeAreaName,
             crcef_tradeareareference: tradeAreaGuid,
             // crcef_demographiclinereference: demographicLineGuid,
         };
@@ -1473,6 +1475,107 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 selectedTradeAreaId: selectedTradeAreaId
             }
         };
+    }
+
+    /**
+     * This function is used to construct the
+     * competitor near api request data required for
+     * creating selected trade area entity details.
+     * @param splitSelectedTradeAreaList splitted array of selected trade area list
+     * @param randomNumber random number to track the record
+     * @return competitor near api request info object
+     */
+    //NEAR API - get data for multiple stores in trade area
+    function constructCompetitorNearApiRequestData(splitSelectedTradeAreaList: TradeAreaInfo[] ,randomNumber: string): CompetitorNearApiRequestInfo {
+        let competitorHistoryGuid = '';
+        let nearAPIFeatureList: GeoJSON.Feature[] = [];
+        let nearApiRequestDetails: CompetitorAnalysisInfo[] = [];
+
+        if (selectedCompetitorHistoryGuid === undefined) {
+            for (let i = 0; i < splitSelectedTradeAreaList.length; i++) {
+                let selectedTradeArea = splitSelectedTradeAreaList[i];
+                let {
+                    tradeAreaId,
+                    tradeAreaName,
+                    coordinates,
+                    demographicLineGuid
+                } = selectedTradeArea;
+
+                // Adding nearAPIFeatureList
+                let tradeAreaFeature: GeoJSON.Feature = {
+                    type: "Feature",
+                    id: tradeAreaId,
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: coordinates
+                    },
+                    properties: {
+                        name: tradeAreaName,
+                        demographicLineGuid: demographicLineGuid
+                    }
+                }
+                nearAPIFeatureList.push(tradeAreaFeature);
+
+                // Adding NearApiRequestDetails
+                let competitorAnalysisObj: CompetitorAnalysisInfo | undefined = competitorAnalysisList.find(ca => ca.crcef_tradeareareference === tradeAreaId);
+                if (competitorAnalysisObj !== undefined) {
+                    nearApiRequestDetails.push(competitorAnalysisObj);
+                }
+            }
+        } else {
+            competitorHistoryGuid = selectedCompetitorHistoryGuid;
+        }
+
+        return {
+            nearAPIFeatureList: nearAPIFeatureList,
+            additionalReportDetails: {
+                endDate: competitorPeriodEndDate,
+                startDate: competitorPeriodStartDate,
+                randomNumber: randomNumber,
+                competitorHistoryGuid: competitorHistoryGuid,
+                nearApiRequestDetails: nearApiRequestDetails,
+            }
+        };
+    }
+
+    /**
+     * This function is used to construct the
+     * selected trade area create request for
+     * competitor analysis report generation
+     * @param competitorNearApiRequestData Competitor Near Api Request Data for multiple trade area
+     * @return Sdk create request
+     */
+    function constructSelectedTradeAreaCreateRequestForCompetitorAnalysis(competitorNearApiRequestData: CompetitorNearApiRequestInfo) {
+        var Sdk = (window as any).Sdk || {};
+
+        Sdk.CreateRequest = function(entityName: string, payload: object) {
+            this.etn = entityName;
+            this.payload = payload;
+        };
+
+        Sdk.CreateRequest.prototype.getMetadata = function () {
+            return {
+                boundParameter: null,
+                parameterTypes: {},
+                operationType: 2, // This is a CRUD operation. Use '0' for actions and '1' for functions
+                operationName: "Create",
+            };
+        };
+
+        let tradeAreaJson = '';
+        let nearApiFeatureList = competitorNearApiRequestData.nearAPIFeatureList;
+        if (nearApiFeatureList.length > 0) {
+            tradeAreaJson = JSON.stringify(nearApiFeatureList);
+        }
+
+        let storeId = JSON.stringify(competitorNearApiRequestData.additionalReportDetails);
+        let payload = {
+            crcef_storeid : storeId,
+            crcef_tradeareajson: tradeAreaJson,
+            crcef_reporttype: ReportTypeValue.COMPETITOR,
+            crcef_processingstatus: ProcessingStatusValue.NEW,
+        };
+        return new Sdk.CreateRequest("crcef_selectedtradearea", payload);
     }
 
     /**
@@ -1653,6 +1756,16 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
     function triggerTradeAreaStatisticsNearApiAction(nearApiRequestData: StatisticsNearApiRequestInfo) {
         setIsTriggerStatisticsNearApi(true);
         setStatisticsNearApiRequestData(nearApiRequestData);
+    }
+
+    /**
+     * This function is used to set the state value of
+     * competitor near api request data list
+     * @param nearApiReqDataList request data for trade area statistics
+     */
+    function triggerCompetitorAnalysisNearApiAction(nearApiReqDataList: CompetitorNearApiRequestInfo[]) {
+        setIsTriggerCompetitorNearApi(true);
+        setCompetitorNearApiRequestDataList(nearApiReqDataList);
     }
 
     /**
@@ -2948,16 +3061,18 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      */
     function createCompetitorAnalysisApiCall() {
         let promisesArray = [];
-        let nearApiFeatureList = competitorNearApiFeatureWithDemographicList;
+        let competitorTradeAreaList = competitorSelectedTradeAreaWithDemographicList;
 
-        for (let i = 0; i < nearApiFeatureList.length; i++) {
-            let nearApiFeature = nearApiFeatureList[i];
-            let tradeAreaGuid = nearApiFeature.id as string;
-            let property: any = nearApiFeature.properties;
-            let demographicLineGuid = (property.demographicLineGuid === undefined) ? '' : property.demographicLineGuid;
+        for (let i = 0; i < competitorTradeAreaList.length; i++) {
+            let competitorTradeArea = competitorTradeAreaList[i];
+            let {
+                tradeAreaId: tradeAreaGuid,
+                tradeAreaName,
+                demographicLineGuid
+            } = competitorTradeArea;
 
             let data = {
-                crcef_tradearea: property.name,
+                crcef_tradearea: tradeAreaName,
                 crcef_tradeareareference: tradeAreaGuid,
                 // crcef_demographic_line_guid: demographicLineGuid,
             }
@@ -2967,7 +3082,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     .createRecord("crcef_competitoranalysis", data)
                     .then(function (result: any) {
                         let guid = result.id;
-                        let competitorAnalysisObj: CompetitorAnalysisInfo = constructCompetitorAnalysisObj(guid, nearApiFeature);
+                        let competitorAnalysisObj: CompetitorAnalysisInfo = constructCompetitorAnalysisObj(guid, competitorTradeArea);
                         resolve(competitorAnalysisObj);
                     })
                     .catch(function (error: any) {
@@ -2979,7 +3094,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         }
 
         Promise.all(promisesArray).then((responses: CompetitorAnalysisInfo[]) => {
-            setCompetitorAnalysisDetailList(responses);
+            setCompetitorAnalysisList(responses);
         });
     }
 
@@ -3094,6 +3209,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 .then(function (response: any) {
                     showPowerBiCompetitorReport();
                     setActiveBtnId('');
+                    setCompetitorAnalysisList([]);
                     setSelectedCompetitorHistoryGuid(undefined);
                     resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
                     //setSelectedReportType(undefined);
@@ -3102,6 +3218,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     // Handle error
                     setIsLoadingBiReport(false);
                     setActiveBtnId('');
+                    setCompetitorAnalysisList([]);
                     setSelectedCompetitorHistoryGuid(undefined);
                     resetCompletedCompetetiorSelectedTradeAreaGuidRefValue();
                     //setSelectedReportType(undefined);
@@ -3120,78 +3237,15 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
      * Api Call for competitor analysis into D635
      */
     function createSelectedTradeAreaApiCallForCompetitorAnalysis() {
-        if (selectedCompetitorHistoryGuid !== undefined) {
-            let fetchHistoryDetails = {
-                competitorHistoryGuid : selectedCompetitorHistoryGuid,
-            };
-            createSelectedTradeAreaApiRequestForCompetitorAnalysis(fetchHistoryDetails, true);
-        } else {
-            let randomNumber = Math.round(Math.random() * 1000000000).toString();
-            let additionalCompetitorAnalysisDetails = {
-                nearApiRequestDetails: [],
-                startDate: competitorPeriodStartDate,
-                endDate: competitorPeriodEndDate,
-                randomNumber: randomNumber
-            };
-
-            createSelectedTradeAreaApiRequestForCompetitorAnalysis(additionalCompetitorAnalysisDetails, false);
-        }
-    }
-
-    /**
-     * This function is used to create selected trade area
-     * Api Request for competitor analysis into D635
-     * @param additionalCompetitorAnalysisDetails additional competitor report details with near request info
-     * @param isFetchFromHistory boolean
-     */
-    function createSelectedTradeAreaApiRequestForCompetitorAnalysis(additionalCompetitorAnalysisDetails: any, isFetchFromHistory: boolean) {
         let requests: any[] = [];
-        let pendingRequests : any[] = [];
+        for (let i = 0; i < competitorNearApiRequestDataList.length; i++) {
+            let requestData = competitorNearApiRequestDataList[i];
+            let createRequest = constructSelectedTradeAreaCreateRequestForCompetitorAnalysis(requestData);
 
-        var Sdk = (window as any).Sdk || {};
-
-        Sdk.CreateRequest = function(entityName: string, payload: object) {
-            this.etn = entityName;
-            this.payload = payload;
-        };
-
-        Sdk.CreateRequest.prototype.getMetadata = function () {
-            return {
-                boundParameter: null,
-                parameterTypes: {},
-                operationType: 2, // This is a CRUD operation. Use '0' for actions and '1' for functions
-                operationName: "Create",
-            };
-        };
-
-        if (isFetchFromHistory === false) {
-            for (let i = 0; i < competitorSplitNearApiFeatureList.length; i++) {
-                let splitNearApiFeatureList = competitorSplitNearApiFeatureList[i];
-                let nearApiRequestDetails = getCompetitorAnalysisNearApiRequestDetailList(splitNearApiFeatureList);
-
-                additionalCompetitorAnalysisDetails.nearApiRequestDetails = nearApiRequestDetails;
-
-                let payload = {
-                    crcef_storeid : JSON.stringify(additionalCompetitorAnalysisDetails),
-                    crcef_tradeareajson: JSON.stringify(splitNearApiFeatureList),
-                    crcef_reporttype: ReportTypeValue.COMPETITOR,
-                    crcef_processingstatus: ProcessingStatusValue.NEW,
-                };
-                let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
-                requests.push(createRequest);
-            }
-        } else {
-            let payload = {
-                crcef_storeid : JSON.stringify(additionalCompetitorAnalysisDetails),
-                crcef_tradeareajson: '',
-                crcef_reporttype: ReportTypeValue.COMPETITOR,
-                crcef_processingstatus: ProcessingStatusValue.NEW,
-            };
-            let createRequest = new Sdk.CreateRequest("crcef_selectedtradearea", payload);
             requests.push(createRequest);
         }
 
-        pendingRequests = requests.slice();
+        let pendingRequests: any[] = requests.slice();
 
         // track the date and time for very first near api plugin hit
         pluginStartTimeRef.competitorAnalysis = new Date();
@@ -3606,11 +3660,14 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
             if (entities.length > 0) {
                 for (let i = 0; i < entities.length; i++) {
                     let currentFeature = JSON.parse(entities[i].crcef_tradeareajson);
+                    let polygonArea = turf.area(currentFeature.geometry);
                     tradeAreaInfo = {
                         tradeAreaId: entities[i].crcef_lawsontradeareaid,
                         tradeAreaName: entities[i].crcef_recordname,
                         featureId: currentFeature.id,
-                        coordinates: currentFeature.geometry.coordinates
+                        coordinates: currentFeature.geometry.coordinates,
+                        area: polygonArea,
+                        demographicLineGuid: '',
                     }
                     tradeAreaInfoList.push(tradeAreaInfo);
                 }
@@ -4255,9 +4312,6 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         
         setIsLoadingBiReport(true);
         setSelectedCompetitorHistoryGuid(historyId);
-
-        // close the competitor report modal
-        competitorReportModalToggle();
     }
 
     function onDeleteStatisticsDataConfirm() {
@@ -4307,36 +4361,13 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         let periodStartDate = ISOStartDate.substring(0, ISOStartDate.length-5).replace('T' , " ")
         let periodEndDate = ISOEndDate.substring(0, ISOEndDate.length-5).replace('T00:00:00' , " 23:59:59");
 
-        // Prepare competitor feature list for selected mall
-        let competitorFeaturesList = selectedTradeAreaList.map(tradeArea => {
-            let competitorFeature: GeoJSON.Feature;
-            competitorFeature = {
-                type: "Feature",
-                id: tradeArea.tradeAreaId,
-                properties: {
-                    name: tradeArea.tradeAreaName
-                },
-                geometry: {
-                    type: "Polygon",
-                    coordinates: tradeArea.coordinates
-                }
-            }
-            return competitorFeature;
-        });
-
-        // add area to competitor feature list
-        competitorFeaturesList.forEach((feature : any) => {
-            let polygonArea = turf.area(feature.geometry);
-            feature.properties.area = polygonArea;
-        });
-
-        // sorting of competitor feature list
-        competitorFeaturesList.sort(function(a: any, b: any) { return b.properties.area - a.properties.area; });
+        // sorting of competitor selected trade area list
+        let sortedSelectedTradeAreaList = selectedTradeAreaList.slice().sort(function(a: any, b: any) { return b.area - a.area; });
 
         setCompetitorRecordName(recordName);
         setCompetitorPeriodEndDate(periodEndDate);
         setCompetitorPeriodStartDate(periodStartDate);
-        setCompetitorNearApiFeatureList(competitorFeaturesList);
+        setCompetitorSelectedTradeAreaList(sortedSelectedTradeAreaList);
     }
 
     /**
@@ -4398,13 +4429,11 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                     lineDetailsList.push(lineDetails);
                 }
 
-                let competitorFeatureWithDemographicList = competitorNearApiFeatureList.slice();
-                competitorFeatureWithDemographicList.forEach((feature: GeoJSON.Feature) => {
-                    let properties = feature.properties;
-                    let currentLineDetails = lineDetailsList.find(line => line.tradeAreaId === feature.id);
-
-                    if (properties !== null) {
-                        properties.demographicLineGuid = currentLineDetails?.lineGuid;
+                let competitorTradeAreaWithDemographicList = competitorSelectedTradeAreaList.slice();
+                competitorTradeAreaWithDemographicList.forEach((competitorTradeArea: TradeAreaInfo) => {
+                    let currentLineDetails = lineDetailsList.find(line => line.tradeAreaId === competitorTradeArea.tradeAreaId);
+                    if (currentLineDetails !== undefined) {
+                        competitorTradeArea.demographicLineGuid = currentLineDetails.lineGuid;
                     }
                 });
 
@@ -4433,7 +4462,7 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
                 }
 
                 setCompetitorMaxArea(maxArea);
-                setCompetitorNearApiFeatureWithDemographicList(competitorFeatureWithDemographicList);
+                setCompetitorSelectedTradeAreaWithDemographicList(competitorTradeAreaWithDemographicList);
             })
             .catch(function(result) {
                 // loader is hide if demographic line promise throws error.
@@ -4446,45 +4475,64 @@ export const ToolbarFC: React.FC<ToolbarProps> = (props => {
         });
     }
 
+    function updateCompetitorNearApiRequestDataList() {
+        let nearApiReqDataList: CompetitorNearApiRequestInfo[] = [];
+        if (selectedCompetitorHistoryGuid !== undefined) {
+            let requestData = constructCompetitorNearApiRequestData([], '0');
+            nearApiReqDataList.push(requestData);
+        } else {
+            let randomNumber = Math.round(Math.random() * 1000000000).toString();
+
+            for (let i = 0; i < competitorSplitSelectedTradeAreaList.length; i++) {
+                let selectedTradeAreaSplitArray = competitorSplitSelectedTradeAreaList[i];
+                let requestData = constructCompetitorNearApiRequestData(selectedTradeAreaSplitArray, randomNumber);
+
+                nearApiReqDataList.push(requestData);
+            }
+        }
+
+        triggerCompetitorAnalysisNearApiAction(nearApiReqDataList);
+    }
+
     /**
      * This function is used to update the
      * competitor split selected trade area feature list
      */
-    function updateComptitorSplitSelectedTradeAreaFeatureList() {
-        let competitorSplitFeaturesList: GeoJSON.Feature[][] = [];
-        let competitorFeatureWithDemographicLineList = competitorNearApiFeatureWithDemographicList.slice();
+    function updateCompetitorSplitSelectedTradeAreaFeatureList() {
+        let competitorSplitTradeAreaList: TradeAreaInfo[][] = [];
+        let competitorTradeAreaWithDemographicLineList = competitorSelectedTradeAreaWithDemographicList.slice();
 
-        while (competitorFeatureWithDemographicLineList.length !== 0) {
+        while (competitorTradeAreaWithDemographicLineList.length !== 0) {
             let maxAreaLimit = competitorMaxArea;
-            let splittedarray: GeoJSON.Feature[] = [];
+            let splittedarray: TradeAreaInfo[] = [];
 
-            for (let i = 0; i < competitorFeatureWithDemographicLineList.length; i++) {
-                let competitorFeature = competitorFeatureWithDemographicLineList[i];
-                let competitorFeatureProp = competitorFeature.properties;
+            for (let i = 0; i < competitorTradeAreaWithDemographicLineList.length; i++) {
+                let competitorTradeArea = competitorTradeAreaWithDemographicLineList[i];
+                let {
+                    area: competitorTradeAreaArea,
+                    tradeAreaName
+                } = competitorTradeArea;
 
-                if (competitorFeatureProp !== null) {
-                    let competitorFeatureArea = competitorFeatureProp.area
-                    if (competitorFeatureArea > competitorMaxArea) {
-                        setErrorTradeAreaName(competitorFeatureProp.name);
-                        return [];
-                    }
+                if (competitorTradeAreaArea > competitorMaxArea) {
+                    setErrorTradeAreaName(tradeAreaName);
+                    return [];
+                }
 
-                    let conditionValue = maxAreaLimit - competitorFeatureArea;
-                    if (conditionValue === 0) {
-                        splittedarray.push(competitorFeature);
-                        break;
-                    } else if (conditionValue > 0) {
-                        splittedarray.push(competitorFeature);
-                        maxAreaLimit = maxAreaLimit - competitorFeatureArea;
-                    }
+                let conditionValue = maxAreaLimit - competitorTradeAreaArea;
+                if (conditionValue === 0) {
+                    splittedarray.push(competitorTradeArea);
+                    break;
+                } else if (conditionValue > 0) {
+                    splittedarray.push(competitorTradeArea);
+                    maxAreaLimit = maxAreaLimit - competitorTradeAreaArea;
                 }
             }
 
-            competitorSplitFeaturesList.push(splittedarray);
-            competitorFeatureWithDemographicLineList = competitorFeatureWithDemographicLineList.filter((item:any) => !splittedarray.includes(item))
+            competitorSplitTradeAreaList.push(splittedarray);
+            competitorTradeAreaWithDemographicLineList = competitorTradeAreaWithDemographicLineList.filter((item:any) => !splittedarray.includes(item))
         }
 
-        setCompetitorSplitNearApiFeatureList(competitorSplitFeaturesList);
+        setCompetitorSplitSelectedTradeAreaList(competitorSplitTradeAreaList);
     }
 
     function onCompetitorReportCancel() {

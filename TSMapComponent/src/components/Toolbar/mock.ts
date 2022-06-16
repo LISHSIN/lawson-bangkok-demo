@@ -29,32 +29,43 @@ export const mockTradeAreaList: TradeAreaInfo[] = [
         tradeAreaId:"1",
         tradeAreaName: "TDP",
         featureId:"1",
-        coordinates: [[[121.06334924697876, 14.60403734475385],
-                    [121.06448650360107, 14.604577218618584],
-                    [121.06386423110962, 14.604722569048002],
-                    [121.06334924697876, 14.60403734475385]]]
+        coordinates: [
+          [
+            [121.06334924697876, 14.60403734475385],
+            [121.06448650360107, 14.604577218618584],
+            [121.06386423110962, 14.604722569048002],
+            [121.06334924697876, 14.60403734475385]
+          ]
+        ],
+        area: 1000,
+        demographicLineGuid: '',
     },
     {
         tradeAreaId:"2",
         tradeAreaName: "Central World",
         featureId:"2",
-        coordinates: [[
-                    [
-                        121.05912208557129,
-                        14.607941018222817
-                    ],
-                    [
-                        121.06184720993043,
-                        14.608418590537632
-                    ],
-                    [
-                        121.06051683425905,
-                        14.610744145242903
-                    ],
-                    [
-                        121.05912208557129,
-                        14.607941018222817
-                    ]]]
+        coordinates: [
+          [
+            [
+                121.05912208557129,
+                14.607941018222817
+            ],
+            [
+                121.06184720993043,
+                14.608418590537632
+            ],
+            [
+                121.06051683425905,
+                14.610744145242903
+            ],
+            [
+                121.05912208557129,
+                14.607941018222817
+            ]
+          ]
+        ],
+        area: 1000,
+        demographicLineGuid: '',
     },
     {
         tradeAreaId:"3",
@@ -79,7 +90,9 @@ export const mockTradeAreaList: TradeAreaInfo[] = [
                 14.610204286522075
               ]
             ]
-          ]
+        ],
+        area: 1000,
+        demographicLineGuid: '',
     },
     {
         tradeAreaId:"4",
@@ -104,7 +117,9 @@ export const mockTradeAreaList: TradeAreaInfo[] = [
                 14.614004033184724
               ]
             ]
-          ]
+        ],
+        area: 1000,
+        demographicLineGuid: '',
     },
     {
         tradeAreaId:"5",
@@ -129,7 +144,9 @@ export const mockTradeAreaList: TradeAreaInfo[] = [
                 14.617429977946973
               ]
             ]
-          ]
+        ],
+        area: 1000,
+        demographicLineGuid: '',
     },
     {
         tradeAreaId:"6",
@@ -154,7 +171,9 @@ export const mockTradeAreaList: TradeAreaInfo[] = [
                 14.607297332156985
               ]
             ]
-          ]
+        ],
+        area: 1000,
+        demographicLineGuid: '',
     }
 ];
 
